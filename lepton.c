@@ -31,7 +31,7 @@
 // *** extract results from apache logs                                                              ***
 //
 
-const float version=3.37;
+const char version[20]="3.38";
 
 #include <stdio.h>
 #include <math.h>
@@ -42,12 +42,12 @@ const float version=3.37;
 #define UPLOAD
 #define MIXEDMASSMODE
 #define SHOWSTATUS
-#define SHOWSEARCH
 #define NEGATIVEEXP
+#define IGNORE_SMALL_UNCERTAINTIES
 
 // pick one G reference
 #define CODATA_G
-//#define ROSI_G 
+//#define ROSI_G
 //#define WIDE_G // wide=larger uncertainty
 
 //#define DEBUG10
@@ -192,16 +192,16 @@ void addUses(input_use *dest, input_use *src) {
 }
 
 void printUses(input_use *uses) {
-  printf("\nuses\n");
-  printf("------------------------------\n");
-  printf("alpha_em: %d\n", uses->alpha_em);
-  printf("v:        %d\n", uses->v);
-  printf("G:        %d\n", uses->G);
-  printf("mz:       %d\n", uses->mz);
-  printf("mw:       %d\n", uses->mw);
-  printf("mh0:      %d\n", uses->mh0);
-  printf("sin2w:    %d\n", uses->sin2w);
-  printf("------------------------------\n");
+  printf("debug, uses:\n");
+  printf("debug, ------------------------------\n");
+  printf("debug, alpha_em: %d\n", uses->alpha_em);
+  printf("debug, v:        %d\n", uses->v);
+  printf("debug, G:        %d\n", uses->G);
+  printf("debug, mz:       %d\n", uses->mz);
+  printf("debug, mw:       %d\n", uses->mw);
+  printf("debug, mh0:      %d\n", uses->mh0);
+  printf("debug, sin2w:    %d\n", uses->sin2w);
+  printf("debug, ------------------------------\n");
 }
 
 char *underscore(char *str, int len) {
@@ -320,21 +320,12 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
   // the computed and experimental muon mass (as an indication of accuracty)
   long int samples=0;
   int i,j;
-  double r;
   struct timespec t;
   long seed;
   long seedsec;
   long seedus;
   double mp;
-  double left, middle, right;
-  double leftstatic, middlestatic, rightstatic;
-  double lefts2w, middles2w, rights2w;
-  double leftc2w, middlec2w, rightc2w;
-  double leftmassterm, middlemassterm, rightmassterm;
-  double leftmeterm, middlemeterm, rightmeterm;
-  double leftmuterm, middlemuterm, rightmuterm;
-  double leftmtterm, middlemtterm, rightmtterm;
-  int arange, merange, murange, vrange, grange, hrange, mzrange, mwrange, mh0range, taurange, sin2wrange;
+  int arange, merange, murange, vrange, grange, mzrange, mwrange, mh0range, taurange, sin2wrange;
   struct timespec starttime;
   struct timespec endtime;
   double elapsedtime;
@@ -369,7 +360,7 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
   char usedasinput[5];
   char usedasoutput[5];
   long long resulthash;
-  long int samplelimit=100000000;
+  long int samplelimit=1000000000;
   int invalid=0;
   int complexity;
   double leftexp;
@@ -410,68 +401,76 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
   double sin2w_ref_relerror=sin2w_ref_error / sin2w_ref;
 
   //  mc test vars
-  double e_test=0;
-  double e_test_last=0;
-  double u_test=0;
-  double u_test_last=0;
-  double t_test=0;
-  double t_test_last=0;
-  double precision=0;
-  double precision_last=0;
-  double avg_rel_range_new;
-  double a9;
-  double a9mp;
+  long double r;
+  long double e_test=0;
+  long double e_test_last=0;
+  long double u_test=0;
+  long double u_test_last=0;
+  long double t_test=0;
+  long double t_test_last=0;
+  long double precision=0;
+  long double precision_last=0;
+  long double left, middle, right;
+  long double leftstatic, middlestatic, rightstatic;
+  long double lefts2w, middles2w, rights2w;
+  long double leftc2w, middlec2w, rightc2w;
+  long double leftmassterm, middlemassterm, rightmassterm;
+  long double leftmeterm, middlemeterm, rightmeterm;
+  long double leftmuterm, middlemuterm, rightmuterm;
+  long double leftmtterm, middlemtterm, rightmtterm;
+  long double a9;
+  long double a9mp;
 
   // mc outputs
-  double alpha=0;
-  double alpha_last=0;
-  double alpha_center=0;
-  double alpha_range=0;
-  double me=0;
-  double me_last=0;
-  double me_center=0;
-  double me_range=0;
-  double mu=0;
-  double mu_last=0;
-  double mu_center=0;
-  double mu_range=0;
-  double mu_range_new=0;
-  double v=0;
-  double v_last=0;
-  double v_center=0;
-  double v_range=0;
-  double v_range_new=0;
-  double tau=0;
-  double tau_last=0;
-  double tau_center=0;
-  double tau_range=0;
-  double tau_range_new=0;
-  double G=0;
-  double G_last=0;
-  double G_center=0;
-  double G_range=0;
-  double G_range_new=0;
-  double mz=0;
-  double mz_last=0;
-  double mz_center=0;
-  double mz_range=0;
-  double mz_range_new=0;
-  double mw=0;
-  double mw_last=0;
-  double mw_center=0;
-  double mw_range=0;
-  double mw_range_new=0;
-  double mh0=0;
-  double mh0_last=0;
-  double mh0_center=0;
-  double mh0_range=0;
-  double mh0_range_new=0;
-  double sin2w=0;
-  double sin2w_last=0;
-  double sin2w_center=0;
-  double sin2w_range=0;
-  double sin2w_range_new=0;
-  double cos2w=0;
+  long double alpha=0;
+  long double alpha_last=0;
+  long double alpha_center=0;
+  long double alpha_range=0;
+  long double me=0;
+  long double me_last=0;
+  long double me_center=0;
+  long double me_range=0;
+  long double mu=0;
+  long double mu_last=0;
+  long double mu_center=0;
+  long double mu_range=0;
+  long double mu_range_new=0;
+  long double v=0;
+  long double v_last=0;
+  long double v_center=0;
+  long double v_range=0;
+  long double v_range_new=0;
+  long double tau=0;
+  long double tau_last=0;
+  long double tau_center=0;
+  long double tau_range=0;
+  long double tau_range_new=0;
+  long double G=0;
+  long double G_last=0;
+  long double G_center=0;
+  long double G_range=0;
+  long double G_range_new=0;
+  long double mz=0;
+  long double mz_last=0;
+  long double mz_center=0;
+  long double mz_range=0;
+  long double mz_range_new=0;
+  long double mw=0;
+  long double mw_last=0;
+  long double mw_center=0;
+  long double mw_range=0;
+  long double mw_range_new=0;
+  long double mh0=0;
+  long double mh0_last=0;
+  long double mh0_center=0;
+  long double mh0_range=0;
+  long double mh0_range_new=0;
+  long double sin2w=0;
+  long double sin2w_last=0;
+  long double sin2w_center=0;
+  long double sin2w_range=0;
+  long double sin2w_range_new=0;
+  long double cos2w=0;
 
   // for reporting
   double alpha_out=0;
@@ -557,9 +556,9 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
 
   clock_gettime(CLOCK_REALTIME, &starttime);
 
-  leftstatic=((double)leftmatchptr->matchup / (double)leftmatchptr->matchdown) / leftmatchptr->matchmult;
-  middlestatic=((double)middlematchptr->matchup / (double)middlematchptr->matchdown) / middlematchptr->matchmult;
-  rightstatic=((double)rightmatchptr->matchup / (double)rightmatchptr->matchdown) / rightmatchptr->matchmult;
+  leftstatic=((long double)leftmatchptr->matchup / (long double)leftmatchptr->matchdown) / leftmatchptr->matchmult;
+  middlestatic=((long double)middlematchptr->matchup / (long double)middlematchptr->matchdown) / middlematchptr->matchmult;
+  rightstatic=((long double)rightmatchptr->matchup / (long double)rightmatchptr->matchdown) / rightmatchptr->matchmult;
 
   leftexp = 1.0 / (double)leftinvexp;
   middleexp = 1.0 / (double)middleinvexp;
@@ -575,8 +574,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatmh0=0;
-    mh0_center=mh0_ref;
-    mh0_range=mh0_ref_error;
+    mh0_center=(long double)mh0_ref;
+    mh0_range=(long double)mh0_ref_error;
   }
 
   // sin2w relative uncertainty 1.2E-3, sinw: 5.9E-4, cosw: 1.7E-4
@@ -584,8 +583,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     if ((alluses->mw == 1) || (alluses->mz == 1)) {  // check if we are explicitly using mw or mz
       mwmzmode=1; // sin2w will be derived from mw and mz
       floatsin2w=0;
-      sin2w_center=sin2w_ref;
-      sin2w_range=sin2w_ref_error;
+      sin2w_center=(long double)sin2w_ref;
+      sin2w_range=(long double)sin2w_ref_error;
     } else {
       mwmzmode=0;
       floatsin2w=1;
@@ -594,8 +593,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
   } else {
     mwmzmode=0;
     floatsin2w=0;
-    sin2w_center=sin2w_ref;
-    sin2w_range=sin2w_ref_error;
+    sin2w_center=(long double)sin2w_ref;
+    sin2w_range=(long double)sin2w_ref_error;
   }
 
 #ifdef WIDE_G // higher uncertainty puts G here when this is selected
@@ -605,8 +604,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatg=0;
-    G_center=G_ref;
-    G_range=G_ref_error;
+    G_center=(long double)G_ref;
+    G_range=(long double)G_ref_error;
   }
 #endif
 
@@ -618,8 +617,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatmw=0;
-    mw_center=mw_ref;
-    mw_range=mw_ref_error;
+    mw_center=(long double)mw_ref;
+    mw_range=(long double)mw_ref_error;
   }
 
 #ifdef ROSI_G // higher uncertainty puts G here when this is selected
@@ -629,8 +628,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatg=0;
-    G_center=G_ref;
-    G_range=G_ref_error;
+    G_center=(long double)G_ref;
+    G_range=(long double)G_ref_error;
   }
 #endif
 
@@ -640,8 +639,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floattau=0;
-    tau_center=mu_ref;
-    tau_range=mu_ref_error;
+    tau_center=(long double)mu_ref;
+    tau_range=(long double)mu_ref_error;
   }
 
 #ifdef CODATA_G
@@ -651,8 +650,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatg=0;
-    G_center=G_ref;
-    G_range=G_ref_error;
+    G_center=(long double)G_ref;
+    G_range=(long double)G_ref_error;
   }
 #endif
 
@@ -662,8 +661,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatmz=0;
-    mz_center=mz_ref;
-    mz_range=mz_ref_error;
+    mz_center=(long double)mz_ref;
+    mz_range=(long double)mz_ref_error;
   }
 
   // v relative uncertainty 2.6E-7
@@ -672,8 +671,8 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatv=0;
-    v_center=v_ref;
-    v_range=v_ref_error;
+    v_center=(long double)v_ref;
+    v_range=(long double)v_ref_error;
   }
 
   // mu relative uncertainty 2.3E-8
@@ -682,26 +681,37 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     unknowns++;
   } else {
     floatmu=0;
-    mu_center=mu_ref;
-    mu_range=mu_ref_error;
+    mu_center=(long double)mu_ref;
+    mu_range=(long double)mu_ref_error;
   }
 
   // we always have three unknowns at this point so the rest are never floated
 
   // me relative uncertainty 3.0E-10
-  me_center=me_ref;
-  me_range=me_ref_error;
+  me_center=(long double)me_ref;
+  me_range=(long double)me_ref_error;
 
   // alpha relative uncertainty 1.5E-10
-  alpha_center=alpha_ref;
-  alpha_range=alpha_ref_error;
+  alpha_center=(long double)alpha_ref;
+  alpha_range=(long double)alpha_ref_error;
 
   // systematically try all non-floated input extremes
 #ifdef DEBUG20
-  printf("debug, Begin phase 2 input loops, unknowns: %d, floatmu: %d, floatv: %d, floatmz: %d, floatg: %d, floattau: %d, floatmw: %d, floatsin2w: %d, mwmzmode: %d, floatmh0: %d\n", unknowns, floatmu, floatv, floatmz, floatg, floattau, floatmw, floatsin2w, mwmzmode, floatmh0);
+  printf("debug,\ndebug, Begin phase 2 input loops, unknowns: %d, floatmu: %d, floatv: %d, floatmz: %d, floatg: %d, floattau: %d, floatmw: %d, floatsin2w: %d, mwmzmode: %d, floatmh0: %d\n", unknowns, floatmu, floatv, floatmz, floatg, floattau, floatmw, floatsin2w, mwmzmode, floatmh0);
 
   printUses(alluses);
 #endif
+
+#ifdef IGNORE_SMALL_UNCERTAINTIES
+  // this speeds up phase 2 by up to 4x
+  alpha=(long double)alpha_ref;
+  alpha_range=alpha_ref_error;
+  arange=1;
+  a9=powl(alpha, 9.00);
+  me=(long double)me_ref;
+  me_range=me_ref_error;
+  merange=1;
+#else
   for (arange=!alluses->alpha_em; ((arange<=1) && (! invalid)); arange++) {
     // alpha is never floated, it is always used as high precision input when needed
     if (arange == 0) {
@@ -709,7 +719,7 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
     } else {
       alpha=(alpha_center + alpha_range);
     }  
-    a9=pow(alpha, 9.00);
+    a9=powl(alpha, 9.00);
     for (merange=0; ((merange<=1) && (! invalid)); merange++) {
       // me is never floated it is always used as high precision input
       if (merange == 0) {
@@ -717,6 +727,7 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
       } else {
         me=(me_center + me_range);
       }
+#endif
         for (murange=floatmu; ((murange<=1) && (! invalid)); murange++) {
           // mu is always used but only floated if necessary
           if (floatmu == 0) {
@@ -784,56 +795,56 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                           }
                         }
 #ifdef DEBUG20
-                printf("debug, Begin phase 2 samples loop, arange: %d, merange: %d, hrange: %d, murange: %d, vrange: %d, mzrange: %d, grange: %d, taurange: %d, mwrange: %d, sin2wrange: %d, mh0range: %d\n", arange, merange, hrange, murange, vrange, mzrange, grange, taurange, mwrange, sin2wrange, mh0range);
+                printf("debug, Begin phase 2 samples loop, arange: %d, merange: %d, murange: %d, vrange: %d, mzrange: %d, grange: %d, taurange: %d, mwrange: %d, sin2wrange: %d, mh0range: %d\n", arange, merange, murange, vrange, mzrange, grange, taurange, mwrange, sin2wrange, mh0range);
 #endif
                 precision_last=1.0E99;
                 //  reset mc test vars and outputs
                 if (floatmu == 1) {
                   mu_last=0;
-                  mu_center=mu_ref;
-                  mu_range=mu_ref * 0.001;
+                  mu_center=(long double)mu_ref;
+                  mu_range=(long double)mu_ref * 0.001;
                   mu_range_new=0;
                 }
                 if (floatv == 1) {
                   v_last=0;
-                  v_center=v_ref; 
-                  v_range=v_ref * 0.001;
+                  v_center=(long double)v_ref; 
+                  v_range=(long double)v_ref * 0.001;
                   v_range_new=0;
                 }
                 if (floatmz == 1) {
                   mz_last=0;
-                  mz_center=mz_ref;
-                  mz_range=mz_ref * 0.01;
+                  mz_center=(long double)mz_ref;
+                  mz_range=(long double)mz_ref * 0.01;
                   mz_range_new=0;
                 }
                 if (floatg == 1) {
                   G_last=0;
-                  G_center=G_ref; 
-                  G_range=G_ref * 0.01;
+                  G_center=(long double)G_ref; 
+                  G_range=(long double)G_ref * 0.01;
                   G_range_new=0;
                 }
                 if (floattau == 1) {
                   tau_last=0;
-                  tau_center=tau_ref; 
-                  tau_range=tau_ref * 0.01;
+                  tau_center=(long double)tau_ref; 
+                  tau_range=(long double)tau_ref * 0.01;
                   tau_range_new=0;
                 }
                 if (floatmw == 1) {
                   mw_last=0;
-                  mw_center=mw_ref; 
-                  mw_range=mw_ref * 0.1;
+                  mw_center=(long double)mw_ref; 
+                  mw_range=(long double)mw_ref * 0.1;
                   mw_range_new=0;
                 }
                 if (floatsin2w == 1) {
                   sin2w_last=0;
-                  sin2w_center=sin2w_ref;
-                  sin2w_range=sin2w_ref * 0.1;
+                  sin2w_center=(long double)sin2w_ref;
+                  sin2w_range=(long double)sin2w_ref * 0.1;
                   sin2w_range_new=0;
                 }
                 if (floatmh0 == 1) {
                   mh0_last=0;
-                  mh0_center=mh0_ref;
-                  mh0_range=mh0_ref * 0.1;
+                  mh0_center=(long double)mh0_ref;
+                  mh0_range=(long double)mh0_ref * 0.1;
                   mh0_range_new=0;
                 }
 
@@ -848,145 +859,145 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                 for (samples = 0; ((samples < samplelimit) && (precision_last > 1.0E-11) && !((samples > 50000000) && (precision_last > 1.0E-6))); samples++) {
                   // guess random values for mc outputs
                   if (floatmu == 1) {
-                    r=drand48();
-                    mu=((mu_center - mu_range) + (r * 2 * mu_range));
+                    r=(long double)drand48();
+                    mu=((mu_center - mu_range) + (r * 2.0 * mu_range));
                     i=0;
                     while ((mu < mu_ref * 0.999) || (mu > (mu_ref * 1.001))) { // sanity check on mu mass to help solve correct root and speed convergance
                       if (i > 50) { // safety valve in case search gets out of bounds
                         i=0;
                         mu_last=0;
-                        mu_center=mu_ref;
-                        mu_range=mu_ref * 0.001;
+                        mu_center=(long double)mu_ref;
+                        mu_range=(long double)mu_ref * 0.001;
                         mu_range_new=0;
                       }
-                      r=drand48();
-                      mu=((mu_center - mu_range) + (r * 2 * mu_range));
+                      r=(long double)drand48();
+                      mu=((mu_center - mu_range) + (r * 2.0 * mu_range));
                       i++;
                     }
                   }
                   if (floatv == 1) {
-                    r=drand48();
-                    v=((v_center - v_range) + (r * 2 * v_range));
+                    r=(long double)drand48();
+                    v=((v_center - v_range) + (r * 2.0 * v_range));
                     i=0;
                     while ((v < (v_ref * 0.999)) || (v > (v_ref * 1.001))) { // sanity check to help convergance
                       if (i > 50) { // safety valve in case search gets out of bounds
                         i=0;
                         v_last=0;
-                        v_center=v_ref;
-                        v_range=v_ref * 0.001;
+                        v_center=(long double)v_ref;
+                        v_range=(long double)v_ref * 0.001;
                         v_range_new=0;
                       }
-                      r=drand48();
-                      v=((v_center - v_range) + (r * 2 * v_range));
+                      r=(long double)drand48();
+                      v=((v_center - v_range) + (r * 2.0 * v_range));
                       i++;
                     }
                   }
                   if (floatmz == 1) {
-                    r=drand48();
-                    mz=((mz_center - mz_range) + (r * 2 * mz_range));
+                    r=(long double)drand48();
+                    mz=((mz_center - mz_range) + (r * 2.0 * mz_range));
                     i=0;
                     while ((mz < mz_ref * 0.99) || (mz > (mz_ref * 1.01))) { // sanity check on mz mass to help solve correct root and speed convergance
                       if (i > 50) { // safety valve in case search gets out of bounds
                         i=0;
                         mz_last=0;
-                        mz_center=mz_ref;
-                        mz_range=mz_ref * 0.01;
+                        mz_center=(long double)mz_ref;
+                        mz_range=(long double)mz_ref * 0.01;
                         mz_range_new=0;
                       }
-                      r=drand48();
-                      mz=((mz_center - mz_range) + (r * 2 * mz_range));
+                      r=(long double)drand48();
+                      mz=((mz_center - mz_range) + (r * 2.0 * mz_range));
                       i++;
                     }
                   }
                   if (floatg == 1) {
-                    r=drand48();
-                    G=((G_center - G_range) + (r * 2 * G_range));
+                    r=(long double)drand48();
+                    G=((G_center - G_range) + (r * 2.0 * G_range));
                     i=0;
                     while ((G < (G_ref * 0.99)) || (G > (G_ref * 1.01))) {  // sanity check to help convergance
                       if (i > 50) {  // safety valve in case search gets out of bounds
                         i=0;
                         G_last=0;
-                        G_center=G_ref;
-                        G_range=G_ref * 0.01;
+                        G_center=(long double)G_ref;
+                        G_range=(long double)G_ref * 0.01;
                         G_range_new=0;
                       }
-                      r=drand48();
-                      G=((G_center - G_range) + (r * 2 * G_range));
+                      r=(long double)drand48();
+                      G=((G_center - G_range) + (r * 2.0 * G_range));
                       i++;
                     }
-                    a9mp=a9 * kg_to_ev * sqrt(hbar_ref * c_ref / G);
+                    a9mp=a9 * (long double)kg_to_ev * (long double)sqrt(hbar_ref * c_ref / G);
                   }
                   if (floattau == 1) {
-                    r=drand48();
-                    tau=((tau_center - tau_range) + (r * 2 * tau_range));
+                    r=(long double)drand48();
+                    tau=((tau_center - tau_range) + (r * 2.0 * tau_range));
                     i=0;
                     while ((tau < tau_ref * 0.99) || (tau > (tau_ref * 1.01))) { // sanity check on tau mass to help solve correct root and speed convergance
                       if (i > 50) { // safety valve in case search gets out of bounds
                         i=0;
                         tau_last=0;
-                        tau_center=tau_ref;
-                        tau_range=tau_ref * 0.01;
+                        tau_center=(long double)tau_ref;
+                        tau_range=(long double)tau_ref * 0.01;
                         tau_range_new=0;
                       }
-                      r=drand48();
-                      tau=((tau_center - tau_range) + (r * 2 * tau_range));
+                      r=(long double)drand48();
+                      tau=((tau_center - tau_range) + (r * 2.0 * tau_range));
                       i++;
                     }
                   }
                   if (floatmw == 1) {
-                    r=drand48();
-                    mw=((mw_center - mw_range) + (r * 2 * mw_range));
+                    r=(long double)drand48();
+                    mw=((mw_center - mw_range) + (r * 2.0 * mw_range));
                     i=0;
                     while ((mw < mw_ref * 0.9) || (mw > (mw_ref * 1.1))) { // sanity check on mw mass to help solve correct root and speed convergance
                       if (i > 50) { // safety valve in case search gets out of bounds
                         i=0;
                         mw_last=0;
-                        mw_center=mw_ref;
-                        mw_range=mw_ref * 0.1;
+                        mw_center=(long double)mw_ref;
+                        mw_range=(long double)mw_ref * 0.1;
                         mw_range_new=0;
                       }
-                      r=drand48();
-                      mw=((mw_center - mw_range) + (r * 2 * mw_range));
+                      r=(long double)drand48();
+                      mw=((mw_center - mw_range) + (r * 2.0 * mw_range));
                       i++;
                     }
                   }
                   if (alluses->sin2w == 1) {  
                     if (mwmzmode == 0) {  // float sin2w
-                      r=drand48();
-                      sin2w=((sin2w_center - sin2w_range) + (r * 2 * sin2w_range));
+                      r=(long double)drand48();
+                      sin2w=((sin2w_center - sin2w_range) + (r * 2.0 * sin2w_range));
                       i=0;
                       while ((sin2w < sin2w_ref * 0.9) || (sin2w > (sin2w_ref * 1.1))) { // sanity check on sin2w to help solve correct root and speed convergance
                         if (i > 50) { // safety valve in case search gets out of bounds
                           i=0;
                           sin2w_last=0;
-                          sin2w_center=sin2w_ref; 
-                          sin2w_range=sin2w_ref * 0.1;
+                          sin2w_center=(long double)sin2w_ref; 
+                          sin2w_range=(long double)sin2w_ref * 0.1;
                           sin2w_range_new=0;
                         }
-                        r=drand48();
-                        sin2w=((sin2w_center - sin2w_range) + (r * 2 * sin2w_range));
+                        r=(long double)drand48();
+                        sin2w=((sin2w_center - sin2w_range) + (r * 2.0 * sin2w_range));
                         i++;
                       }
                       cos2w=1.0 - sin2w;
                     } else { // derive sin2w from mw/mz
-                      cos2w=pow((mw/mz), 2.0);
+                      cos2w=powl((mw/mz), 2.0);
                       sin2w=1.0 - cos2w;
                     } // end mwmzmode
                   } // end alluses sin2w
                   if (floatmh0 == 1) {
-                    r=drand48();
-                    mh0=((mh0_center - mh0_range) + (r * 2 * mh0_range));
+                    r=(long double)drand48();
+                    mh0=((mh0_center - mh0_range) + (r * 2.0 * mh0_range));
                     i=0;
                     while ((mh0 < mh0_ref * 0.9) || (mh0 > (mh0_ref * 1.1))) { // sanity check on mh0 mass to help solve correct root and speed convergance
                       if (i > 50) { // safety valve in case search gets out of bounds
                         i=0;
                         mh0_last=0;
-                        mh0_center=mh0_ref;
-                        mh0_range=mh0_ref * 0.1;
+                        mh0_center=(long double)mh0_ref;
+                        mh0_range=(long double)mh0_ref * 0.1;
                         mh0_range_new=0;
                       }
-                      r=drand48();
-                      mh0=((mh0_center - mh0_range) + (r * 2 * mh0_range));
+                      r=(long double)drand48();
+                      mh0=((mh0_center - mh0_range) + (r * 2.0 * mh0_range));
                       i++;
                     }
                   }
@@ -994,7 +1005,7 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                   if (leftmatchptr->massratio == 0) {
                     leftmassterm=a9mp;
                   } else if (leftmatchptr->massratio == 1) {
-                    leftmassterm=v / sqrt(2);
+                    leftmassterm=v / (long double)sqrt(2.0);
                   } else if (leftmatchptr->massratio == 2) {
                     leftmassterm=mz;
                   } else if (leftmatchptr->massratio == 3) {
@@ -1005,7 +1016,7 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                   if (middlematchptr->massratio == 0) {
                     middlemassterm=a9mp;
                   } else if (middlematchptr->massratio == 1) {
-                    middlemassterm=v / sqrt(2);
+                    middlemassterm=v / (long double)sqrt(2);
                   } else if (middlematchptr->massratio == 2) {
                     middlemassterm=mz;
                   } else if (middlematchptr->massratio == 3) {
@@ -1016,7 +1027,7 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                   if (rightmatchptr->massratio == 0) {
                     rightmassterm=a9mp;
                   } else if (rightmatchptr->massratio == 1) {
-                    rightmassterm=v / sqrt(2);
+                    rightmassterm=v / (long double)sqrt(2);
                   } else if (rightmatchptr->massratio == 2) {
                     rightmassterm=mz;
                   } else if (rightmatchptr->massratio == 3) {
@@ -1036,34 +1047,34 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                   rightmtterm=tau / rightmassterm;
 
                   if (leftmatchptr->s2wupout != 0) {
-                    lefts2w=pow(sin2w, ((double)leftmatchptr->s2wupout / (double)leftmatchptr->s2wdownout));
+                    lefts2w=powl(sin2w, ((long double)leftmatchptr->s2wupout / (long double)leftmatchptr->s2wdownout));
                   } else {
                     lefts2w=1.0;
                   }
                   if (leftmatchptr->c2wupout != 0) {
-                    leftc2w=pow(cos2w, ((double)leftmatchptr->c2wupout / (double)leftmatchptr->c2wdownout));
+                    leftc2w=powl(cos2w, ((long double)leftmatchptr->c2wupout / (long double)leftmatchptr->c2wdownout));
                   } else {
                     leftc2w=1.0;
                   }
 
                   if (middlematchptr->s2wupout != 0) {
-                    middles2w=pow(sin2w, ((double)middlematchptr->s2wupout / (double)middlematchptr->s2wdownout));
+                    middles2w=powl(sin2w, ((long double)middlematchptr->s2wupout / (long double)middlematchptr->s2wdownout));
                   } else {
                     middles2w=1.0;
                   }
                   if (middlematchptr->c2wupout != 0) {
-                    middlec2w=pow(cos2w, ((double)middlematchptr->c2wupout / (double)middlematchptr->c2wdownout));
+                    middlec2w=powl(cos2w, ((long double)middlematchptr->c2wupout / (long double)middlematchptr->c2wdownout));
                   } else {
                     middlec2w=1.0;
                   }
 
                   if (rightmatchptr->s2wupout != 0) {
-                    rights2w=pow(sin2w, ((double)rightmatchptr->s2wupout / (double)rightmatchptr->s2wdownout));
+                    rights2w=powl(sin2w, ((long double)rightmatchptr->s2wupout / (long double)rightmatchptr->s2wdownout));
                   } else {
                     rights2w=1.0;
                   }
                   if (rightmatchptr->c2wupout != 0) {
-                    rightc2w=pow(cos2w, ((double)rightmatchptr->c2wupout / (double)rightmatchptr->c2wdownout));
+                    rightc2w=powl(cos2w, ((long double)rightmatchptr->c2wupout / (long double)rightmatchptr->c2wdownout));
                   } else {
                     rightc2w=1.0;
                   }
@@ -1072,15 +1083,15 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                   middle=(middlestatic / middles2w) / middlec2w;
                   right= (rightstatic  / rights2w ) / rightc2w;
 
-                  e_test=(left * pow(leftmeterm, leftexp)) - (middle * pow(middlemeterm, middleexp)) + (right * pow(rightmeterm, rightexp)) - 1.0;
-                  u_test=(left * pow(leftmuterm, leftexp)) - (middle * pow(middlemuterm, middleexp)) + (right * pow(rightmuterm, rightexp)) - 1.0;
-                  t_test=(left * pow(leftmtterm, leftexp)) - (middle * pow(middlemtterm, middleexp)) + (right * pow(rightmtterm, rightexp)) - 1.0;
+                  e_test=(left * powl(leftmeterm, leftexp)) - (middle * powl(middlemeterm, middleexp)) + (right * powl(rightmeterm, rightexp)) - 1.0;
+                  u_test=(left * powl(leftmuterm, leftexp)) - (middle * powl(middlemuterm, middleexp)) + (right * powl(rightmuterm, rightexp)) - 1.0;
+                  t_test=(left * powl(leftmtterm, leftexp)) - (middle * powl(middlemtterm, middleexp)) + (right * powl(rightmtterm, rightexp)) - 1.0;
 
-#ifdef DEBUG22
-                  printf("sample: %ld, left: %.6e, leftstatic: %.6e, lefts2w: %.6e, leftc2w: %.6e, lefts2wupout: %d, lefts2wdownout: %d, leftc2wupout: %d, leftc2wdownout: %d\n", samples, left, leftstatic, lefts2w, leftc2w, leftmatchptr->s2wupout, leftmatchptr->s2wdownout, leftmatchptr->c2wupout, leftmatchptr->c2wdownout);
-                  printf("sample: %ld, middle: %.6e, middlestatic: %.6e, middles2w: %.6e, middlec2w: %.6e, middles2wupout: %d, middles2wdownout: %d, middlec2wupout: %d, middlec2wdownout: %d\n", samples, middle, middlestatic, middles2w, middlec2w, middlematchptr->s2wupout, middlematchptr->s2wdownout, middlematchptr->c2wupout, middlematchptr->c2wdownout);
-                  printf("sample: %ld, right: %.6e, rightstatic: %.6e, rights2w: %.6e, rightc2w: %.6e, rights2wupout: %d, rights2wdownout: %d, rightc2wupout: %d, rightc2wdownout: %d\n", samples, right, rightstatic, rights2w, rightc2w, rightmatchptr->s2wupout, rightmatchptr->s2wdownout, rightmatchptr->c2wupout, rightmatchptr->c2wdownout);
-                  printf("sample: %ld, e_test:  %.3e, u_test:  %.3e, t_test: %.3e, left: %.3e, middle: %.3e, right: %.3e\n", samples, e_test, u_test, t_test, left, middle, right);
+#ifdef DEBUG23
+                  printf("sample: %ld, left: %.6Le, leftstatic: %.6Le, lefts2w: %.6Le, leftc2w: %.6Le, lefts2wupout: %d, lefts2wdownout: %d, leftc2wupout: %d, leftc2wdownout: %d\n", samples, left, leftstatic, lefts2w, leftc2w, leftmatchptr->s2wupout, leftmatchptr->s2wdownout, leftmatchptr->c2wupout, leftmatchptr->c2wdownout);
+                  printf("sample: %ld, middle: %.6Le, middlestatic: %.6Le, middles2w: %.6Le, middlec2w: %.6Le, middles2wupout: %d, middles2wdownout: %d, middlec2wupout: %d, middlec2wdownout: %d\n", samples, middle, middlestatic, middles2w, middlec2w, middlematchptr->s2wupout, middlematchptr->s2wdownout, middlematchptr->c2wupout, middlematchptr->c2wdownout);
+                  printf("sample: %ld, right: %.6Le, rightstatic: %.6Le, rights2w: %.6Le, rightc2w: %.6Le, rights2wupout: %d, rights2wdownout: %d, rightc2wupout: %d, rightc2wdownout: %d\n", samples, right, rightstatic, rights2w, rightc2w, rightmatchptr->s2wupout, rightmatchptr->s2wdownout, rightmatchptr->c2wupout, rightmatchptr->c2wdownout);
+                  printf("sample: %ld, e_test:  %.3Le, u_test:  %.3Le, t_test: %.3Le, left: %.3Le, middle: %.3Le, right: %.3Le\n", samples, e_test, u_test, t_test, left, middle, right);
                   fflush(stdout);
 #endif
                   if (e_test > 0.0) {
@@ -1091,14 +1102,10 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                               ((u_test / t_test) < 25.0) && ((t_test / u_test) < 25.0)) {
                             precision=e_test + u_test + t_test;
 #ifdef DEBUG22
-                            printf ("%ld: precision:  %.3e, e_test:  %.3e, u_test:  %.3e, t_test: %.3e, left: %.3e, middle: %.3e, right: %.3e\n", samples, precision, e_test, u_test, t_test, left, middle, right);
-                            fflush(stdout);
-#endif
-                            if ((precision > 0) && (precision < (precision_last * 0.99))) { // 99999
-#ifdef DEBUG21
-                              printf ("%ld: precision:  %.3e, e_test:  %.3e, u_test:  %.3e, t_test: %.3e tau: %.9e, tau_range: %.4e, G: %.9e, G_range: %.4e, v: %.9e, v_range: %.4e, mu: %.9e, mu_range: %.4e\n", samples, precision, e_test, u_test, t_test, tau, tau_range, G, G_range, v, v_range, mu, mu_range);
+                              printf ("debug, %ld: precision:  %.3Le, precision_last: %.3Le, e_test:  %.3Le, u_test:  %.3Le, t_test: %.3Le, tau: %.9Le, tau_range: %.4Le, G: %.9Le, G_range: %.4Le, v: %.9Le, v_range: %.4Le, mu: %.9Le, mu_range: %.4Le, mz: %.9Le, mz_range: %.4Le, mw: %.9Le, mw_range: %.4Le\n", samples, precision, precision_last, e_test, u_test, t_test, tau, tau_range, G, G_range, v, v_range, mu, mu_range, mz, mz_range, mw, mw_range);
                               fflush(stdout);
 #endif
+                            if ((precision > 0) && (precision < (precision_last * 0.99))) { // 99999
                               precision_last=precision;
                               e_test_last=e_test;
                               u_test_last=u_test;
@@ -1113,6 +1120,10 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                               mw_last=mw;
                               mh0_last=mh0;
                               sin2w_last=sin2w;
+                              if (floattau == 1) {
+                                tau_range=(tau * precision);
+                                tau_center=tau;
+                              }
                               if (floatmu == 1) {
                                 mu_range=(mu * precision);
                                 mu_center=mu;
@@ -1137,11 +1148,14 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                                 mh0_range=(mh0 * precision);
                                 mh0_center=mh0;
                               }
-                              tau_range=(tau * precision);
-                              tau_center=tau;
-                              sin2w_range=(sin2w * precision);
-                              sin2w_center=sin2w;
-
+                              if (floatsin2w == 1) {
+                                sin2w_range=(sin2w * precision);
+                                sin2w_center=sin2w;
+                              }
+#ifdef DEBUG21
+                              printf ("debug, %ld: precision:  %.3Le, precision_last: %.3Le, e_test:  %.3Le, u_test:  %.3Le, t_test: %.3Le, tau: %.9Le, tau_range: %.4Le, G: %.9Le, G_range: %.4Le, v: %.9Le, v_range: %.4Le, mu: %.9Le, mu_range: %.4Le, mz: %.9Le, mz_range: %.4Le, mw: %.9Le, mw_range: %.4Le\n", samples, precision, precision_last, e_test, u_test, t_test, tau, tau_range, G, G_range, v, v_range, mu, mu_range, mz, mz_range, mw, mw_range);
+                              fflush(stdout);
+#endif
                             } // end if  precision < precision_last
                           } // end if t_test/u_test/e_test
                         } // end if t_test > 0
@@ -1151,12 +1165,12 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
                 } // end for samples 
 
 #ifdef DEBUG20
-                printf("debug, Finished phase 2 samples loop, samples: %ld, mass mode: %d%d%d, precision: %.6e\n", samples, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, precision_last);
+                printf("debug, Finished phase 2 samples loop, samples: %ld, mass mode: %d%d%d, precision: %.6Le\n", samples, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, precision_last);
 #endif
                 if ((samples >= (samplelimit-1)) || (precision_last >= 1.0E-11)) {
                   invalid=1;
 #ifdef SHOWSTATUS
-                  printf ("status, Failed to solve phase 2 formula for masses within sample limit, samples: %ld, e_test:  %.3e, u_test:  %.3e, t_test: %.3e tau: %.9e, tau_range: %.4e, G: %.9e, G_range: %.4e, v: %.9e, v_range: %.4e, mu: %.9e, mu_range: %.4e, precision: %.3e\n", samples, e_test, u_test, t_test, tau, tau_range, G, G_range, v, v_range, mu, mu_range, precision_last);
+                  printf ("status, Failed to solve phase 2 formula for masses within sample limit, samples: %ld, e_test:  %.3Le, u_test:  %.3Le, t_test: %.3Le tau: %.9Le, tau_range: %.4Le, G: %.9Le, G_range: %.4Le, v: %.9Le, v_range: %.4Le, mu: %.9Le, mu_range: %.4Le, precision: %.3Le\n", samples, e_test, u_test, t_test, tau, tau_range, G, G_range, v, v_range, mu, mu_range, precision_last);
                   fflush(stdout);
 #endif
                 } else {
@@ -1304,8 +1318,10 @@ double solvePolyforMasses(int leftinvexp, int middleinvexp, int rightinvexp, mat
             } // end mzrange
           } // end vrange
         }  // end murange
+#ifndef IGNORE_SMALL_UNCERTAINTIES
     } // end merange
   }  // end arange
+#endif
 
   if (invalid == 0) {
     clock_gettime(CLOCK_REALTIME, &endtime);
@@ -2979,15 +2995,15 @@ int solvePolyforCoefficients(multipliers *multstart, int *nummult, matches **mat
           progress=0;
           stalled=0;
           stalledboost=0;
-          //for (samples = 0; ((samples < 100000000) && (precision_last > 1.0E-11) && !((samples > 100000) && (progress == 0)) && !(((samples % 5000) == 0) && (i == 200)) && !((stalled > 2000000) && (precision_last > 1.0E-1))); samples++) {
-          for (samples = 0; ((samples < 100000000) && (precision_last > 1.0E-11) && !((samples > 100000) && (progress == 0)) && !(((samples % 5000) == 0) && (i == 200)) && !((stalledboost > 5)) && !((stalled > 2000000) && (precision_last > 1.0E-1))); samples++) {
+          //for (samples = 0; ((samples < 100000000) && (precision_last > 1.0E-11) && !((samples > 100000) && (progress == 0)) && !(((samples % 5000) == 0) && (i == 200)) && !((stalledboost > 5)) && !((stalled > 2000000) && (precision_last > 1.0E-1))); samples++) {
+          for (samples = 0; ((samples < 1000000000) && (precision_last > 1.0E-11) && !((samples > 100000) && (progress == 0)) && !(((samples % 1000) == 0) && (i == 200)) && !((stalledboost > 5)) && !((stalled > 2000000) && (precision_last > 1.0E-1))); samples++) {
             // generate random coefficients within limits
             stalled++;
-            if ((stalled % 2000000) == 0) {
+            if ((stalled % 5000000) == 0) {
               stalledboost++;
-              cleft_range = cleft_range *     0.1;
-              cmiddle_range = cmiddle_range * 0.1;
-              cright_range = cright_range *   0.1;
+              cleft_range = cleft_range *     0.5;
+              cmiddle_range = cmiddle_range * 0.5;
+              cright_range = cright_range *   0.5;
 #ifdef DEBUG12
               printf("stalled boost\n");
               printf("stalled: %d, precision_last: %.9Le, pre-filter precision: %.9Le, e_test: %.9Le, u_test: %.9Le, t_test: %.9Le, cleft: %.9Le, cmiddle: %.9Le, cright: %.9Le, cleftrange: %.9Le, cmiddlerange: %.9Le, crightrange: %.9Le\n", stalled, precision_last, precision, e_test, u_test, t_test, cleft, cmiddle, cright, cleft_range, cmiddle_range, cright_range);
@@ -3117,14 +3133,14 @@ int solvePolyforCoefficients(multipliers *multstart, int *nummult, matches **mat
   printf("status, Solved  phase 1 formula for coefficients, random input: %i, polyform:  %s, mass ratio: %s, Tau: %.9e, sin2w: %.9e, massterm: %.9e, runs: %ld, samples: %ld, precision: %.3Le (%6.4fs)\n", random_input_count, poly, massstr, random_inputs.tau_sample, random_inputs.sin2w_sample, massterm, runs, samples, precision, elapsedtime);
   fflush(stdout);
 #endif
-#ifdef SHOWSEARCH
-  printf("search, +-----------------+-----------------+---------+--------------+-----------------+-----------------+-----------------+-----------------+-----------------+\n");
-  printf("search, |    tau mass     |    mass term    |  poly   |  mass ratio  | polynomial term |   coefficient   | c * polyterm(e) | c * polyterm(u) | c * polyterm(t) |\n");
-  printf("search, +-----------------+-----------------+---------+--------------+-----------------+-----------------+-----------------+-----------------+-----------------+\n");
-  printf("search, | %.9e | %.9e | %s | %s |     +left       | %.9Le | %.9Le | %.9Le | %.9Le |\n", random_inputs.tau_sample, massterm, poly, massstr, cleft, e_test_1, u_test_1, t_test_1);
-  printf("search, | %.9e | %.9e | %s | %s |     -middle     | %.9Le | %.9Le | %.9Le | %.9Le |\n", random_inputs.tau_sample, massterm, poly, massstr, cmiddle, e_test_2, u_test_2, t_test_2);
-  printf("search, | %.9e | %.9e | %s | %s |     +right      | %.9Le | %.9Le | %.9Le | %.9Le |\n", random_inputs.tau_sample, massterm, poly, massstr, cright, e_test_3, u_test_3, t_test_3);
-  printf("search, +-----------------+-----------------+---------+--------------+-----------------+-----------------+-----------------+-----------------+-----------------+\n");
+#ifdef SHOWSTATUS
+  printf("status, +-----------------+-----------------+---------+--------------+-----------------+-----------------+-----------------+-----------------+-----------------+\n");
+  printf("status, |    tau mass     |    mass term    |  poly   |  mass ratio  | polynomial term |   coefficient   | c * polyterm(e) | c * polyterm(u) | c * polyterm(t) |\n");
+  printf("status, +-----------------+-----------------+---------+--------------+-----------------+-----------------+-----------------+-----------------+-----------------+\n");
+  printf("status, | %.9e | %.9e | %s | %s |     +left       | %.9Le | %.9Le | %.9Le | %.9Le |\n", random_inputs.tau_sample, massterm, poly, massstr, cleft, e_test_1, u_test_1, t_test_1);
+  printf("status, | %.9e | %.9e | %s | %s |     -middle     | %.9Le | %.9Le | %.9Le | %.9Le |\n", random_inputs.tau_sample, massterm, poly, massstr, cmiddle, e_test_2, u_test_2, t_test_2);
+  printf("status, | %.9e | %.9e | %s | %s |     +right      | %.9Le | %.9Le | %.9Le | %.9Le |\n", random_inputs.tau_sample, massterm, poly, massstr, cright, e_test_3, u_test_3, t_test_3);
+  printf("status, +-----------------+-----------------+---------+--------------+-----------------+-----------------+-----------------+-----------------+-----------------+\n");
   fflush(stdout);
 #endif
 
@@ -3194,7 +3210,7 @@ int main(int argc, char **argv) {
     maxcomplexity=atoi(argv[5]);
   } else {
     printf("\n\
-lepton version %.2f\n", version);
+lepton version %s\n", version);
 printf("\n\
 usage: lepton <seed> <exponentlimit> <phase1filter> <minsymmetry> <maxcomplexity>\n\
 \n\
@@ -3273,7 +3289,7 @@ printf("\
   seed=exseed ^ (seedsec + seedus);
   srand48(seed);
   testrand=drand48();
-  printf("init, version: %.2f, external seed: %ld, seedsec: %ld, seedus: %ld, seed: %ld, firstrand: %.9e\n", version, exseed, seedsec, seedus, seed, testrand);
+  printf("init, version: %s, external seed: %ld, seedsec: %ld, seedus: %ld, seed: %ld, firstrand: %.9e\n", version, exseed, seedsec, seedus, seed, testrand);
 
   // init matches array
   matchstart = (matches *)malloc(5000000 * sizeof(matches));
