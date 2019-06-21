@@ -1,4 +1,4 @@
-0.38 - Minor changes to phase 1 algorithm solvePolyForCoefficients() improves the solving difficult polyforms (like P+10+11+12)
+3.38 - Minor changes to phase 1 algorithm solvePolyForCoefficients() improves the solving difficult polyforms (like P+10+11+12)
      - Phase 2 solvePolyforMasses() now uses long double instead of double floating point
      - Phase 2 samplelimit increased (allows more phase 2's to be solved but slows the ones that fail to solve)
      - Compile tim option IGNORE_SMALL_UNCERTAINTIES fixes alpha_em and electron mass to exact values for up to 4x phase 2 speedup
@@ -6,4 +6,4 @@
      - Phase 1 output now part of "status" output instead of "search"
      - Cosmetic changes to some debug output
 
-0.37 - first GitHub release
+3.37 - first GitHub release
