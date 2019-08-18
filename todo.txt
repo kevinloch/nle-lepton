@@ -1,0 +1,6 @@
+To Do:
+ - Increase supported dimensions to 26 (to cover 25 dimensional string theories)
+ - Improve reliability/speed of phase 2
+ - Support for four term polyforms without constant term (one zero mass root and three real positive mass roots)
+ - Support for some limited rational exponents (2/x, 3/x, but always < 1).   This is intended to represent converting radius derived from a 1/x exponent to a 2 or 3 dimensinal surface/volume on some (or all) term(s)
+ - Split monolithic source file into separate files for easier readability/maintainability
