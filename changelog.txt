@@ -1,3 +1,12 @@
+3.39 - Expanded supported dimensions from 12 to 26
+     - Removed a^9 factor from M/mp mass ratio (this arbitrary scaling factor is not needed with higher dimensions)
+     - Removed sqrt(2) factor from M/v mass ratio, as sqrt(2) inside radical is already included in initMultiplierArray()
+     - Significant changes to phase 1  and phase 2 algorythims to be faster and more reliable
+     - Phase 1 now uses electron mass as a temporary reference mass, actual reference masses are now introduced in cscanner()
+     - Phase 1 and 2 now always solves all polyforms. Low dimension and mixed dimension polyforms are solved quickly.  Polyforms
+       with sequential dimensions and especially higher sequential dimensions can take a long time to solve (over an hour in some cases).
+     - Renamed project from 'lepton' to 'polylepton'
+
 3.38 - Minor changes to phase 1 algorithm solvePolyForCoefficients() improves the solving difficult polyforms (like P+10+11+12)
      - Phase 2 solvePolyforMasses() now uses long double instead of double floating point
      - Phase 2 samplelimit increased (allows more phase 2's to be solved but slows the ones that fail to solve)
