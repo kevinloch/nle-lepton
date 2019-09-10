@@ -27,50 +27,46 @@
 
 ###### Usage and Description of Operation ######
 
-usage: lepton <seed> <exponentlimit> <phase1filter> <minsymmetry> <maxcomplexity>
+usage: polylepton <seed> <exponentlimit> <phase1filter> <minsymmetry> <maxcomplexity>
 
- example: lepton 0 4 5 50 70 (no external seed, max exponent -1/4 or +1/4, phase1 filter of 1x10^-5,
-                             minimum phase 2 symmetry of 50, maximum phase 2 complexity of 70. (recommended values).
+ example: polylepton 0 12 5 70 65 (no external seed, exponents from -1/12 to +1/12, phase1 filter of 1x10^-5,
+                             minimum phase 2 symmetry of 70, maximum phase 2 complexity of 65. (recommended values).
 
- example: lepton 1000000 3 6 7 30 150 (with an external seed, max exponent -1/3 or +1/3, phase1 fitler of 1x10^-6,
+ example: polylepton 1000000 26 6 30 150 (with an external seed, exponents from -1/26 to +1/26, phase1 fitler of 1x10^-6,
                                        minimum phase 2 symmetry of 30, maximum phase 2 complexity of 150).
 
  *** Warning: very rough work in progress ***
 
  This program searches for polynomial-like formulas (polyforms) that might generate the charged lepton masses from simple coefficients.
- These three term (plus constant of -1) formulas use positive and negative rational exponents less than 1 and are designed to give exactly three positive real
- roots representing the lepton masses. Unlike integer exponents, rational exponents less than +/-1 generate positive-only roots with a spectrum similar to that
- of the observed masses using relatively small coefficients on each term.
+ These three term (plus constant of -1) formulas use positive and negative rational exponents less than 1 and are designed to give three positive real roots
+ representing the charged lepton masses. Unlike integer exponents, rational exponents <= +/-1 generate positive-only roots with a spectrum similar to that
+ of the observed masses using relatively small coefficients on each term.  To ensure each term is dimensionless, the charged lepton masses are combined with
+ a reference mass inside each term as a mass ratio.   Teh reference masses currently supported are the Planck mass "mp", Higgs vacuum expectation value "v",
+ Z boson mass "mz", W boson mass "mw" and Higgs boson mass "mh0".
 
  Processing is broken into two phases.   Phase 1 starts with the known charged lepton masses, solves a proposed polyform for the three coefficients and searches
  for interesting multipliers to those coefficients. Phase 2 reverses the process by converting the close multiplier matches from phase 1 to exact formulas
- and solving them for the charged lepton masses and other outputs.  These results are then filtered by comparing them to their experimental values and
- uncertainties.
+ and solving them for the charged lepton masses and other outputs.  These results are then compared to their experimental values and uncertainties.
 
  Phase 1:
-   A random combination of three exponents are selected along with a mass ratio (like M/v or M/mZ etc.).   The three charged lepton masses are used as inputs
-   along with the other mass used in the selected mass ratio. Any input with experimental uncertainty greater than 1x10^-7 is varied randomly within it's
-   uncertainty range for each run to enable usefully tight filter limits in phase1.
+   A random combination of three exponents are selected.   The three charged lepton masses are used as inputs for each term with the Tau mass being varied
+   randomly within it's experimental uncertainty range each time phase 1 is run.  The electron mass is temporarily used as the reference mass in each term.
 
    This formula is then solved for the coefficients for each of the three exponent terms (left, middle, right).  Each coefficient is then multiplied by a
-   series of test multipliers to see if the result is a relatively small integer rational number.   These interesting (passing the phase 1 filter)
-   coefficient * multiplier matches are then stored in a table for phase 2.  Each polyform (set of three exponents) is run through phase 1 for every mass ratio
-   and all of the matches for a given polyform  are saved in the same table for phase 2 to enable mixed mass ratio formulas.
+   series of test multipliers (including the actual reference masses) to see if the result is close to a relatively small integer rational number. The phase 1
+   limit determines which results are close enough to pass to phase 2.
 
  Phase 2:
-   formulas are constructed with the same exponents and various interesting multipliers from phase 1 and then solved for the three charged lepton masses and
-   other variables.  Unlike in phase 1, in phase 2 each exponent term can have a different mass ratio, as long as the product of the mass ratio and multiplier
+   formulas are constructed with the same exponents and various interesting multipliers found in phase 1 and then solved for the three charged lepton masses and
+   other variables.  In phase 2 each exponent term can have a different mass ratio, as long as the product of the mass ratio and multiplier
    generates the correct individual polynomial term.
 
    Before solving each proposed formula, all of the experimentally known variables are ranked by relative standard uncertainty and the three with the highest
    uncertainty are used as outputs (solved for) with the rest used as inputs. The resulting outputs are then checked against their experimental ranges.
 
-   Symmetry and complexity scores are also
-   assigned to each result based on the numerical values in the multiplier, with higher symmetry and lower complexity generally meaning a simpler formula.
-   Minimum symmetry and maximum complexity
-   filters are provided to restrict the formulas allowed to be solved.   This can greatly speed up finding the most interesting
-   formulas as cpu time is not wasted solving the much more common higher complexity formulas.   The optimal maxcomplexity setting varies by exponent limit
-   and the phase1 limit.
+   Symmetry and complexity scores are also assigned to each result based on the numerical values in the multiplier, with higher symmetry and lower complexity
+   generally meaning a simpler formula. Minimum symmetry and maximum complexity filters are provided to restrict the formulas allowed to be solved.
+   This can greatly speed up finding the most interesting formulas as cpu time is not wasted solving the much more common higher complexity formulas.
 
  seed            External integer used as part of a seed for srand48() along with second and microsecond clock data.
                  This can help separate threads started at the same time on the same machine have different seeds.
@@ -128,7 +124,7 @@ Polyform ID indicates the fracitonal exponent of each term and if the mass ratio
 
 Mass ratio ID indicates the mass ratio used in each term using these indexes:
 
-0  = M / (a^9 * mp)
+0  = M / mp
 1  = M / v
 2  = M / mZ
 3  = M / mW
@@ -136,32 +132,60 @@ Mass ratio ID indicates the mass ratio used in each term using these indexes:
 
 For exmpale: 422 = M / mH0 (left term), M / mZ (middle term), M / mZ (right term)
 
-nbv = n-ball volume (index is term exponent, n-ball dimension):
-  nbv[0]= 1.0;
-  nbv[1]= 2.0;
-  nbv[2]=            M_PI;
-  nbv[3]= 4.0  *     M_PI       / 3.0;
-  nbv[4]=        pow(M_PI, 2.0) / 2.0;
-  nbv[5]= 8.0  * pow(M_PI, 2.0) / 15.0;
-  nbv[6]=        pow(M_PI, 3.0) / 6.0;
-  nbv[7]= 16.0 * pow(M_PI, 3.0) / 105.0;
-  nbv[8]=        pow(M_PI, 4.0) / 24.0;
-  nbv[9]= 32.0 * pow(M_PI, 4.0) / 945.0;
-  nbv[10]=       pow(M_PI, 5.0) / 120.0;
-  nbv[11]=64.0 * pow(M_PI, 5.0) / 10395.0;
-  nbv[12]=       pow(M_PI, 6.0) / 720.0;
+nbv = geometric constant for n-ball volume (index is term exponent, n-ball dimension):
+  nbv[0]=    1.0;
+  nbv[1]=    2.0;
+  nbv[2]=              M_PI;
+  nbv[3]=    4.0 *     M_PI        / 3.0;
+  nbv[4]=          pow(M_PI,  2.0) / 2.0;
+  nbv[5]=    8.0 * pow(M_PI,  2.0) / 15.0;
+  nbv[6]=          pow(M_PI,  3.0) / 6.0;
+  nbv[7]=   16.0 * pow(M_PI,  3.0) / 105.0;
+  nbv[8]=          pow(M_PI,  4.0) / 24.0;
+  nbv[9]=   32.0 * pow(M_PI,  4.0) / 945.0;
+  nbv[10]=         pow(M_PI,  5.0) / 120.0;
+  nbv[11]=  64.0 * pow(M_PI,  5.0) / 10395.0;
+  nbv[12]=         pow(M_PI,  6.0) / 720.0;
+  nbv[13]= 128.0 * pow(M_PI,  6.0) / 135135.0;
+  nbv[14]=         pow(M_PI,  7.0) / 5040.0;
+  nbv[15]= 256.0 * pow(M_PI,  7.0) / 2027025.0;
+  nbv[16]=         pow(M_PI,  8.0) / 40320.0;
+  nbv[17]= 512.0 * pow(M_PI,  8.0) / 34459425.0;
+  nbv[18]=         pow(M_PI,  9.0) / 362880.0;
+  nbv[19]=1024.0 * pow(M_PI,  9.0) / 654729075.0;
+  nbv[20]=         pow(M_PI, 10.0) / 3628800.0;
+  nbv[21]=2048.0 * pow(M_PI, 10.0) / 13749310575.0;
+  nbv[22]=         pow(M_PI, 11.0) / 39916800.0;
+  nbv[23]=4096.0 * pow(M_PI, 11.0) / 316234143225.0;
+  nbv[24]=         pow(M_PI, 12.0) / 479001600.0;
+  nbv[25]=8192.0 * pow(M_PI, 12.0) / 7905853580625.0;
+  nbv[26]=         pow(M_PI, 13.0) / 6227020800.0;
 
-nbs = n-ball surface area (index is term exponent, n-ball dimension - 1);
-  nbs[1]= 2.0  *      M_PI;
-  nbs[2]= 4.0  *      M_PI;
-  nbs[3]= 2.0  *  pow(M_PI, 2.0);
-  nbs[4]= 8.0  *  pow(M_PI, 2.0) / 3.0;
-  nbs[5]=         pow(M_PI, 3.0);
-  nbs[6]= 16.0 *  pow(M_PI, 3.0) / 15.0;
-  nbs[7]=         pow(M_PI, 4.0) / 3.0;
-  nbs[8]= 32.0 *  pow(M_PI, 4.0) / 105.0;
-  nbs[9]=         pow(M_PI, 5.0) / 12.0;
-  nbs[10]=64.0 *  pow(M_PI, 5.0) / 945.0;
-  nbs[11]=        pow(M_PI, 6.0) / 60.0;
-  nbs[12]=128.0 * pow(M_PI, 6.0) / 10395.0;
-
+nbs = geometric constant for n-ball surface area (index is term exponent, n-ball dimension - 1);
+  nbs[0]=     2.0;
+  nbs[1]=     2.0 *     M_PI;
+  nbs[2]=     4.0 *     M_PI;
+  nbs[3]=     2.0 * pow(M_PI,  2.0);
+  nbs[4]=     8.0 * pow(M_PI,  2.0) / 3.0;
+  nbs[5]=           pow(M_PI,  3.0);
+  nbs[6]=    16.0 * pow(M_PI,  3.0) / 15.0;
+  nbs[7]=           pow(M_PI,  4.0) / 3.0;
+  nbs[8]=    32.0 * pow(M_PI,  4.0) / 105.0;
+  nbs[9]=           pow(M_PI,  5.0) / 12.0;
+  nbs[10]=   64.0 * pow(M_PI,  5.0) / 945.0;
+  nbs[11]=          pow(M_PI,  6.0) / 60.0;
+  nbs[12]=  128.0 * pow(M_PI,  6.0) / 10395.0;
+  nbs[13]=          pow(M_PI,  7.0) / 360.0;
+  nbs[14]=  256.0 * pow(M_PI,  7.0) / 135135.0;
+  nbs[15]=          pow(M_PI,  8.0) / 2520.0;
+  nbs[16]=  512.0 * pow(M_PI,  8.0) / 2027025.0;
+  nbs[17]=          pow(M_PI,  9.0) / 20160.0;
+  nbs[18]= 1024.0 * pow(M_PI,  9.0) / 34459425.0;
+  nbs[19]=          pow(M_PI, 10.0) / 181440.0;
+  nbs[20]= 2048.0 * pow(M_PI, 10.0) / 654729075.0;
+  nbs[21]=          pow(M_PI, 11.0) / 1814400.0;
+  nbs[22]= 4096.0 * pow(M_PI, 11.0) / 13749310575.0;
+  nbs[23]=          pow(M_PI, 12.0) / 19958400.0;
+  nbs[24]= 8192.0 * pow(M_PI, 12.0) / 316234143225.0;
+  nbs[25]=          pow(M_PI, 13.0) / 239500800.0;
+  nbs[26]=16384.0 * pow(M_PI, 13.0) / 7905853580625.0;
