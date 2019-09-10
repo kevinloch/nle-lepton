@@ -19,13 +19,13 @@ Instructions:
 
 2. Install gcc with 'sudo bash; yum install gcc'.
 
-3. Upload lepton source code to server with scp or download from web server with curl, then compile with 'gcc -lm -Ofast lepton -o lepton'.
+3. Upload polylepton source code to server with scp or download from web server with curl, then compile with 'gcc -lm -Ofast polylepton.c -o polylepton'.
 
 4. Copy the executable you compiled to your webserver (or another non-spot AWS instance running httpd) where start.sh will download it from.
 
 5. Edit user-data.txt and start.sh with the desired url(s).
 
-6. Edit lepton.cfg with the desired arguments and put on your webserver.
+6. Edit polylepton.cfg with the desired arguments and put on your webserver.
 
 7. Create a spot fleet request in the cheapest availability zone (currently US-EAST2 Ohio).   You can use a fixed instance type or specify number of vcpus.
    The default aws Linux AMI is fine.
@@ -33,10 +33,10 @@ Instructions:
    with the same executable.  Copy and paste the contents of user-data.txt to the 'user data' field so it will start everything automatically.  Select 'maintain capacity'
    with 'terminate instances' option.   Set other options like security groups, expiration time as desired.
 
-8. Once started the instances should grab start.sh and then grab lepton.cfg and the executable from your webserver and start as many threads as there are vcpus on the server.
+8. Once started the instances should grab start.sh and then grab polylepton.cfg and the executable from your webserver and start as many threads as there are vcpus on the server.
 
 9. Watch your usage/costs carefully, and keep in mind there is a delay of about 12 hours before usage shows up in your aws billing dashboard.
    Even with the cheapest spot instances 100 vcpu's might cost around $.95/hour and that adds up fast ($23/day, $560/month)!
 
-10. start.sh will check for Any change to lepton.cfg once each minute.   If there are any changes it will kill all running threads, redownload the executable and restart
+10. start.sh will check for Any change to polylepton.cfg once each minute.   If there are any changes it will kill all running threads, redownload the executable and restart
     the threads automatically.
