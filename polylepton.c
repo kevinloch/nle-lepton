@@ -31,7 +31,7 @@
 // *** extract results from apache logs                                                              ***
 //
 
-const char version[20]="3.39";
+const char version[20]="3.40";
 
 #include <stdio.h>
 #include <math.h>
@@ -44,6 +44,7 @@ const char version[20]="3.39";
 #define NEGATIVEEXP                // allow negative exponents
 #define IGNORE_SMALL_UNCERTAINTIES // use fixed reference values for electron mass and alpha_em in phase 2
 //#define SIN2W                    // enable weak mixing angle terms (much slower)
+//#define ALWAYSSHOWRESULTS        // shows phase 2 results even if they don't match experimental uncertainties
 
 // pick one G reference
 #define CODATA_G
@@ -326,6 +327,8 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
   int arange, merange, murange, vrange, grange, mzrange, mwrange, mh0range, taurange, sin2wrange;
   struct timespec starttime, starttime2, endtime;
   double elapsedtime;
+  int floata;
+  int floatme;
   int floatmu;
   int floatv;
   int floattau;
@@ -342,7 +345,7 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
   char outstr02[320];
   char outstr03[320];
   char outstr04[320];
-  //char outstr05[320];
+  char outstr05[320];
   char outstr06[320];
   char outstr07[320];
   char outstr08[320];
@@ -433,10 +436,12 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
   double alpha_last=0;
   double alpha_center=0;
   double alpha_range=0;
+  double alpha_range_new=0;
   double me=0;
   double me_last=0;
   double me_center=0;
   double me_range=0;
+  double me_range_new=0;
   double mu=0;
   double mu_last=0;
   double mu_center=0;
@@ -690,15 +695,25 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
     mu_range=(double)mu_ref_error;
   }
 
-  // we always have three unknowns at this point so the rest are never floated
-
   // me relative uncertainty 3.0E-10
-  me_center=(double)me_ref;
-  me_range=(double)me_ref_error;
+  if (unknowns < 3) {  // me is always used but only floated if we have less than 3 uknowns so far
+    floatme=1;
+    unknowns++;
+  } else {
+    floatme=0;
+    me_center=(double)me_ref;
+    me_range=(double)me_ref_error;
+  }
 
   // alpha relative uncertainty 1.5E-10
-  alpha_center=(double)alpha_ref;
-  alpha_range=(double)alpha_ref_error;
+  if (unknowns < 3) {  
+    floata=1;
+    unknowns++;
+  } else {
+    floata=0;
+    alpha_center=(double)alpha_ref;
+    alpha_range=(double)alpha_ref_error;
+  }
 
   // systematically try all non-floated input extremes
 #ifdef DEBUG21
@@ -708,7 +723,7 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
 #endif
 
 #ifdef IGNORE_SMALL_UNCERTAINTIES
-  // this speeds up phase 2 by up to 4x
+  // this speeds up phase 2 by up to 4x, don't use if me or a would be floated
   alpha=(double)alpha_ref;
   alpha_range=alpha_ref_error;
   arange=1;
@@ -716,15 +731,13 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
   me_range=me_ref_error;
   merange=1;
 #else
-  for (arange=!alluses->alpha_em; arange <= 1; arange++) {
-    // alpha is never floated, it is always used as high precision input when needed
+  for (arange=!(alluses->alpha_em || floata); arange <= 1; arange++) {
     if (arange == 0) {
       alpha=(alpha_center - alpha_range);
     } else {
       alpha=(alpha_center + alpha_range);
     }  
-    for (merange=0; merange <= 1; merange++) {
-      // me is never floated it is always used as high precision input
+    for (merange=floatme; merange <= 1; merange++) {
       if (merange == 0) {
         me=(me_center - me_range);
       } else {
@@ -732,7 +745,6 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
       }
 #endif
       for (murange=floatmu; murange <= 1; murange++) {
-        // mu is always used but only floated if necessary
         if (floatmu == 0) {
           if (murange == 0) {
             mu=(mu_center - mu_range);
@@ -805,6 +817,16 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                       clock_gettime(CLOCK_REALTIME, &starttime2);
                       precision_last=1.0E99;
                       //  reset mc test vars and outputs
+                      if (floata == 1) {
+                        alpha_last=(double)alpha_ref;
+                        alpha_center=(double)alpha_ref;
+                        alpha_range=(double)alpha_ref * 0.1;
+                      }
+                      if (floatme == 1) {
+                        me_last=(double)me_ref;
+                        me_center=(double)me_ref;
+                        me_range=(double)me_ref * 0.1;
+                      }
                       if (floatmu == 1) {
                         mu_last=(double)mu_ref;
                         mu_center=(double)mu_ref;
@@ -868,6 +890,16 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                             fflush(stdout);
 #endif
                             //  reset mc test vars and outputs
+                            if (floata == 1) {
+                              alpha_last=(double)alpha_ref;
+                              alpha_center=(double)alpha_ref;
+                              alpha_range=(double)alpha_ref * 0.1;
+                            }
+                            if (floatme == 1) {
+                              me_last=(double)me_ref;
+                              me_center=(double)me_ref;
+                              me_range=(double)me_ref * 0.1;
+                            }
                             if (floatmu == 1) {
                               mu_last=(double)mu_ref;
                               mu_center=(double)mu_ref;
@@ -922,6 +954,12 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                           elapsedtime=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime2.tv_sec - 1500000000) + ((double)starttime2.tv_nsec) / 1.0E9);
                           printf("debug, polyform: %s, samples: %ld, time: %6.4fs, progress: %d, rangefactor: %.9e, precision_last: %.3e, stalled\n", poly, samples, elapsedtime, progress, rangefactor, precision_last);
 #endif
+                          if (floata == 1) {
+                            alpha_range=alpha_last * rangefactor;
+                          }
+                          if (floatme == 1) {
+                            me_range=me_last * rangefactor;
+                          }
                           if (floattau == 1) {
                             tau_range=tau_last * rangefactor;
                           }
@@ -949,6 +987,51 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                         }
                         stalled++;
                         // guess random values for mc outputs
+                        if (floata == 1) {
+                          r=(double)drand48();
+                          alpha=((alpha_center - alpha_range) + (r * 2.0 * alpha_range));
+                          i=0;
+                          while ((alpha < alpha_ref * 0.9) || (alpha > (alpha_ref * 1.1))) { // sanity check on alpha to help solve correct root and speed convergance
+                            if (i > 50) { // safety valve in case search gets out of bounds
+#ifdef DEBUG20
+                              clock_gettime(CLOCK_REALTIME, &endtime);
+                              elapsedtime=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime2.tv_sec - 1500000000) + ((double)starttime2.tv_nsec) / 1.0E9);
+                              printf("debug, polyform: %s, samples: %ld, time: %6.4fs, progress: %d, rangefactor: %.9e, precision_last: %.3e, alpha range error\n", poly, samples, elapsedtime, progress, rangefactor, precision_last);
+                              fflush(stdout);
+#endif
+                              i=0;
+                              alpha_last=0;
+                              alpha_center=(double)alpha_ref;
+                              alpha_range=(double)alpha_ref * 0.1;
+                            }
+                            r=(double)drand48();
+                            alpha=((alpha_center - alpha_range) + (r * 2.0 * alpha_range));
+                            i++;
+                          }
+                        }
+
+                        if (floatme == 1) {
+                          r=(double)drand48();
+                          me=((me_center - me_range) + (r * 2.0 * me_range));
+                          i=0;
+                          while ((me < me_ref * 0.9) || (me > (me_ref * 1.1))) { // sanity check on me mass to help solve correct root and speed convergance
+                            if (i > 50) { // safety valve in case search gets out of bounds
+#ifdef DEBUG20
+                              clock_gettime(CLOCK_REALTIME, &endtime);
+                              elapsedtime=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime2.tv_sec - 1500000000) + ((double)starttime2.tv_nsec) / 1.0E9);
+                              printf("debug, polyform: %s, samples: %ld, time: %6.4fs, progress: %d, rangefactor: %.9e, precision_last: %.3e, me range error\n", poly, samples, elapsedtime, progress, rangefactor, precision_last);
+                              fflush(stdout);
+#endif
+                              i=0;
+                              me_last=0;
+                              me_center=(double)me_ref;
+                              me_range=(double)me_ref * 0.1;
+                            }
+                            r=(double)drand48();
+                            me=((me_center - me_range) + (r * 2.0 * me_range));
+                            i++;
+                          }
+                        }
                         if (floatmu == 1) {
                           r=(double)drand48();
                           mu=((mu_center - mu_range) + (r * 2.0 * mu_range));
@@ -1064,7 +1147,7 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                           r=(double)drand48();
                           mw=((mw_center - mw_range) + (r * 2.0 * mw_range));
                           i=0;
-                          while ((mw < mw_ref * 0.9) || (mw > (mw_ref * 1.1))) { // sanity check on mw mass to help solve correct root and speed convergance
+                          while ((mw < mw_ref * 0.9) || (mw > (mw_ref * 1.1)) || (mw >= mz)) { // sanity check on mw mass to help solve correct root and speed convergance and prevent mw >= mz
                             if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                               clock_gettime(CLOCK_REALTIME, &endtime);
@@ -1261,6 +1344,14 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                               rangefactor=worst_test * rangemultiplier;
                               if (rangefactor > 0.1) {
                                 //  use default ranges
+                                if (floata == 1) {
+                                  alpha_center=alpha_last;
+                                  alpha_range=(double)alpha_ref * 0.1;
+                                }
+                                if (floatme == 1) {
+                                  me_center=me_last;
+                                  me_range=(double)me_ref * 0.1;
+                                }
                                 if (floatmu == 1) {
                                   mu_center=mu_last;
                                   mu_range=(double)mu_ref * 0.1;
@@ -1294,6 +1385,16 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
                                   mh0_range=(double)mh0_ref * 0.1;
                                 }
                               } else { 
+                                if (floata == 1) {
+                                  alpha_center=alpha_last;
+                                  alpha_range_new=alpha_last * rangefactor;
+                                  alpha_range=((alpha_range + alpha_range_new + alpha_range_new) / 3.0);
+                                }
+                                if (floatme == 1) {
+                                  me_center=me_last;
+                                  me_range_new=me_last * rangefactor;
+                                  me_range=((me_range + me_range_new + me_range_new) / 3.0);
+                                }
                                 if (floattau == 1) {
                                   tau_center=tau_last;
                                   tau_range_new=tau_last * rangefactor;
@@ -1496,7 +1597,9 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
 
   score=((fmax((fabs(mu_out_reldiff) / mu_ref_relerror), 1.0) + fmax((fabs(tau_out_reldiff) / tau_ref_relerror), 1.0) + (alluses->G * fmax((fabs(G_out_reldiff) / G_ref_relerror), 1.0)) + (alluses->v * fmax((fabs(v_out_reldiff) / v_ref_relerror), 1.0)) + ((alluses->mz || mwmzmode) * fmax((fabs(mz_out_reldiff) / mz_ref_relerror), 1.0))\
        + ((alluses->mw || mwmzmode) * fmax((fabs(mw_out_reldiff) / mw_ref_relerror), 1.0)) + (alluses->mh0 * fmax((fabs(mh0_out_reldiff) / mh0_ref_relerror), 1.0)) + (alluses->sin2w * fmax((fabs(sin2w_out_reldiff) / sin2w_ref_relerror), 1.0))) / (2.0 + (double)alluses->G + (double)alluses->v + (double)(alluses->mz || mwmzmode) + (double)(alluses->mw || mwmzmode) + (double)alluses->mh0 + (double)alluses->sin2w)) - 1.0; 
+#ifndef ALWAYSSHOWRESULTS
   if (score == 0.0) {
+#endif
     complexity=leftmatchptr->matchcomplexity + middlematchptr->matchcomplexity + rightmatchptr->matchcomplexity;
     //resulthash=lrand48();
     resulthash=(leftmatchptr->matchhash ^ middlematchptr->matchhash) ^ rightmatchptr->matchhash;
@@ -1871,8 +1974,14 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
     sprintf(outstr03, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 03, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash);
     printf("%s\n", outstr03);
     if (alluses->alpha_em == 1) {
-      sprintf(usedasinput, "*");
-      sprintf(outstr04, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 04, | alpha_em   || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |                |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, alpha_out_c, alpha_out_error, alpha_out_relerror, alpha_ref, alpha_ref_error, alpha_ref_relerror, alpha_out_diff, alpha_out_reldiff, usedasinput);
+      if (floata == 1 ) {
+        sprintf(usedasoutput, "*");
+        sprintf(usedasinput, " ");
+      } else {
+        sprintf(usedasinput, "*");
+        sprintf(usedasoutput, " ");
+      }
+      sprintf(outstr04, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 04, | alpha_em   || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, alpha_out_c, alpha_out_error, alpha_out_relerror, alpha_ref, alpha_ref_error, alpha_ref_relerror, alpha_out_diff, alpha_out_reldiff, usedasinput, usedasoutput);
       printf("%s\n", outstr04);
     } else {
       outstr04[0]=0;
@@ -1885,10 +1994,10 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
         sprintf(usedasinput, "*");
         sprintf(usedasoutput, " ");
       }
-      sprintf(outstr06, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 06, | v          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, v_out_c, v_out_error, v_out_relerror, v_ref, v_ref_error, v_ref_relerror, v_out_diff, v_out_reldiff, usedasinput, usedasoutput);
-      printf("%s\n", outstr06);
+      sprintf(outstr05, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 06, | v          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, v_out_c, v_out_error, v_out_relerror, v_ref, v_ref_error, v_ref_relerror, v_out_diff, v_out_reldiff, usedasinput, usedasoutput);
+      printf("%s\n", outstr05);
     } else {
-      outstr06[0]=0;
+      outstr05[0]=0;
     }
     if ((alluses->mz == 1) || (mwmzmode == 1)) {
       if (floatmz == 1 ) {
@@ -1898,10 +2007,10 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
         sprintf(usedasinput, "*");
         sprintf(usedasoutput, " ");
       }
-      sprintf(outstr07, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 08, | mZ         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mz_out_c, mz_out_error, mz_out_relerror, mz_ref, mz_ref_error, mz_ref_relerror, mz_out_diff, mz_out_reldiff, usedasinput, usedasoutput);
-      printf("%s\n", outstr07);
+      sprintf(outstr06, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 08, | mZ         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mz_out_c, mz_out_error, mz_out_relerror, mz_ref, mz_ref_error, mz_ref_relerror, mz_out_diff, mz_out_reldiff, usedasinput, usedasoutput);
+      printf("%s\n", outstr06);
     } else {
-      outstr07[0]=0;
+      outstr06[0]=0;
     }
     if (alluses->G == 1) {
       if (floatg == 1 ) {
@@ -1911,10 +2020,10 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
         sprintf(usedasinput, "*");
         sprintf(usedasoutput, " ");
       }
-      sprintf(outstr08, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 07, | G          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, G_out_c, G_out_error, G_out_relerror, G_ref, G_ref_error, G_ref_relerror, G_out_diff, G_out_reldiff, usedasinput, usedasoutput);
-      printf("%s\n", outstr08);
+      sprintf(outstr07, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 07, | G          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, G_out_c, G_out_error, G_out_relerror, G_ref, G_ref_error, G_ref_relerror, G_out_diff, G_out_reldiff, usedasinput, usedasoutput);
+      printf("%s\n", outstr07);
     } else {
-      outstr08[0]=0;
+      outstr07[0]=0;
     }
     if ((alluses->mw == 1) || (mwmzmode)) {
       if (floatmw == 1 ) {
@@ -1924,31 +2033,46 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
         sprintf(usedasinput, "*");
         sprintf(usedasoutput, " ");
       }
-      sprintf(outstr09, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 09, | mW         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mw_out_c, mw_out_error, mw_out_relerror, mw_ref, mw_ref_error, mw_ref_relerror, mw_out_diff, mw_out_reldiff, usedasinput, usedasoutput);
-      printf("%s\n", outstr09);
+      sprintf(outstr08, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 09, | mW         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mw_out_c, mw_out_error, mw_out_relerror, mw_ref, mw_ref_error, mw_ref_relerror, mw_out_diff, mw_out_reldiff, usedasinput, usedasoutput);
+      printf("%s\n", outstr08);
     } else {
-      outstr09[0]=0;
+      outstr08[0]=0;
     }
     if (alluses->sin2w == 1) {
       if (floatsin2w == 1 ) {
         sprintf(usedasoutput, "*");
+        sprintf(usedasinput, " ");
       } else {
+        sprintf(usedasinput, "*");
         sprintf(usedasoutput, " ");
       }
-      sprintf(outstr10, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 11, | sin2w      || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |               |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, sin2w_out_c, sin2w_out_error, sin2w_out_relerror, sin2w_ref, sin2w_ref_error, sin2w_ref_relerror, sin2w_out_diff, sin2w_out_reldiff, usedasoutput);
+      sprintf(outstr09, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 11, | sin2w      || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, sin2w_out_c, sin2w_out_error, sin2w_out_relerror, sin2w_ref, sin2w_ref_error, sin2w_ref_relerror, sin2w_out_diff, sin2w_out_reldiff, usedasinput, usedasoutput);
+      printf("%s\n", outstr09);
+    } else {
+      outstr09[0]=0;
+    }
+    if (alluses->mh0 == 1) {
+      if (floatmh0 == 1 ) {
+        sprintf(usedasoutput, "*");
+        sprintf(usedasinput, " ");
+      } else {
+        sprintf(usedasinput, "*");
+        sprintf(usedasoutput, " ");
+      }
+      sprintf(outstr10, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 10, | mH0        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mh0_out_c, mh0_out_error, mh0_out_relerror, mh0_ref, mh0_ref_error, mh0_ref_relerror, mh0_out_diff, mh0_out_reldiff, usedasinput, usedasoutput);
       printf("%s\n", outstr10);
     } else {
       outstr10[0]=0;
     }
-    if (alluses->mh0 == 1) {
-      sprintf(usedasoutput, "*");
-      sprintf(outstr11, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 10, | mH0        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |               |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mh0_out_c, mh0_out_error, mh0_out_relerror, mh0_ref, mh0_ref_error, mh0_ref_relerror, mh0_out_diff, mh0_out_reldiff, usedasoutput);
-      printf("%s\n", outstr11);
-    } else {
-      outstr11[0]=0;
-    }
-    sprintf(outstr12, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 12, | Electron   || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       *       |                |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, me_out_c, me_out_error, me_out_relerror, me_ref, me_ref_error, me_ref_relerror, me_out_diff, me_out_reldiff);
-    printf("%s\n", outstr12);
+      if (floatme == 1 ) {
+        sprintf(usedasoutput, "*");
+        sprintf(usedasinput, " ");
+      } else {
+        sprintf(usedasinput, "*");
+        sprintf(usedasoutput, " ");
+      }
+      sprintf(outstr11, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 12, | Electron   || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, me_out_c, me_out_error, me_out_relerror, me_ref, me_ref_error, me_ref_relerror, me_out_diff, me_out_reldiff, usedasinput, usedasoutput);
+    printf("%s\n", outstr11);
     if (floatmu == 1) {
       sprintf(usedasinput, " ");
       sprintf(usedasoutput, "*");
@@ -1956,17 +2080,26 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
       sprintf(usedasinput, "*");
       sprintf(usedasoutput, " ");
     }
-    sprintf(outstr13, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 13, | Muon       || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mu_out_c, mu_out_error, mu_out_relerror, mu_ref, mu_ref_error, mu_ref_relerror, mu_out_diff, mu_out_reldiff, usedasinput, usedasoutput);
+      sprintf(outstr12, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 13, | Muon       || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, mu_out_c, mu_out_error, mu_out_relerror, mu_ref, mu_ref_error, mu_ref_relerror, mu_out_diff, mu_out_reldiff, usedasinput, usedasoutput);
+    printf("%s\n", outstr12);
+    if (floattau == 1) {
+      sprintf(usedasinput, " ");
+      sprintf(usedasoutput, "*");
+    } else {
+      sprintf(usedasinput, "*");
+      sprintf(usedasoutput, " ");
+    }
+      sprintf(outstr13, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 14, | Tau        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, tau_out_c, tau_out_error, tau_out_relerror, tau_ref, tau_ref_error, tau_ref_relerror, tau_out_diff, tau_out_reldiff, usedasinput, usedasoutput);
     printf("%s\n", outstr13);
-    sprintf(outstr14, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 14, | Tau        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |               |       *        |", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, tau_out_c, tau_out_error, tau_out_relerror, tau_ref, tau_ref_error, tau_ref_relerror, tau_out_diff, tau_out_reldiff);
+    sprintf(outstr14, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 15, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash);
     printf("%s\n", outstr14);
-    sprintf(outstr15, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 15, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash);
+    sprintf(outstr15, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 16, L-M+R-1=0", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash);
     printf("%s\n", outstr15);
-    sprintf(outstr16, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 16, %5d, %s", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, leftmatchptr->matchcomplexity, leftformulastr);
+    sprintf(outstr16, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 17, L=%s", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, leftformulastr);
     printf("%s\n", outstr16);
-    sprintf(outstr17, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 17, %5d, %s", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, middlematchptr->matchcomplexity, middleformulastr);
+    sprintf(outstr17, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 18, M=%s", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, middleformulastr);
     printf("%s\n", outstr17);
-    sprintf(outstr18, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 18, %5d, %s", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, rightmatchptr->matchcomplexity, rightformulastr);
+    sprintf(outstr18, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 19, R=%s", combinedscore, symmetry, complexity, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, resulthash, rightformulastr);
     printf("%s\n", outstr18);
     fflush(stdout);
 #ifdef UPLOAD
@@ -1981,12 +2114,10 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
         sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr04, 320));
         system(execstr);
       }
-/*
       if (outstr05[0] != 0) {
         sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr05, 320));
         system(execstr);
       }
-*/
       if (outstr06[0] != 0) {
         sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr06, 320));
         system(execstr);
@@ -2007,10 +2138,8 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
         sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr10, 320));
         system(execstr);
       }
-      if (outstr11[0] != 0) {
-        sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr11, 320));
-        system(execstr);
-      }
+      sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr11, 320));
+      system(execstr);
       sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr12, 320));
       system(execstr);
       sprintf(execstr, "curl -s \"http://localhost/lepton/%s\" > /dev/null 2>&1\n", underscore(outstr13, 320));
@@ -2027,7 +2156,10 @@ double solvePolyforMasses(char *poly, int leftinvexp, int middleinvexp, int righ
       system(execstr);
     } // end if complexity
 #endif
+#ifndef ALWAYSSHOWRESULTS
   } // end if score
+#endif
+
 
   return(precision_last);
 }
@@ -2084,7 +2216,7 @@ int verifyMatches(matches *matchstart, int *nummatches, char *poly, int leftinve
         tmpmatchdown=(int)((1.0 / match->match) + 0.5);
       }
       tmphash=(long long)match->massratio ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / match->matchmult)) * (long long)1.0E9) + 0.5));
-      tmpmatchcomplexity=(match->matchcomplexity + tmpmatchup + tmpmatchdown);
+      tmpmatchcomplexity=(match->matchcomplexity + (tmpmatchup * match->downout) + (tmpmatchdown * match->upout));
       // search existing match table for dupes and see if we have lower complexity
       tmpmatchptr=leftmatches;
       dupe=0;
@@ -2187,7 +2319,7 @@ int verifyMatches(matches *matchstart, int *nummatches, char *poly, int leftinve
         tmpmatchdown=(int)((1.0 / match->match) + 0.5);
       }
       tmphash=(long long)match->massratio ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / match->matchmult)) * (long long)1.0E9) + 0.5));
-      tmpmatchcomplexity=(match->matchcomplexity + tmpmatchup + tmpmatchdown);
+      tmpmatchcomplexity=(match->matchcomplexity + (tmpmatchup * match->downout) + (tmpmatchdown * match->upout));
       // search existing match table for dupes and see if we have lower complexity
       tmpmatchptr=middlematches;
       dupe=0;
@@ -2290,7 +2422,7 @@ int verifyMatches(matches *matchstart, int *nummatches, char *poly, int leftinve
         tmpmatchdown=(int)((1.0 / match->match) + 0.5);
       }
       tmphash=(long long)match->massratio ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / match->matchmult)) * (long long)1.0E9) + 0.5));
-      tmpmatchcomplexity=(match->matchcomplexity + tmpmatchup + tmpmatchdown);
+      tmpmatchcomplexity=(match->matchcomplexity + (tmpmatchup * match->downout) + (tmpmatchdown * match->upout));
       // search existing match table for dupes and see if we have lower complexity
       tmpmatchptr=rightmatches;
       dupe=0;
@@ -2416,21 +2548,23 @@ int verifyMatches(matches *matchstart, int *nummatches, char *poly, int leftinve
         checkSymmetry(&symmetry, leftmatchptr->piupin, middlematchptr->piupin, rightmatchptr->piupin);
         checkSymmetry(&symmetry, (leftmatchptr->aupin * leftmatchptr->adownin), (middlematchptr->aupin * middlematchptr->adownin), (rightmatchptr->aupin * rightmatchptr->adownin));
         if ((symmetry >= minsymmetry) && (complexity <= maxcomplexity)) {
-          initUses(&rightuses);
-          addUses(&rightuses, &rightmatchptr->uses);
-          initUses(&alluses);
-          addUses(&alluses, &leftuses);
-          addUses(&alluses, &middleuses);
-          addUses(&alluses, &rightuses);
-          clock_gettime(CLOCK_REALTIME, &starttime);
-          precision=solvePolyforMasses(poly, leftinvexp, middleinvexp, rightinvexp, leftmatchptr, middlematchptr, rightmatchptr, &alluses, maxcomplexity);
+         if ((leftmatchptr->nbvupin == middlematchptr->nbvupin) && (leftmatchptr->nbvupin == rightmatchptr-> nbvupin) && (leftmatchptr->nbsupin == middlematchptr->nbsupin) && (leftmatchptr->nbsupin == rightmatchptr-> nbsupin)) { // consistency check
+            initUses(&rightuses);
+            addUses(&rightuses, &rightmatchptr->uses);
+            initUses(&alluses);
+            addUses(&alluses, &leftuses);
+            addUses(&alluses, &middleuses);
+            addUses(&alluses, &rightuses);
+            clock_gettime(CLOCK_REALTIME, &starttime);
+            precision=solvePolyforMasses(poly, leftinvexp, middleinvexp, rightinvexp, leftmatchptr, middlematchptr, rightmatchptr, &alluses, maxcomplexity);
 #ifdef SHOWSTATUS
-          clock_gettime(CLOCK_REALTIME, &endtime);
-          elapsedtime=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-          printf("status, Solved  phase 2 formula  for masses, random input: %d, polyform: %s, mass mode: %d%d%d, progress: total (%ld/%ld) left (%d/%d) middle (%d/%d) right (%d/%d), precision: %.3e, (%6.4fs)\n", random_input_count, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, combo, totalcombos, l+1, numleftmatches, m+1, nummiddlematches, r+1, numrightmatches, precision, elapsedtime);
-          fflush(stdout);
+            clock_gettime(CLOCK_REALTIME, &endtime);
+            elapsedtime=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
+            printf("status, Solved  phase 2 formula  for masses, random input: %d, polyform: %s, mass mode: %d%d%d, progress: total (%ld/%ld) left (%d/%d) middle (%d/%d) right (%d/%d), precision: %.3e, (%6.4fs)\n", random_input_count, poly, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, combo, totalcombos, l+1, numleftmatches, m+1, nummiddlematches, r+1, numrightmatches, precision, elapsedtime);
+            fflush(stdout);
 #endif
-        }
+          } // end consistency check
+        } // end if symmetry and complexity
         rightmatchptr++;
       } // for r
       middlematchptr++;
@@ -2453,14 +2587,14 @@ int interesting(int range, double inld) {
   if (range == 2) {
     rangehigh=1.01;
     rangelow=0.99;
+*/
   if (range == 3) {
     rangehigh=1.001;
     rangelow=0.999;
-  if (range == 4) {
+  } else if (range == 4) {
     rangehigh=1.0001;
     rangelow=0.9999;
-*/
-  if (range == 5) {
+  } else if (range == 5) {
     rangehigh=1.00001;
     rangelow=0.99999;
   } else if (range == 6) {

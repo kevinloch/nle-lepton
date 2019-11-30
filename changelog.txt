@@ -1,3 +1,10 @@
+3.40 - Added ALWAYSSHOWRESULTS compile time option
+     - Added consistency check requiring all three terms to have the same type of n-ball volume or n-sphere surface area factors
+     - Now displays formula key in results output (L-M+R-1=0) along with term label (L,M,R) for each term formula
+     - Increased support range of phase 1 filter to [3..6]
+     - Support in phase 2 for solving for any variable including me and alpha
+     - tmpmatchcomplexity is now calculated correctly in verifyMatches()
+
 3.39 - Expanded supported dimensions from 12 to 26
      - Removed a^9 factor from M/mp mass ratio (this arbitrary scaling factor is not needed with higher dimensions)
      - Removed sqrt(2) factor from M/v mass ratio, as sqrt(2) inside radical is already included in initMultiplierArray()
