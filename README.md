@@ -1,2 +1,2 @@
-# lepton
-Search for polynomial-like formula with the three charged lepton masses as roots
+# nle-lepton
+Search for polynomial-like non-linear equations with the three charged lepton masses as roots

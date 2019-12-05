@@ -1,0 +1,10 @@
+1. cd src
+
+2. Edit nle-lepton.h to customize compile time options and features and url's
+   Optionally edit reference values and uncertainty ranges in reference.c
+
+3. Compile with 'make'
+
+4. run ./nle-lepton without any args to display usage.  See readme.txt for additional info about output format
+
+5. Edit scripts for file locations/urls before using them
