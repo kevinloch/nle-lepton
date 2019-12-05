@@ -1,3 +1,9 @@
+3.41 - Renamed project from polylepton to nle-lepton (nle = non-linear equation) since we are not working with true polynomials and
+       to avoid confusion with multi-lepton decay processes
+     - Renamed 'poly' string variable to 'exponents', changed other occurrances of poly or polyform to NLE, exponents or other appropriate words
+     - Split monolithic source file into multiple files and added a basic Makefile
+     - Renamed ALWAYSSHOWRESULTS compile time option to ALWAYS_SHOW_RESULTS
+
 3.40 - Added ALWAYSSHOWRESULTS compile time option
      - Added consistency check requiring all three terms to have the same type of n-ball volume or n-sphere surface area factors
      - Now displays formula key in results output (L-M+R-1=0) along with term label (L,M,R) for each term formula
