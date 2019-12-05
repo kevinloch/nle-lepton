@@ -1,9 +1,0 @@
-#!/bin/sh
-#
-# put this in the aws "user data" field when provisioning instances
-#
-# change localhost to the url you will be fetching start.sh from
-#
-curl -s -k https://localhost/lep/start.sh > start.sh
-chmod 755 ./start.sh
-./start.sh
