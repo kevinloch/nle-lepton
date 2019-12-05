@@ -1,3 +1,0 @@
-1. Edit source code and scripts to customize compile time options and features and url's
-
-2. Compile with 'gcc -lm -Ofast polylepton.c -o polylepton'
