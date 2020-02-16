@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -Ofast -I.
+CFLAGS = -I. -Wall -Ofast
 LIBS = -lm
-OBJ = cscanner.o reference.o initMultiplierArray.o phase1.o phase2.o util.o verifyMatches.o usage.o nle-lepton.o
-DEPS = cscanner.h reference.h initMultiplierArray.h phase1.h phase2.h util.h verifyMatches.h usage.h nle-lepton.h
+OBJ = cscanner.o getFormulaStr.o initInfactorArray.o initOutfactorArray.o phase1.o phase2.o util.o selectOutputs.o verifyMatches.o usage.o nle-config.o generateExponents.o nle-lepton.o
+DEPS = cscanner.h getFormulaStr.h initInfactorArray.h initOutfactorArray.h phase1.h phase2.h util.h selectOutputs.h verifyMatches.h usage.h nle-config.h generateExponents.h nle-lepton.h
 
 .PHONY: all clean
 

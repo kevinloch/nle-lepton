@@ -1,3 +1,7 @@
+4.0  - First version to use an external configuration file (nle-lepton.cfg) to set search parameters
+     - See nle-lepton.cfg for complete list of supported options
+     - New types nle_config_t and nle_state_t greatly simplify arguments passed between functions
+
 3.41 - Renamed project from polylepton to nle-lepton (nle = non-linear equation) since we are not working with true polynomials and
        to avoid confusion with multi-lepton decay processes
      - Renamed 'poly' string variable to 'exponents', changed other occurrances of poly or polyform to NLE, exponents or other appropriate words

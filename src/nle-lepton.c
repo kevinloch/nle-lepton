@@ -30,232 +30,200 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <time.h>
 #include "nle-lepton.h"
-#include "reference.h"
+#include "nle-config.h"
 #include "usage.h"
-#include "initMultiplierArray.h"
+#include "initInfactorArray.h"
+#include "initOutfactorArray.h"
 #include "phase1.h"
 #include "verifyMatches.h"
+#include "generateExponents.h"
+
+int processCmdArgs(nle_config_t *nle_config, int argc, char **argv) {
+
+  int i;
+  char *option_start;
+
+  if (argc == 1) {
+    return(0);
+  } else {
+    for (i=1; i <= (argc - 1); i++) {
+      if (argv[i][1] == 'c') {
+        // configuration file name
+        if (argv[i][2] != 0) {
+          // option concatenated onto switch
+          option_start=argv[i];
+          strcpy(nle_config->config_file_name, (option_start + (size_t)2)); 
+        } else if ((argc >= (i + 1)) && (argv[i + 1][0] != '-')) {
+          // option is probably next argv
+          option_start=argv[i + 1];
+          strcpy(nle_config->config_file_name, option_start);
+        } // end if no space
+      } else if (argv[i][1] == 'h') {
+        // print help
+        printUsage();
+        exit(0);
+      } else if (argv[i][1] == 's') {
+        if (argv[i][2] != 0) {
+          // option concatenated onto switch
+          option_start=argv[i];
+          nle_config->external_seed=strtol((option_start + (size_t)2), NULL, 10);
+        } else if ((argc >= (i + 1)) && (argv[i + 1][0] != '-')) {
+          // option is probably next argv
+          option_start=argv[i + 1];
+          nle_config->external_seed=strtol(option_start, NULL, 10);
+        } // end if no space
+      } // end which option
+    } // end for argc
+  } // end if any options
+  return(0);
+}
 
 int main(int argc, char **argv) {
+  nle_config_t nle_config;
+  nle_state_t nle_state;
   struct timespec t;
   long seed;
   double testrand;
   double r;
-  int nummatches;
   int i;
-  int coffhit[3];
-  int numcoff;
-  long exseed;
+  int coefficients_matched;
   long seedsec;
   long seedus;
-  int nummult;
-  multipliers *multstart;
-  matches *matchstart;
-  matches *matchptr;
-  int leftinvexp;
-  int middleinvexp;
-  int rightinvexp;
-  int numdimensions;
-  int invexp1;
-  int invexp2;
-  int invexp3;
-  random_input random_inputs;
-  char exponents[20];
-  int maxcomplexity;
-  int minsymmetry;
 
-  int random_input_count=0;
-  int range;
+  // initialize nle_config to default values
+  initConfig(&nle_config);
 
-  if (argc == 6) {
-    exseed=atol(argv[1]);
-    numdimensions=atoi(argv[2]);
-    range=atoi(argv[3]);
-    minsymmetry=atoi(argv[4]);
-    maxcomplexity=atoi(argv[5]);
-  } else {
-    printUsage();
-    return(1);
-  }
+  // process command line arguments and load command line options into nle_conifg (including external seed and config file name)
+  processCmdArgs(&nle_config, argc, argv);
 
-  // init pseudorandom number generator from external seed and clock
+  // initialize pseudorandom number generator from external seed and clock
   clock_gettime(CLOCK_REALTIME, &t);
   seedsec=(t.tv_sec % 1000000000);
-  seedus=(t.tv_nsec / 1000); 
-  seed=exseed ^ (seedsec + seedus);
+  seedus=(t.tv_nsec / 1000);
+  seed=nle_config.external_seed ^ (seedsec + seedus);
   srand48(seed);
   testrand=drand48();
-  printf("init, version: %s, external seed: %ld, seedsec: %ld, seedus: %ld, seed: %ld, firstrand: %.9e\n", NLE_VERSION, exseed, seedsec, seedus, seed, testrand);
 
-  // init matches array
-  matchstart = (matches *)malloc(5000000 * sizeof(matches));
+  // print version, config file nameand random seed data
+  printf("init, version: %s, external seed: %ld, seconds seed: %ld, microseconds seed: %ld, composite seed: %ld, first random number: %.9e\n", NLE_VERSION, nle_config.external_seed, seedsec, seedus, seed, testrand);
+  fflush(stdout);
 
-  // init mult array
-  nummult=0;
-  multstart=(multipliers *)malloc(1000000 * sizeof(multipliers));
-  initMultiplierArray(multstart, &nummult);
+  // load config file
+  if (loadConfig(&nle_config) == 1) {
+    exit(1);
+  }
 
+  // check operating mode
+  if (nle_config.nle_mode != 3) {
+    printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  3 is the only supported mode in this version.\n", nle_config.nle_mode);
+    exit(1);
+  }
+
+  // check if all forced exponents or none
+  i=0;
+  if (nle_config.exp_inv_term1_force != 0) {
+    i++;
+  }
+  if (nle_config.exp_inv_term2_force != 0) {
+    i++;
+  }
+  if ((i > 0) && (i != 2) && (nle_config.nle_mode == 2)) {
+    printf("init, Error: in nle-lepton.cfg, when nle_mode=2 term1 and term2 exponents must be forced or all set to random (exp_inv_term1_force...)\n");
+    fflush(stdout);
+    exit(1);
+  }
+  if (nle_config.exp_inv_term3_force != 0) {
+    i++;
+  }
+  if ((i > 0) && (i != 3) && (nle_config.nle_mode == 3)) {
+    printf("init, Error: in nle-lepton.cfg, when nle_mode=3 term1, term2, and term3 exponents must be forced or all set to random (exp_inv_term1_force...)\n");
+    fflush(stdout);
+    exit(1);
+  }
+  if (nle_config.exp_inv_term4_force != 0) {
+    i++;
+  }
+  if ((i > 0) && (i != 4) && (nle_config.nle_mode == 4)) {
+    printf("init, Error: in nle-lepton.cfg, when nle_mode=4 all exponents must be forced or all set to random (exp_inv_term1_force...)\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  // allocate memory for  matches arrays
+  nle_state.phase1_matches_start = (nle_phase1_match_t *)malloc(5000000 * sizeof(nle_phase1_match_t));
+  nle_state.term1.matches_start = (nle_phase1_match_t *)malloc(100000 * sizeof(nle_phase1_match_t));
+  nle_state.term2.matches_start = (nle_phase1_match_t *)malloc(100000 * sizeof(nle_phase1_match_t));
+  nle_state.term3.matches_start = (nle_phase1_match_t *)malloc(100000 * sizeof(nle_phase1_match_t));
+
+  // allocate memory for and initialize precomupted infactor array
+  nle_state.infactors_precomputed_start=(nle_infactor_precomputed_t *)malloc(1000000 * sizeof(nle_infactor_precomputed_t));
+  initInfactorArray(&nle_config, &nle_state);
+
+  // allocate memory for and initialize precomputed outfactor array
+  nle_state.outfactors_precomputed_start=(nle_outfactor_precomputed_t *)malloc(1000000 * sizeof(nle_outfactor_precomputed_t));
+  initOutfactorArray(&nle_config, &nle_state);
+
+  // main operating loop
+  nle_state.phase1_seq=0;
   while (1) {
-    random_input_count++;
-    // generate random tau mass
-    r=drand48();
-    random_inputs.tau_sample=((tau_ref - tau_ref_error) + (r * 2.0 * tau_ref_error));
-    // use static reference tau mass
-    //random_inputs.tau_sample=tau_ref_center;
+    nle_state.phase1_seq++;
 
-    // generate random G
-    r=drand48();
-    random_inputs.G_sample=((G_ref - G_ref_error) + (r * 2.0 * G_ref_error));
-    // use static reference G
-    //G_sample=G_ref;
-    random_inputs.mp_sample=kg_to_ev * sqrt(hbar_ref * c_ref / random_inputs.G_sample);
+    // generate valid exponents
+    generateExponents(&nle_config, &nle_state);
 
-    // generate random mz
+    // generate random samples of experimental values
     r=drand48();
-    random_inputs.mz_sample=((mz_ref - mz_ref_error) + (r * 2.0 * mz_ref_error));
-    // use static reference mz
-    //random_inputs.mz_sample=mz_ref;
-
-    // generate random mw
+    nle_state.random_sample_sm1=((nle_config.ref_sm1 - nle_config.ref_sm1_error) + (r * 2.0 * nle_config.ref_sm1_error));
     r=drand48();
-    random_inputs.mw_sample=((mw_ref - mw_ref_error) + (r * 2.0 * mw_ref_error));
-    // use static reference mw 
-    //random_inputs.mw_sample=mw_ref;
-
-    // generate random mh0
+    nle_state.random_sample_sm2=((nle_config.ref_sm2 - nle_config.ref_sm2_error) + (r * 2.0 * nle_config.ref_sm2_error));
     r=drand48();
-    random_inputs.mh0_sample=((mh0_ref - mh0_ref_error) + (r * 2.0 * mh0_ref_error));
-    // use static reference mh0
-    //random_inputs.mh0_sample=mh0_ref;
-
-    // generate random sin2w
+    nle_state.random_sample_sm3=((nle_config.ref_sm3 - nle_config.ref_sm3_error) + (r * 2.0 * nle_config.ref_sm3_error));
     r=drand48();
-    random_inputs.sin2w_sample=((sin2w_ref - sin2w_ref_error) + (r * 2.0 * sin2w_ref_error));
-    // use static reference sin2w
-    //random_inputs.sin2w_sample=sin2w_ref;
-
-#ifdef NEGATIVEEXP
-    // allow negative
-    // select random exponents
+    nle_state.random_sample_v=((nle_config.ref_v - nle_config.ref_v_error) + (r * 2.0 * nle_config.ref_v_error));
     r=drand48();
-    invexp1=(int)(r * 2 * ((double)numdimensions + 0.5)) - numdimensions;
-    while (invexp1 == 0) {
-      r=drand48();
-      invexp1=(int)(r * 2 * ((double)numdimensions + 0.5)) - numdimensions;
-    }
+    nle_state.random_sample_alpha=((nle_config.ref_alpha - nle_config.ref_alpha_error) + (r * 2.0 * nle_config.ref_alpha_error));
     r=drand48();
-    invexp2=(int)(r * 2 * ((double)numdimensions + 0.5)) - numdimensions;
-    while ((invexp2 == 0) || (invexp2 == invexp1)) {
-      r=drand48();
-      invexp2=(int)(r * 2 * ((double)numdimensions + 0.5)) - numdimensions;
-    }
+    nle_state.random_sample_G=((nle_config.ref_G - nle_config.ref_G_error) + (r * 2.0 * nle_config.ref_G_error));
+    nle_state.random_sample_mp=nle_config.ref_kg_to_ev * sqrt(nle_config.ref_hbar * nle_config.ref_c / nle_state.random_sample_G);
     r=drand48();
-    invexp3=(int)(r * 2 * ((double)numdimensions + 0.5)) - numdimensions;
-    while ((invexp3 == 0) || (invexp3 == invexp1) || (invexp3 == invexp2)) {
-      r=drand48();
-      invexp3=(int)(r * 2 * ((double)numdimensions + 0.5)) - numdimensions;
-    }
-#else
-    // only non-negative
-    // select random exponents
+    nle_state.random_sample_mz=((nle_config.ref_mz - nle_config.ref_mz_error) + (r * 2.0 * nle_config.ref_mz_error));
     r=drand48();
-    invexp1=(int)(r * ((double)numdimensions - 0.5)) + 1;
-    while (invexp1 == 0) {
-      r=drand48();
-      invexp1=(int)(r * ((double)numdimensions - 0.5)) + 1;
-    }
+    nle_state.random_sample_mw=((nle_config.ref_mw - nle_config.ref_mw_error) + (r * 2.0 * nle_config.ref_mw_error));
     r=drand48();
-    invexp2=(int)(r * ((double)numdimensions - 0.5)) + 1;
-    while ((invexp2 == 0) || (invexp2 == invexp1)) {
-      r=drand48();
-      invexp2=(int)(r * ((double)numdimensions - 0.5)) + 1;
-    }
+    nle_state.random_sample_sin2w=((nle_config.ref_sin2w - nle_config.ref_sin2w_error) + (r * 2.0 * nle_config.ref_sin2w_error));
     r=drand48();
-    invexp3=(int)(r * ((double)numdimensions - 0.5)) + 1;
-    while ((invexp3 == 0) || (invexp3 == invexp1) || (invexp3 == invexp2)) {
-      r=drand48();
-      invexp3=(int)(r * ((double)numdimensions + 0.5)) + 1;
-    }
-#endif
-
-    // sort exponents to ensure real roots
-    if ((invexp1 < invexp2) && (invexp1 < invexp3)) {
-      leftinvexp = invexp1;
-    }
-    if ((invexp2 < invexp1) && (invexp2 < invexp3)) {
-      leftinvexp = invexp2;
-    }
-    if ((invexp3 < invexp1) && (invexp3 < invexp2)) {
-      leftinvexp = invexp3;
-    }
-    if (((invexp1 < invexp2) && (invexp1 > invexp3)) || ((invexp1 > invexp2) && (invexp1 < invexp3))) {
-      middleinvexp = invexp1;
-    }
-    if (((invexp2 < invexp1) && (invexp2 > invexp3)) || ((invexp2 > invexp1) && (invexp2 < invexp3))) {
-      middleinvexp = invexp2;
-    }
-    if (((invexp3 < invexp1) && (invexp3 > invexp2)) || ((invexp3 > invexp1) && (invexp3 < invexp2))) {
-      middleinvexp = invexp3;
-    }
-    if ((invexp1 > invexp2) && (invexp1 > invexp3)) {
-      rightinvexp = invexp1;
-    }
-    if ((invexp2 > invexp1) && (invexp2 > invexp3)) {
-      rightinvexp = invexp2;
-    }
-    if ((invexp3 > invexp1) && (invexp3 > invexp2)) {
-      rightinvexp = invexp3;
-    }
-
-/*
-    // force exponents for debugging or focused searches
-    leftinvexp=+1;
-    middleinvexp=+2;
-    rightinvexp=+3;
-*/
-/*
-    // force exponents for debugging or focused searches
-    leftinvexp=-18;
-    middleinvexp=+17;
-    rightinvexp=+18;
-*/
-
-    // init strings
-    exponents[19]=0;
-    sprintf(exponents, "E%+d%+d%+d", leftinvexp, middleinvexp, rightinvexp);
-    matchptr=matchstart;
-    nummatches=0;
-    for (i=0; i<=2; i++) {
-      coffhit[i]=0;
-    }
+    nle_state.random_sample_mh0=((nle_config.ref_mh0 - nle_config.ref_mh0_error) + (r * 2.0 * nle_config.ref_mh0_error));
+    r=drand48();
+    nle_state.random_sample_muser=((nle_config.smrfactor_mass_user - nle_config.smrfactor_mass_user_error) + (r * 2.0 * nle_config.smrfactor_mass_user_error));
 
     // phase 1
-    solveNLEforCoefficients(multstart, &nummult, &matchptr, &nummatches, coffhit, random_input_count, random_inputs, exponents, leftinvexp, middleinvexp, rightinvexp, range);
-    if (nummatches > 0) {
-      numcoff=0;
+    solveNLEforCoefficients(&nle_config, &nle_state);
+    if (nle_state.phase1_matches_count > 0) {
+      coefficients_matched=0;
       for (i=0; i<=2; i++) {
-        if (coffhit[i] != 0) {
-          numcoff++;
+        if (nle_state.terms_matched[i] != 0) {
+          coefficients_matched++;
         }
       }
-      if (numcoff == 3) {
+      if (coefficients_matched == 3) {
         // phase 2
-        verifyMatches(matchstart, &nummatches, exponents, leftinvexp, middleinvexp, rightinvexp, random_input_count, minsymmetry, maxcomplexity);
+        verifyMatches(&nle_config, &nle_state);
       } else {
-#ifdef SHOWSTATUS
-        printf("status, No complete three-term phase 2 formulas to solve, coffhit: %d, %d, %d\n", coffhit[0], coffhit[1], coffhit[2]);
-        fflush(stdout);
-#endif
+        if (nle_config.status_enable ==1) {
+          printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+          fflush(stdout);
+        }
       }
     } else {
-#ifdef SHOWSTATUS
-      printf("status, No interesting coefficient multipliers found\n");
-      fflush(stdout);
-#endif
+      if (nle_config.status_enable ==1) {
+        printf("status, No interesting coefficient multipliers found\n");
+        fflush(stdout);
+      }
     } // end nummatches
   } // end while 1
-  return(0);
+  exit(0);
 }   

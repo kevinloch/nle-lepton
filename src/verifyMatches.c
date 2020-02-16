@@ -5,415 +5,439 @@
 #include "util.h"
 #include "phase2.h"
 
-int verifyMatches(matches *matchstart, int *nummatches, char *exponents, int leftinvexp, int middleinvexp, int rightinvexp, int random_input_count, int minsymmetry, int maxcomplexity) {
-  //  For formulas with interesting coefficients on all three exponent terms,
+void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   //  separate the match table into a separate list for each exponent, then test all unique combinations of coefficients
-  //  for accuracy by comparing the computed muon mass to it's experimental value.  Print results matching a minimum threshold of interest.
   int i,j;
-  matches *match;
-  matches *leftmatches;
-  matches *middlematches;
-  matches *rightmatches;
-  matches *leftmatchptr;
-  matches *middlematchptr;
-  matches *rightmatchptr;
-  matches *tmpmatchptr;
-  int numleftmatches, nummiddlematches, numrightmatches;
-  int l,m,r;
+  nle_phase1_match_t *phase1_match;
+  nle_phase1_match_t *term1_match;
+  nle_phase1_match_t *term2_match;
+  nle_phase1_match_t *term3_match;
+  nle_phase1_match_t *temp_match;
+  int t1,t2,t3;
   int dupe;
-  struct timespec starttime;
-  struct timespec endtime;
-  double elapsedtime;
+  struct timespec start_time;
+  struct timespec end_time;
+  double elapsed_time;
   double precision;
   int tmpmatchup;
   int tmpmatchdown;
   int tmpmatchcomplexity;
   long long tmphash;
-  long totalcombos;
+  long combo_count;
   long combo;
-  input_use leftuses;
-  input_use middleuses;
-  input_use rightuses;
-  input_use alluses;
+  nle_input_use_t term1_uses;
+  nle_input_use_t term2_uses;
+  nle_input_use_t term3_uses;
   int complexity;
   int symmetry;
 
-  leftmatches = (matches *)malloc(100000 * sizeof(matches));
-  middlematches = (matches *)malloc(100000 * sizeof(matches));
-  rightmatches = (matches *)malloc(100000 * sizeof(matches));
-
-  // extract all left term coefficients
-  match=matchstart;
-  leftmatchptr=leftmatches;
-  numleftmatches=0;
-  for (i=0; i<*nummatches; i++) {
-    if (match->invexp == leftinvexp) {
+  // extract all term1 coefficients
+  phase1_match=nle_state->phase1_matches_start;
+  term1_match=nle_state->term1.matches_start;
+  nle_state->term1.matches_count=0;
+  for (i=0; i < nle_state->phase1_matches_count; i++) {
+    if (phase1_match->exp_inv == nle_state->term1.exp_inv) {
      // determine integer/rational match value
-      if (match->match > 1.0) {
-       tmpmatchup=(int)(match->match + 0.5);
+      if (phase1_match->match > 1.0) {
+       tmpmatchup=(int)(phase1_match->match + 0.5);
        tmpmatchdown=1;
       } else {
         tmpmatchup=1;
-        tmpmatchdown=(int)((1.0 / match->match) + 0.5);
+        tmpmatchdown=(int)((1.0 / phase1_match->match) + 0.5);
       }
-      tmphash=(long long)match->massratio ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / match->matchmult)) * (long long)1.0E9) + 0.5));
-      tmpmatchcomplexity=(match->matchcomplexity + (tmpmatchup * match->downout) + (tmpmatchdown * match->upout));
+      tmphash=(long long)phase1_match->smrfactor_mass ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / phase1_match->static_multiplier)) * (long long)1.0E9) + 0.5));
+      tmpmatchcomplexity=(phase1_match->match_complexity + (tmpmatchup * phase1_match->outfactor_rational_down) + (tmpmatchdown * phase1_match->outfactor_rational_up));
       // search existing match table for dupes and see if we have lower complexity
-      tmpmatchptr=leftmatches;
+      temp_match=nle_state->term1.matches_start;
       dupe=0;
-      for (j=0; j< numleftmatches; j++) {
-        if (tmphash == tmpmatchptr->matchhash) {
-          if (tmpmatchcomplexity < tmpmatchptr->matchcomplexity) {
+      for (j=0; j< nle_state->term1.matches_count; j++) {
+        if (tmphash == temp_match->match_hash) {
+          if (tmpmatchcomplexity < temp_match->match_complexity) {
             // replace
-            tmpmatchptr->massratio=match->massratio;
-            tmpmatchptr->matchup=tmpmatchup;
-            tmpmatchptr->matchdown=tmpmatchdown;
-            tmpmatchptr->invexp=match->invexp;
-            tmpmatchptr->massratio=match->massratio;
-            tmpmatchptr->upin=match->upin;
-            tmpmatchptr->downin=match->downin;
-            tmpmatchptr->piupin=match->piupin;
-            tmpmatchptr->pidownin=match->pidownin;
-            tmpmatchptr->aupin=match->aupin;
-            tmpmatchptr->adownin=match->adownin;
-            tmpmatchptr->e2upin=match->e2upin;
-            tmpmatchptr->e2downin=match->e2downin;
-            tmpmatchptr->nbvupin=match->nbvupin;
-            tmpmatchptr->nbsupin=match->nbsupin;
-            tmpmatchptr->upout=match->upout;
-            tmpmatchptr->downout=match->downout;
-            tmpmatchptr->piupout=match->piupout;
-            tmpmatchptr->pidownout=match->pidownout;
-            tmpmatchptr->aupout=match->aupout;
-            tmpmatchptr->adownout=match->adownout;
-            tmpmatchptr->e2upout=match->e2upout;
-            tmpmatchptr->e2downout=match->e2downout;
-            tmpmatchptr->s2wupout=match->s2wupout;
-            tmpmatchptr->s2wdownout=match->s2wdownout;
-            tmpmatchptr->c2wupout=match->c2wupout;
-            tmpmatchptr->c2wdownout=match->c2wdownout;
-            tmpmatchptr->matchcomplexity=tmpmatchcomplexity;
-            tmpmatchptr->matchmult=match->matchmult;
-            tmpmatchptr->match=match->match;
-            tmpmatchptr->matchhash=tmphash;
-            initUses(&tmpmatchptr->uses);
-            addUses(&tmpmatchptr->uses, &match->uses);
+            temp_match->exp_inv=phase1_match->exp_inv;
+            temp_match->smrfactor_mass=phase1_match->smrfactor_mass;
+            temp_match->infactor_rational_up=phase1_match->infactor_rational_up;
+            temp_match->infactor_rational_down=phase1_match->infactor_rational_down;
+            temp_match->infactor_2_exp_up=phase1_match->infactor_2_exp_up;
+            temp_match->infactor_2_exp_down=phase1_match->infactor_2_exp_down;
+            temp_match->infactor_alpha_exp_up=phase1_match->infactor_alpha_exp_up;
+            temp_match->infactor_alpha_exp_down=phase1_match->infactor_alpha_exp_down;
+            temp_match->infactor_pi_exp_up=phase1_match->infactor_pi_exp_up;
+            temp_match->infactor_pi_exp_down=phase1_match->infactor_pi_exp_down;
+            temp_match->infactor_nss=phase1_match->infactor_nss;
+            temp_match->infactor_nbv=phase1_match->infactor_nbv;
+            temp_match->infactor_user_exp_up=phase1_match->infactor_user_exp_up;
+            temp_match->infactor_user_exp_down=phase1_match->infactor_user_exp_down;
+            temp_match->outfactor_rational_up=phase1_match->outfactor_rational_up;
+            temp_match->outfactor_rational_down=phase1_match->outfactor_rational_down;
+            temp_match->outfactor_2_exp_up=phase1_match->outfactor_2_exp_up;
+            temp_match->outfactor_2_exp_down=phase1_match->outfactor_2_exp_down;
+            temp_match->outfactor_alpha_exp_up=phase1_match->outfactor_alpha_exp_up;
+            temp_match->outfactor_alpha_exp_down=phase1_match->outfactor_alpha_exp_down;
+            temp_match->outfactor_pi_exp_up=phase1_match->outfactor_pi_exp_up;
+            temp_match->outfactor_pi_exp_down=phase1_match->outfactor_pi_exp_down;
+            temp_match->outfactor_sin2w_exp_up=phase1_match->outfactor_sin2w_exp_up;
+            temp_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
+            temp_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
+            temp_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+            temp_match->outfactor_user_exp_up=phase1_match->outfactor_user_exp_up;
+            temp_match->outfactor_user_exp_down=phase1_match->outfactor_user_exp_down;
+            temp_match->static_multiplier=phase1_match->static_multiplier;
+            temp_match->match=phase1_match->match;
+            temp_match->match_up=tmpmatchup;
+            temp_match->match_down=tmpmatchdown;
+            temp_match->match_complexity=tmpmatchcomplexity;
+            temp_match->match_hash=tmphash;
+            initUses(&temp_match->match_uses);
+            addUses(&temp_match->match_uses, &phase1_match->match_uses);
           }
           dupe=1;
           break;
         }
-        tmpmatchptr++;
+        temp_match++;
       } // end for j
-      if (dupe ==0) {
-        leftmatchptr->massratio=match->massratio;
-        leftmatchptr->matchup=tmpmatchup;
-        leftmatchptr->matchdown=tmpmatchdown;
-        leftmatchptr->invexp=match->invexp;
-        leftmatchptr->massratio=match->massratio;
-        leftmatchptr->upin=match->upin;
-        leftmatchptr->downin=match->downin;
-        leftmatchptr->piupin=match->piupin;
-        leftmatchptr->pidownin=match->pidownin;
-        leftmatchptr->aupin=match->aupin;
-        leftmatchptr->adownin=match->adownin;
-        leftmatchptr->e2upin=match->e2upin;
-        leftmatchptr->e2downin=match->e2downin;
-        leftmatchptr->nbvupin=match->nbvupin;
-        leftmatchptr->nbsupin=match->nbsupin;
-        leftmatchptr->upout=match->upout;
-        leftmatchptr->downout=match->downout;
-        leftmatchptr->piupout=match->piupout;
-        leftmatchptr->pidownout=match->pidownout;
-        leftmatchptr->aupout=match->aupout;
-        leftmatchptr->adownout=match->adownout;
-        leftmatchptr->e2upout=match->e2upout;
-        leftmatchptr->e2downout=match->e2downout;
-        leftmatchptr->s2wupout=match->s2wupout;
-        leftmatchptr->s2wdownout=match->s2wdownout;
-        leftmatchptr->c2wupout=match->c2wupout;
-        leftmatchptr->c2wdownout=match->c2wdownout;
-        leftmatchptr->matchcomplexity=tmpmatchcomplexity;
-        leftmatchptr->matchmult=match->matchmult;
-        leftmatchptr->match=match->match;
-        leftmatchptr->matchhash=tmphash;
-        initUses(&tmpmatchptr->uses);
-        addUses(&tmpmatchptr->uses, &match->uses);
-        numleftmatches++;
-        leftmatchptr++;
+      if (dupe == 0) {
+        // insert
+        term1_match->exp_inv=phase1_match->exp_inv;
+        term1_match->smrfactor_mass=phase1_match->smrfactor_mass;
+        term1_match->infactor_rational_up=phase1_match->infactor_rational_up;
+        term1_match->infactor_rational_down=phase1_match->infactor_rational_down;
+        term1_match->infactor_2_exp_up=phase1_match->infactor_2_exp_up;
+        term1_match->infactor_2_exp_down=phase1_match->infactor_2_exp_down;
+        term1_match->infactor_alpha_exp_up=phase1_match->infactor_alpha_exp_up;
+        term1_match->infactor_alpha_exp_down=phase1_match->infactor_alpha_exp_down;
+        term1_match->infactor_pi_exp_up=phase1_match->infactor_pi_exp_up;
+        term1_match->infactor_pi_exp_down=phase1_match->infactor_pi_exp_down;
+        term1_match->infactor_nss=phase1_match->infactor_nss;
+        term1_match->infactor_nbv=phase1_match->infactor_nbv;
+        term1_match->infactor_user_exp_up=phase1_match->infactor_user_exp_up;
+        term1_match->infactor_user_exp_down=phase1_match->infactor_user_exp_down;
+        term1_match->outfactor_rational_up=phase1_match->outfactor_rational_up;
+        term1_match->outfactor_rational_down=phase1_match->outfactor_rational_down;
+        term1_match->outfactor_2_exp_up=phase1_match->outfactor_2_exp_up;
+        term1_match->outfactor_2_exp_down=phase1_match->outfactor_2_exp_down;
+        term1_match->outfactor_alpha_exp_up=phase1_match->outfactor_alpha_exp_up;
+        term1_match->outfactor_alpha_exp_down=phase1_match->outfactor_alpha_exp_down;
+        term1_match->outfactor_pi_exp_up=phase1_match->outfactor_pi_exp_up;
+        term1_match->outfactor_pi_exp_down=phase1_match->outfactor_pi_exp_down;
+        term1_match->outfactor_sin2w_exp_up=phase1_match->outfactor_sin2w_exp_up;
+        term1_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
+        term1_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
+        term1_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+        term1_match->outfactor_user_exp_up=phase1_match->outfactor_user_exp_up;
+        term1_match->outfactor_user_exp_down=phase1_match->outfactor_user_exp_down;
+        term1_match->static_multiplier=phase1_match->static_multiplier;
+        term1_match->match=phase1_match->match;
+        term1_match->match_up=tmpmatchup;
+        term1_match->match_down=tmpmatchdown;
+        term1_match->match_complexity=tmpmatchcomplexity;
+        term1_match->match_hash=tmphash;
+        initUses(&term1_match->match_uses);
+        addUses(&term1_match->match_uses, &phase1_match->match_uses);
+        nle_state->term1.matches_count++;
+        term1_match++;
       } // end if not dupe
     }  // end if invexp
-    match++;
+    phase1_match++;
   } // end for i
 
-  // extract all middle term coefficients
-  match=matchstart;
-  middlematchptr=middlematches;
-  nummiddlematches=0;
-  for (i=0; i<*nummatches; i++) {
-    if (match->invexp == middleinvexp) {
+  // extract all term2 term coefficients
+  phase1_match=nle_state->phase1_matches_start;
+  term2_match=nle_state->term2.matches_start;
+  nle_state->term2.matches_count=0;
+  for (i=0; i < nle_state->phase1_matches_count; i++) {
+    if (phase1_match->exp_inv == nle_state->term2.exp_inv) {
      // determine integer/rational match value
-      if (match->match > 1.0) {
-       tmpmatchup=(int)(match->match + 0.5);
+      if (phase1_match->match > 1.0) {
+       tmpmatchup=(int)(phase1_match->match + 0.5);
        tmpmatchdown=1;
       } else {
         tmpmatchup=1;
-        tmpmatchdown=(int)((1.0 / match->match) + 0.5);
+        tmpmatchdown=(int)((1.0 / phase1_match->match) + 0.5);
       }
-      tmphash=(long long)match->massratio ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / match->matchmult)) * (long long)1.0E9) + 0.5));
-      tmpmatchcomplexity=(match->matchcomplexity + (tmpmatchup * match->downout) + (tmpmatchdown * match->upout));
+      tmphash=(long long)phase1_match->smrfactor_mass ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / phase1_match->static_multiplier)) * (long long)1.0E9) + 0.5));
+      tmpmatchcomplexity=(phase1_match->match_complexity + (tmpmatchup * phase1_match->outfactor_rational_down) + (tmpmatchdown * phase1_match->outfactor_rational_up));
       // search existing match table for dupes and see if we have lower complexity
-      tmpmatchptr=middlematches;
+      temp_match=nle_state->term2.matches_start;
       dupe=0;
-      for (j=0; j< nummiddlematches; j++) {
-        if (tmphash == tmpmatchptr->matchhash) {
-          if (tmpmatchcomplexity < tmpmatchptr->matchcomplexity) {
+      for (j=0; j< nle_state->term2.matches_count; j++) {
+        if (tmphash == temp_match->match_hash) {
+          if (tmpmatchcomplexity < temp_match->match_complexity) {
             // replace
-            tmpmatchptr->massratio=match->massratio;
-            tmpmatchptr->matchup=tmpmatchup;
-            tmpmatchptr->matchdown=tmpmatchdown;
-            tmpmatchptr->invexp=match->invexp;
-            tmpmatchptr->massratio=match->massratio;
-            tmpmatchptr->upin=match->upin;
-            tmpmatchptr->downin=match->downin;
-            tmpmatchptr->piupin=match->piupin;
-            tmpmatchptr->pidownin=match->pidownin;
-            tmpmatchptr->aupin=match->aupin;
-            tmpmatchptr->adownin=match->adownin;
-            tmpmatchptr->e2upin=match->e2upin;
-            tmpmatchptr->e2downin=match->e2downin;
-            tmpmatchptr->nbvupin=match->nbvupin;
-            tmpmatchptr->nbsupin=match->nbsupin;
-            tmpmatchptr->upout=match->upout;
-            tmpmatchptr->downout=match->downout;
-            tmpmatchptr->piupout=match->piupout;
-            tmpmatchptr->pidownout=match->pidownout;
-            tmpmatchptr->aupout=match->aupout;
-            tmpmatchptr->adownout=match->adownout;
-            tmpmatchptr->e2upout=match->e2upout;
-            tmpmatchptr->e2downout=match->e2downout;
-            tmpmatchptr->s2wupout=match->s2wupout;
-            tmpmatchptr->s2wdownout=match->s2wdownout;
-            tmpmatchptr->c2wupout=match->c2wupout;
-            tmpmatchptr->c2wdownout=match->c2wdownout;
-            tmpmatchptr->matchcomplexity=tmpmatchcomplexity;
-            tmpmatchptr->matchmult=match->matchmult;
-            tmpmatchptr->match=match->match;
-            tmpmatchptr->matchhash=tmphash;
-            initUses(&tmpmatchptr->uses);
-            addUses(&tmpmatchptr->uses, &match->uses);
+            temp_match->exp_inv=phase1_match->exp_inv;
+            temp_match->smrfactor_mass=phase1_match->smrfactor_mass;
+            temp_match->infactor_rational_up=phase1_match->infactor_rational_up;
+            temp_match->infactor_rational_down=phase1_match->infactor_rational_down;
+            temp_match->infactor_2_exp_up=phase1_match->infactor_2_exp_up;
+            temp_match->infactor_2_exp_down=phase1_match->infactor_2_exp_down;
+            temp_match->infactor_alpha_exp_up=phase1_match->infactor_alpha_exp_up;
+            temp_match->infactor_alpha_exp_down=phase1_match->infactor_alpha_exp_down;
+            temp_match->infactor_pi_exp_up=phase1_match->infactor_pi_exp_up;
+            temp_match->infactor_pi_exp_down=phase1_match->infactor_pi_exp_down;
+            temp_match->infactor_nss=phase1_match->infactor_nss;
+            temp_match->infactor_nbv=phase1_match->infactor_nbv;
+            temp_match->infactor_user_exp_up=phase1_match->infactor_user_exp_up;
+            temp_match->infactor_user_exp_down=phase1_match->infactor_user_exp_down;
+            temp_match->outfactor_rational_up=phase1_match->outfactor_rational_up;
+            temp_match->outfactor_rational_down=phase1_match->outfactor_rational_down;
+            temp_match->outfactor_2_exp_up=phase1_match->outfactor_2_exp_up;
+            temp_match->outfactor_2_exp_down=phase1_match->outfactor_2_exp_down;
+            temp_match->outfactor_alpha_exp_up=phase1_match->outfactor_alpha_exp_up;
+            temp_match->outfactor_alpha_exp_down=phase1_match->outfactor_alpha_exp_down;
+            temp_match->outfactor_pi_exp_up=phase1_match->outfactor_pi_exp_up;
+            temp_match->outfactor_pi_exp_down=phase1_match->outfactor_pi_exp_down;
+            temp_match->outfactor_sin2w_exp_up=phase1_match->outfactor_sin2w_exp_up;
+            temp_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
+            temp_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
+            temp_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+            temp_match->outfactor_user_exp_up=phase1_match->outfactor_user_exp_up;
+            temp_match->outfactor_user_exp_down=phase1_match->outfactor_user_exp_down;
+            temp_match->static_multiplier=phase1_match->static_multiplier;
+            temp_match->match=phase1_match->match;
+            temp_match->match_up=tmpmatchup;
+            temp_match->match_down=tmpmatchdown;
+            temp_match->match_complexity=tmpmatchcomplexity;
+            temp_match->match_hash=tmphash;
+            initUses(&temp_match->match_uses);
+            addUses(&temp_match->match_uses, &phase1_match->match_uses);
           }
           dupe=1;
           break;
         }
-        tmpmatchptr++;
+        temp_match++;
       } // end for j
       if (dupe ==0) {
-        middlematchptr->massratio=match->massratio;
-        middlematchptr->matchup=tmpmatchup;
-        middlematchptr->matchdown=tmpmatchdown;
-        middlematchptr->invexp=match->invexp;
-        middlematchptr->massratio=match->massratio;
-        middlematchptr->upin=match->upin;
-        middlematchptr->downin=match->downin;
-        middlematchptr->piupin=match->piupin;
-        middlematchptr->pidownin=match->pidownin;
-        middlematchptr->aupin=match->aupin;
-        middlematchptr->adownin=match->adownin;
-        middlematchptr->e2upin=match->e2upin;
-        middlematchptr->e2downin=match->e2downin;
-        middlematchptr->nbvupin=match->nbvupin;
-        middlematchptr->nbsupin=match->nbsupin;
-        middlematchptr->upout=match->upout;
-        middlematchptr->downout=match->downout;
-        middlematchptr->piupout=match->piupout;
-        middlematchptr->pidownout=match->pidownout;
-        middlematchptr->aupout=match->aupout;
-        middlematchptr->adownout=match->adownout;
-        middlematchptr->e2upout=match->e2upout;
-        middlematchptr->e2downout=match->e2downout;
-        middlematchptr->s2wupout=match->s2wupout;
-        middlematchptr->s2wdownout=match->s2wdownout;
-        middlematchptr->c2wupout=match->c2wupout;
-        middlematchptr->c2wdownout=match->c2wdownout;
-        middlematchptr->matchcomplexity=tmpmatchcomplexity;
-        middlematchptr->matchmult=match->matchmult;
-        middlematchptr->match=match->match;
-        middlematchptr->matchhash=tmphash;
-        initUses(&tmpmatchptr->uses);
-        addUses(&tmpmatchptr->uses, &match->uses);
-        nummiddlematches++;
-        middlematchptr++;
+        // insert
+        term2_match->exp_inv=phase1_match->exp_inv;
+        term2_match->smrfactor_mass=phase1_match->smrfactor_mass;
+        term2_match->infactor_rational_up=phase1_match->infactor_rational_up;
+        term2_match->infactor_rational_down=phase1_match->infactor_rational_down;
+        term2_match->infactor_2_exp_up=phase1_match->infactor_2_exp_up;
+        term2_match->infactor_2_exp_down=phase1_match->infactor_2_exp_down;
+        term2_match->infactor_alpha_exp_up=phase1_match->infactor_alpha_exp_up;
+        term2_match->infactor_alpha_exp_down=phase1_match->infactor_alpha_exp_down;
+        term2_match->infactor_pi_exp_up=phase1_match->infactor_pi_exp_up;
+        term2_match->infactor_pi_exp_down=phase1_match->infactor_pi_exp_down;
+        term2_match->infactor_nss=phase1_match->infactor_nss;
+        term2_match->infactor_nbv=phase1_match->infactor_nbv;
+        term2_match->infactor_user_exp_up=phase1_match->infactor_user_exp_up;
+        term2_match->infactor_user_exp_down=phase1_match->infactor_user_exp_down;
+        term2_match->outfactor_rational_up=phase1_match->outfactor_rational_up;
+        term2_match->outfactor_rational_down=phase1_match->outfactor_rational_down;
+        term2_match->outfactor_2_exp_up=phase1_match->outfactor_2_exp_up;
+        term2_match->outfactor_2_exp_down=phase1_match->outfactor_2_exp_down;
+        term2_match->outfactor_alpha_exp_up=phase1_match->outfactor_alpha_exp_up;
+        term2_match->outfactor_alpha_exp_down=phase1_match->outfactor_alpha_exp_down;
+        term2_match->outfactor_pi_exp_up=phase1_match->outfactor_pi_exp_up;
+        term2_match->outfactor_pi_exp_down=phase1_match->outfactor_pi_exp_down;
+        term2_match->outfactor_sin2w_exp_up=phase1_match->outfactor_sin2w_exp_up;
+        term2_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
+        term2_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
+        term2_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+        term2_match->outfactor_user_exp_up=phase1_match->outfactor_user_exp_up;
+        term2_match->outfactor_user_exp_down=phase1_match->outfactor_user_exp_down;
+        term2_match->static_multiplier=phase1_match->static_multiplier;
+        term2_match->match=phase1_match->match;
+        term2_match->match_up=tmpmatchup;
+        term2_match->match_down=tmpmatchdown;
+        term2_match->match_complexity=tmpmatchcomplexity;
+        term2_match->match_hash=tmphash;
+        initUses(&term2_match->match_uses);
+        addUses(&term2_match->match_uses, &phase1_match->match_uses);
+        nle_state->term2.matches_count++;
+        term2_match++;
       } // end if not dupe
     }  // end if invexp
-    match++;
+    phase1_match++;
   } // end for i
 
-  // extract all right term coefficients
-  match=matchstart;
-  rightmatchptr=rightmatches;
-  numrightmatches=0;
-  for (i=0; i<*nummatches; i++) {
-    if (match->invexp == rightinvexp) {
+  // extract all term3 coefficients
+  phase1_match=nle_state->phase1_matches_start;
+  term3_match=nle_state->term3.matches_start;
+  nle_state->term3.matches_count=0;
+  for (i=0; i < nle_state->phase1_matches_count; i++) {
+    if (phase1_match->exp_inv == nle_state->term3.exp_inv) {
      // determine integer/rational match value
-      if (match->match > 1.0) {
-       tmpmatchup=(int)(match->match + 0.5);
+      if (phase1_match->match > 1.0) {
+       tmpmatchup=(int)(phase1_match->match + 0.5);
        tmpmatchdown=1;
       } else {
         tmpmatchup=1;
-        tmpmatchdown=(int)((1.0 / match->match) + 0.5);
+        tmpmatchdown=(int)((1.0 / phase1_match->match) + 0.5);
       }
-      tmphash=(long long)match->massratio ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / match->matchmult)) * (long long)1.0E9) + 0.5));
-      tmpmatchcomplexity=(match->matchcomplexity + (tmpmatchup * match->downout) + (tmpmatchdown * match->upout));
+      tmphash=(long long)phase1_match->smrfactor_mass ^ ((long long)((((tmpmatchup / tmpmatchdown) * (1.0 / phase1_match->static_multiplier)) * (long long)1.0E9) + 0.5));
+      tmpmatchcomplexity=(phase1_match->match_complexity + (tmpmatchup * phase1_match->outfactor_rational_down) + (tmpmatchdown * phase1_match->outfactor_rational_up));
       // search existing match table for dupes and see if we have lower complexity
-      tmpmatchptr=rightmatches;
+      temp_match=nle_state->term3.matches_start;
       dupe=0;
-      for (j=0; j< numrightmatches; j++) {
-        if (tmphash == tmpmatchptr->matchhash) {
-          if (tmpmatchcomplexity < tmpmatchptr->matchcomplexity) {
+      for (j=0; j< nle_state->term3.matches_count; j++) {
+        if (tmphash == temp_match->match_hash) {
+          if (tmpmatchcomplexity < temp_match->match_complexity) {
             // replace
-            tmpmatchptr->massratio=match->massratio;
-            tmpmatchptr->matchup=tmpmatchup;
-            tmpmatchptr->matchdown=tmpmatchdown;
-            tmpmatchptr->invexp=match->invexp;
-            tmpmatchptr->massratio=match->massratio;
-            tmpmatchptr->upin=match->upin;
-            tmpmatchptr->downin=match->downin;
-            tmpmatchptr->piupin=match->piupin;
-            tmpmatchptr->pidownin=match->pidownin;
-            tmpmatchptr->aupin=match->aupin;
-            tmpmatchptr->adownin=match->adownin;
-            tmpmatchptr->e2upin=match->e2upin;
-            tmpmatchptr->e2downin=match->e2downin;
-            tmpmatchptr->nbvupin=match->nbvupin;
-            tmpmatchptr->nbsupin=match->nbsupin;
-            tmpmatchptr->upout=match->upout;
-            tmpmatchptr->downout=match->downout;
-            tmpmatchptr->piupout=match->piupout;
-            tmpmatchptr->pidownout=match->pidownout;
-            tmpmatchptr->aupout=match->aupout;
-            tmpmatchptr->adownout=match->adownout;
-            tmpmatchptr->e2upout=match->e2upout;
-            tmpmatchptr->e2downout=match->e2downout;
-            tmpmatchptr->s2wupout=match->s2wupout;
-            tmpmatchptr->s2wdownout=match->s2wdownout;
-            tmpmatchptr->c2wupout=match->c2wupout;
-            tmpmatchptr->c2wdownout=match->c2wdownout;
-            tmpmatchptr->matchcomplexity=tmpmatchcomplexity;
-            tmpmatchptr->matchmult=match->matchmult;
-            tmpmatchptr->match=match->match;
-            tmpmatchptr->matchhash=tmphash;
-            initUses(&tmpmatchptr->uses);
-            addUses(&tmpmatchptr->uses, &match->uses);
+            temp_match->exp_inv=phase1_match->exp_inv;
+            temp_match->smrfactor_mass=phase1_match->smrfactor_mass;
+            temp_match->infactor_rational_up=phase1_match->infactor_rational_up;
+            temp_match->infactor_rational_down=phase1_match->infactor_rational_down;
+            temp_match->infactor_2_exp_up=phase1_match->infactor_2_exp_up;
+            temp_match->infactor_2_exp_down=phase1_match->infactor_2_exp_down;
+            temp_match->infactor_alpha_exp_up=phase1_match->infactor_alpha_exp_up;
+            temp_match->infactor_alpha_exp_down=phase1_match->infactor_alpha_exp_down;
+            temp_match->infactor_pi_exp_up=phase1_match->infactor_pi_exp_up;
+            temp_match->infactor_pi_exp_down=phase1_match->infactor_pi_exp_down;
+            temp_match->infactor_nss=phase1_match->infactor_nss;
+            temp_match->infactor_nbv=phase1_match->infactor_nbv;
+            temp_match->infactor_user_exp_up=phase1_match->infactor_user_exp_up;
+            temp_match->infactor_user_exp_down=phase1_match->infactor_user_exp_down;
+            temp_match->outfactor_rational_up=phase1_match->outfactor_rational_up;
+            temp_match->outfactor_rational_down=phase1_match->outfactor_rational_down;
+            temp_match->outfactor_2_exp_up=phase1_match->outfactor_2_exp_up;
+            temp_match->outfactor_2_exp_down=phase1_match->outfactor_2_exp_down;
+            temp_match->outfactor_alpha_exp_up=phase1_match->outfactor_alpha_exp_up;
+            temp_match->outfactor_alpha_exp_down=phase1_match->outfactor_alpha_exp_down;
+            temp_match->outfactor_pi_exp_up=phase1_match->outfactor_pi_exp_up;
+            temp_match->outfactor_pi_exp_down=phase1_match->outfactor_pi_exp_down;
+            temp_match->outfactor_sin2w_exp_up=phase1_match->outfactor_sin2w_exp_up;
+            temp_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
+            temp_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
+            temp_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+            temp_match->outfactor_user_exp_up=phase1_match->outfactor_user_exp_up;
+            temp_match->outfactor_user_exp_down=phase1_match->outfactor_user_exp_down;
+            temp_match->static_multiplier=phase1_match->static_multiplier;
+            temp_match->match=phase1_match->match;
+            temp_match->match_up=tmpmatchup;
+            temp_match->match_down=tmpmatchdown;
+            temp_match->match_complexity=tmpmatchcomplexity;
+            temp_match->match_hash=tmphash;
+            initUses(&temp_match->match_uses);
+            addUses(&temp_match->match_uses, &phase1_match->match_uses);
           }
           dupe=1;
           break;
         }
-        tmpmatchptr++;
+        temp_match++;
       } // end for j
       if (dupe ==0) {
-        rightmatchptr->massratio=match->massratio;
-        rightmatchptr->matchup=tmpmatchup;
-        rightmatchptr->matchdown=tmpmatchdown;
-        rightmatchptr->invexp=match->invexp;
-        rightmatchptr->massratio=match->massratio;
-        rightmatchptr->upin=match->upin;
-        rightmatchptr->downin=match->downin;
-        rightmatchptr->piupin=match->piupin;
-        rightmatchptr->pidownin=match->pidownin;
-        rightmatchptr->aupin=match->aupin;
-        rightmatchptr->adownin=match->adownin;
-        rightmatchptr->e2upin=match->e2upin;
-        rightmatchptr->e2downin=match->e2downin;
-        rightmatchptr->nbvupin=match->nbvupin;
-        rightmatchptr->nbsupin=match->nbsupin;
-        rightmatchptr->upout=match->upout;
-        rightmatchptr->downout=match->downout;
-        rightmatchptr->piupout=match->piupout;
-        rightmatchptr->pidownout=match->pidownout;
-        rightmatchptr->aupout=match->aupout;
-        rightmatchptr->adownout=match->adownout;
-        rightmatchptr->e2upout=match->e2upout;
-        rightmatchptr->e2downout=match->e2downout;
-        rightmatchptr->s2wupout=match->s2wupout;
-        rightmatchptr->s2wdownout=match->s2wdownout;
-        rightmatchptr->c2wupout=match->c2wupout;
-        rightmatchptr->c2wdownout=match->c2wdownout;
-        rightmatchptr->matchcomplexity=tmpmatchcomplexity;
-        rightmatchptr->matchmult=match->matchmult;
-        rightmatchptr->match=match->match;
-        rightmatchptr->matchhash=tmphash;
-        initUses(&tmpmatchptr->uses);
-        addUses(&tmpmatchptr->uses, &match->uses);
-        numrightmatches++;
-        rightmatchptr++;
+        // insert
+        term3_match->exp_inv=phase1_match->exp_inv;
+        term3_match->smrfactor_mass=phase1_match->smrfactor_mass;
+        term3_match->infactor_rational_up=phase1_match->infactor_rational_up;
+        term3_match->infactor_rational_down=phase1_match->infactor_rational_down;
+        term3_match->infactor_2_exp_up=phase1_match->infactor_2_exp_up;
+        term3_match->infactor_2_exp_down=phase1_match->infactor_2_exp_down;
+        term3_match->infactor_alpha_exp_up=phase1_match->infactor_alpha_exp_up;
+        term3_match->infactor_alpha_exp_down=phase1_match->infactor_alpha_exp_down;
+        term3_match->infactor_pi_exp_up=phase1_match->infactor_pi_exp_up;
+        term3_match->infactor_pi_exp_down=phase1_match->infactor_pi_exp_down;
+        term3_match->infactor_nss=phase1_match->infactor_nss;
+        term3_match->infactor_nbv=phase1_match->infactor_nbv;
+        term3_match->infactor_user_exp_up=phase1_match->infactor_user_exp_up;
+        term3_match->infactor_user_exp_down=phase1_match->infactor_user_exp_down;
+        term3_match->outfactor_rational_up=phase1_match->outfactor_rational_up;
+        term3_match->outfactor_rational_down=phase1_match->outfactor_rational_down;
+        term3_match->outfactor_2_exp_up=phase1_match->outfactor_2_exp_up;
+        term3_match->outfactor_2_exp_down=phase1_match->outfactor_2_exp_down;
+        term3_match->outfactor_alpha_exp_up=phase1_match->outfactor_alpha_exp_up;
+        term3_match->outfactor_alpha_exp_down=phase1_match->outfactor_alpha_exp_down;
+        term3_match->outfactor_pi_exp_up=phase1_match->outfactor_pi_exp_up;
+        term3_match->outfactor_pi_exp_down=phase1_match->outfactor_pi_exp_down;
+        term3_match->outfactor_sin2w_exp_up=phase1_match->outfactor_sin2w_exp_up;
+        term3_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
+        term3_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
+        term3_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+        term3_match->outfactor_user_exp_up=phase1_match->outfactor_user_exp_up;
+        term3_match->outfactor_user_exp_down=phase1_match->outfactor_user_exp_down;
+        term3_match->static_multiplier=phase1_match->static_multiplier;
+        term3_match->match=phase1_match->match;
+        term3_match->match_up=tmpmatchup;
+        term3_match->match_down=tmpmatchdown;
+        term3_match->match_complexity=tmpmatchcomplexity;
+        term3_match->match_hash=tmphash;
+        initUses(&term3_match->match_uses);
+        addUses(&term3_match->match_uses, &phase1_match->match_uses);
+        nle_state->term3.matches_count++;
+        term3_match++;
       } // end if not dupe
     }  // end if invexp
-    match++;
+    phase1_match++;
   } // end for i
 
-  // send all combinations of left, middle, right to solution function
-  leftmatchptr=leftmatches;
+  // generate all combinations and send to phase2
+  term1_match=nle_state->term1.matches_start;
   combo=0;
-#ifdef SHOWSTATUS
-  totalcombos=(numleftmatches * nummiddlematches * numrightmatches);
-#endif
-#ifdef SHOWSTATUS
-  printf("status, Solving phase 2 formulas for masses, random input: %d, exponents: %s,                 progress: total (0/%ld) left (0/%d) middle (0/%d) right (0/%d)\n", random_input_count, exponents, totalcombos, numleftmatches, nummiddlematches, numrightmatches);
-  fflush(stdout);
-#endif
-  for (l=0; l<numleftmatches; l++) {
-    initUses(&leftuses);
-    addUses(&leftuses, &leftmatchptr->uses);
-    middlematchptr=middlematches;
-    for (m=0; m<nummiddlematches; m++) {
-      initUses(&middleuses);
-      addUses(&middleuses, &middlematchptr->uses);
-      rightmatchptr=rightmatches;
-      for (r=0; r<numrightmatches; r++) {
+  combo_count=(nle_state->term1.matches_count * nle_state->term2.matches_count * nle_state->term3.matches_count);
+  if (nle_config->status_enable == 1) {
+    printf("status, Solving phase 2 formulas for masses, random input: %d, exponents: %s,                 progress: total (0/%ld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+    fflush(stdout);
+  }
+  for (t1=0; t1 < nle_state->term1.matches_count; t1++) {
+    initUses(&term1_uses);
+    addUses(&term1_uses, &term1_match->match_uses);
+    term2_match=nle_state->term2.matches_start;
+    for (t2=0; t2 < nle_state->term2.matches_count; t2++) {
+      initUses(&term2_uses);
+      addUses(&term2_uses, &term2_match->match_uses);
+      term3_match=nle_state->term3.matches_start;
+      for (t3=0; t3 < nle_state->term3.matches_count; t3++) {
         combo++;
-        complexity=leftmatchptr->matchcomplexity + middlematchptr->matchcomplexity + rightmatchptr->matchcomplexity;
-        // calculate symmetry score.   This measures how many factors are identical or inverse identical between the left, middle and right terms
+
+        // calculate complexity score
+        complexity=term1_match->match_complexity + term2_match->match_complexity + term3_match->match_complexity;
+
+        // calculate symmetry score.   This measures how many factors are identical or inverse identical between the dfferent terms
         symmetry=0;
-        checkSymmetry(&symmetry, (leftmatchptr->matchup * leftmatchptr->downout), (middlematchptr->matchup * middlematchptr->downout), (rightmatchptr->matchup * rightmatchptr->downout));
-        checkSymmetry(&symmetry, (leftmatchptr->matchdown * leftmatchptr->upout), (middlematchptr->matchdown * middlematchptr->upout), (rightmatchptr->matchdown * rightmatchptr->upout));
-        checkSymmetry(&symmetry, leftmatchptr->e2upout, middlematchptr->e2upout, rightmatchptr->e2upout);
-        checkSymmetry(&symmetry, leftmatchptr->piupout, middlematchptr->piupout, rightmatchptr->piupout);
-        checkSymmetry(&symmetry, (leftmatchptr->aupout * leftmatchptr->adownout), (middlematchptr->aupout * middlematchptr->adownout), (rightmatchptr->aupout * rightmatchptr->adownout));
-        checkSymmetry(&symmetry, (leftmatchptr->s2wupout * leftmatchptr->s2wdownout), (middlematchptr->s2wupout * middlematchptr->s2wdownout), (rightmatchptr->s2wupout * rightmatchptr->s2wdownout));
-        checkSymmetry(&symmetry, (leftmatchptr->c2wupout * leftmatchptr->c2wdownout), (middlematchptr->c2wupout * middlematchptr->c2wdownout), (rightmatchptr->c2wupout * rightmatchptr->c2wdownout));
-        checkSymmetry(&symmetry, leftmatchptr->upin, middlematchptr->upin, rightmatchptr->upin);
-        checkSymmetry(&symmetry, leftmatchptr->downin, middlematchptr->downin, rightmatchptr->downin);
-        checkSymmetry(&symmetry, leftmatchptr->nbvupin, middlematchptr->nbvupin, rightmatchptr->nbvupin);
-        checkSymmetry(&symmetry, leftmatchptr->nbsupin, middlematchptr->nbsupin, rightmatchptr->nbsupin);
-        checkSymmetry(&symmetry, leftmatchptr->e2upin, middlematchptr->e2upin, rightmatchptr->e2upin);
-        checkSymmetry(&symmetry, leftmatchptr->piupin, middlematchptr->piupin, rightmatchptr->piupin);
-        checkSymmetry(&symmetry, (leftmatchptr->aupin * leftmatchptr->adownin), (middlematchptr->aupin * middlematchptr->adownin), (rightmatchptr->aupin * rightmatchptr->adownin));
-        if ((symmetry >= minsymmetry) && (complexity <= maxcomplexity)) {
-         if ((leftmatchptr->nbvupin == middlematchptr->nbvupin) && (leftmatchptr->nbvupin == rightmatchptr-> nbvupin) && (leftmatchptr->nbsupin == middlematchptr->nbsupin) && (leftmatchptr->nbsupin == rightmatchptr-> nbsupin)) { // consistency check
-            initUses(&rightuses);
-            addUses(&rightuses, &rightmatchptr->uses);
-            initUses(&alluses);
-            addUses(&alluses, &leftuses);
-            addUses(&alluses, &middleuses);
-            addUses(&alluses, &rightuses);
-            clock_gettime(CLOCK_REALTIME, &starttime);
-            precision=solveNLEforMasses(exponents, leftinvexp, middleinvexp, rightinvexp, leftmatchptr, middlematchptr, rightmatchptr, &alluses, maxcomplexity);
-#ifdef SHOWSTATUS
-            clock_gettime(CLOCK_REALTIME, &endtime);
-            elapsedtime=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-            printf("status, Solved  phase 2 formula  for masses, random input: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) left (%d/%d) middle (%d/%d) right (%d/%d), precision: %.3e, (%6.4fs)\n", random_input_count, exponents, leftmatchptr->massratio, middlematchptr->massratio, rightmatchptr->massratio, combo, totalcombos, l+1, numleftmatches, m+1, nummiddlematches, r+1, numrightmatches, precision, elapsedtime);
-            fflush(stdout);
-#endif
-          } // end consistency check
-        } // end if symmetry and complexity
-        rightmatchptr++;
-      } // for r
-      middlematchptr++;
-    } // for m
-    leftmatchptr++;
-  } // for l
-  free(leftmatches);
-  free(middlematches);
-  free(rightmatches);
-  return(0);
+        checkSymmetry(&symmetry, (term1_match->match_up * term1_match->outfactor_rational_down), (term2_match->match_up * term2_match->outfactor_rational_down), (term3_match->match_up * term3_match->outfactor_rational_down));
+        checkSymmetry(&symmetry, (term1_match->match_down * term1_match->outfactor_rational_up), (term2_match->match_down * term2_match->outfactor_rational_up), (term3_match->match_down * term3_match->outfactor_rational_up));
+        checkSymmetry(&symmetry, term1_match->outfactor_2_exp_up, term2_match->outfactor_2_exp_up, term3_match->outfactor_2_exp_up);
+        checkSymmetry(&symmetry, term1_match->outfactor_pi_exp_up, term2_match->outfactor_pi_exp_up, term3_match->outfactor_pi_exp_up);
+        checkSymmetry(&symmetry, (term1_match->outfactor_alpha_exp_up * term1_match->outfactor_alpha_exp_down), (term2_match->outfactor_alpha_exp_up * term2_match->outfactor_alpha_exp_down), (term3_match->outfactor_alpha_exp_up * term3_match->outfactor_alpha_exp_down));
+        checkSymmetry(&symmetry, (term1_match->outfactor_sin2w_exp_up * term1_match->outfactor_sin2w_exp_down), (term2_match->outfactor_sin2w_exp_up * term2_match->outfactor_sin2w_exp_down), (term3_match->outfactor_sin2w_exp_up * term3_match->outfactor_sin2w_exp_down));
+        checkSymmetry(&symmetry, (term1_match->outfactor_cos2w_exp_up * term1_match->outfactor_cos2w_exp_down), (term2_match->outfactor_cos2w_exp_up * term2_match->outfactor_cos2w_exp_down), (term3_match->outfactor_cos2w_exp_up * term3_match->outfactor_cos2w_exp_down));
+        checkSymmetry(&symmetry, term1_match->infactor_rational_up, term2_match->infactor_rational_up, term3_match->infactor_rational_up);
+        checkSymmetry(&symmetry, term1_match->infactor_rational_down, term2_match->infactor_rational_down, term3_match->infactor_rational_down);
+        checkSymmetry(&symmetry, term1_match->infactor_nbv, term2_match->infactor_nbv, term3_match->infactor_nbv);
+        checkSymmetry(&symmetry, term1_match->infactor_nss, term2_match->infactor_nss, term3_match->infactor_nss);
+        checkSymmetry(&symmetry, term1_match->infactor_2_exp_up, term2_match->infactor_2_exp_up, term3_match->infactor_2_exp_up);
+        checkSymmetry(&symmetry, term1_match->infactor_pi_exp_up, term2_match->infactor_pi_exp_up, term3_match->infactor_pi_exp_up);
+        checkSymmetry(&symmetry, (term1_match->infactor_alpha_exp_up * term1_match->infactor_alpha_exp_down), (term2_match->infactor_alpha_exp_up * term2_match->infactor_alpha_exp_down), (term3_match->infactor_alpha_exp_up * term3_match->infactor_alpha_exp_down));
+        if ((symmetry >= nle_config->phase2_symmetry_min) && (complexity <= nle_config->phase2_complexity_max)) {
+         if ((nle_config->phase2_check_nbv_nss == 0) || ((term1_match->infactor_nbv == term2_match->infactor_nbv) && (term1_match->infactor_nbv == term3_match->infactor_nbv) && (term1_match->infactor_nss == term2_match->infactor_nss) && (term1_match->infactor_nss == term3_match-> infactor_nss))) { // consistency check
+           if ((nle_config->phase2_check_weak == 0) || ((term1_match->outfactor_sin2w_exp_up == term2_match->outfactor_sin2w_exp_up) && (term1_match->outfactor_sin2w_exp_up == term3_match->outfactor_sin2w_exp_up)\
+                                                     && (term1_match->outfactor_sin2w_exp_down == term2_match->outfactor_sin2w_exp_down) && (term1_match->outfactor_sin2w_exp_down == term3_match->outfactor_sin2w_exp_down)\
+                                                     && (term1_match->outfactor_cos2w_exp_up == term2_match->outfactor_cos2w_exp_up) && (term1_match->outfactor_cos2w_exp_up == term3_match->outfactor_cos2w_exp_up)\
+                                                     && (term1_match->outfactor_cos2w_exp_down == term2_match->outfactor_cos2w_exp_down) && (term1_match->outfactor_cos2w_exp_down == term3_match->outfactor_cos2w_exp_down))) {
+
+              initUses(&term3_uses);
+              addUses(&term3_uses, &term3_match->match_uses);
+              initUses(&nle_state->all_uses);
+              addUses(&nle_state->all_uses, &term1_uses);
+              addUses(&nle_state->all_uses, &term2_uses);
+              addUses(&nle_state->all_uses, &term3_uses);
+              nle_state->term1.current_match=term1_match;
+              nle_state->term2.current_match=term2_match;
+              nle_state->term3.current_match=term3_match;
+              clock_gettime(CLOCK_REALTIME, &start_time);
+
+              // send to phase2 to verify formula
+              precision=solveNLEforMasses(nle_config, nle_state);
+
+              if (nle_config->status_enable ==1) {
+                clock_gettime(CLOCK_REALTIME, &end_time);
+                elapsed_time=((double)(end_time.tv_sec - 1500000000) + ((double)end_time.tv_nsec / 1.0E9)) - ((double)(start_time.tv_sec - 1500000000) + ((double)start_time.tv_nsec) / 1.0E9);
+                if (precision < 1.0E30) {
+                  printf("status, Solved  phase 2 formula  for masses, random input: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                  fflush(stdout);
+                } else {
+                  printf("status, Failed to solve phase 2 formula  for masses, random input: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                  fflush(stdout);
+                } // end precision
+              } // end status_enable
+            } // end weak consistency check
+          } // end nbv/nss consistency check
+        } // end if symmetry and complexity check
+        term3_match++;
+      } // for t3
+      term2_match++;
+    } // for t2
+    term1_match++;
+  } // for t1
 }

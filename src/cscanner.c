@@ -2,350 +2,344 @@
 #include <stdlib.h> // abs
 #include <math.h>   // pow
 #include "nle-lepton.h"
-#include "reference.h"
 #include "util.h"
 
-void cscanner(multipliers *multstart, int *nummult, matches **matchptr, int *nummatches, int *coffhit, int range, char *exponents, int leftinvexp, int middleinvexp, int rightinvexp, double cleft, double cmiddle, double cright, random_input random_inputs) {
-  /*************/
-  /* Phase 1.5 */
-  /*************/
+//#define DEBUG_CSCANNER
+
+void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
   //  Each coefficient is multiplied by various numbers and the resulting value is tested to see if it is
   // close to an interesting integer or simple rational number.  The results are stored in the match table.
-  int i;
-  double multiplierout;
-  multipliers *mult;
+  int infactor, outfactor;
+  double multiplier;
+  nle_infactor_precomputed_t *infactors;
+  nle_outfactor_precomputed_t *outfactors;
   unsigned int u, v;
-  matches *match;
-  int complexity;
+  nle_phase1_match_t *match;
+  int phase1_filter;
+  int max_int;
+  int filter_int;
+  int mass_ratio_enabled;
 
-  int massratio;
-  double massterm;
-  double leftmassterm;
-  double middlemassterm;
-  double rightmassterm;
-  int upout=1, downout=1;
-  int piupout=0, pidownout=1;
-  int aupout=1, adownout=1;
-  int e2upout=0, e2downout=2;
-  int s2wupout=0, s2wdownout=1;
-  int c2wupout=0, c2wdownout=1;
-  double updownout;
-  double piout;
-  double aout;
-  double e2out;
-  double s2wout=1.0;
-  double c2wout=1.0;
-
+  int mass_ratio_id;
+  double mass_ratio;
+  double term1_mass_ratio_factor;
+  double term2_mass_ratio_factor;
+  double term3_mass_ratio_factor;
+  int sin2w_exp_up=0, sin2w_exp_down=1;
+  int cos2w_exp_up=0, cos2w_exp_down=1;
+  double outfactor_sin2w=1.0;
+  double outfactor_cos2w=1.0;
   double sin2w;
   double cos2w;
 
-  sin2w=random_inputs.sin2w_sample;
+  sin2w=nle_state->random_sample_sin2w;
   cos2w=1.0 - sin2w;
 
-  match=*matchptr;
-  // here we substitute the M/me mass ratio used in phase 1 with the actual test mass ratio
-  for (massratio=0; massratio<=4; massratio++) {
-    if (massratio == 0) {         
-      massterm=random_inputs.mp_sample/me_ref;
-#ifdef SHOWSTATUS
-      printf("M/mp, ");             
-      fflush(stdout);               
-#endif
-    } else if (massratio == 1) {  
-      massterm=v_ref/me_ref;
-#ifdef SHOWSTATUS
-      printf("M/v, ");              
-      fflush(stdout);               
-#endif
-    } else if (massratio == 2) {  
-      massterm=random_inputs.mz_sample/me_ref;
-#ifdef SHOWSTATUS
-      printf("M/mz, ");             
-      fflush(stdout);               
-#endif
-    } else if (massratio == 3) {  
-      massterm=random_inputs.mw_sample/me_ref;
-#ifdef SHOWSTATUS
-      printf("M/mw, ");             
-      fflush(stdout);               
-#endif
-    } else if (massratio == 4) {  
-      massterm=random_inputs.mh0_sample/me_ref;
-#ifdef SHOWSTATUS
-      printf("M/mh0");             
-      fflush(stdout);               
-#endif
+  phase1_filter=nle_config->phase1_filter;
+  max_int=nle_config->phase1_int_match_max;
+  filter_int=nle_config->phase1_int_match_filter;
+
+  match=nle_state->phase1_matches_start;
+  // here we substitute the M/v mass ratio used in phase 1 with the actual test mass ratio
+  for (mass_ratio_id=0; mass_ratio_id<=5; mass_ratio_id++) {
+    mass_ratio_enabled=1;
+    if (mass_ratio_id == 0) {
+      if (nle_config->smrfactor_mass_mp_enable == 1) {
+        mass_ratio=nle_state->random_sample_mp/nle_config->ref_v;
+        if (nle_config->status_enable ==1) {
+          printf(" M/mp");
+          fflush(stdout);
+        }
+      } else {
+        mass_ratio_enabled=0;
+      }
+    } else if (mass_ratio_id == 1) {
+      if (nle_config->smrfactor_mass_v_enable == 1) {
+        mass_ratio=1.0;
+        if (nle_config->status_enable ==1) {
+          printf(" M/v");              
+          fflush(stdout);               
+        }
+      } else {
+        mass_ratio_enabled=0;
+      }
+    } else if (mass_ratio_id == 2) {
+      if (nle_config->smrfactor_mass_mz_enable == 1) {
+        mass_ratio=nle_state->random_sample_mz/nle_config->ref_v;
+        if (nle_config->status_enable ==1) {
+          printf(" M/mz");             
+          fflush(stdout);               
+        }
+      } else {
+        mass_ratio_enabled=0;
+      } 
+    } else if (mass_ratio_id == 3) {
+      if (nle_config->smrfactor_mass_mw_enable == 1) {
+        mass_ratio=nle_state->random_sample_mw/nle_config->ref_v;
+        if (nle_config->status_enable ==1) {
+          printf(" M/mw");             
+          fflush(stdout);               
+        }
+      } else {
+        mass_ratio_enabled=0;
+      }
+    } else if (mass_ratio_id == 4) {
+      if (nle_config->smrfactor_mass_mh0_enable == 1) {
+        mass_ratio=nle_state->random_sample_mh0/nle_config->ref_v;
+        if (nle_config->status_enable ==1) {
+          printf(" M/mh0");             
+          fflush(stdout);               
+        }
+      } else {
+        mass_ratio_enabled=0;
+      }
+    } else if (mass_ratio_id == 5) {
+      if ((nle_config->smrfactor_mass_user_enable == 1) && (mass_ratio_id == 5)) {
+        mass_ratio=nle_state->random_sample_muser/nle_config->ref_v;
+        if (nle_config->status_enable ==1) {
+          printf(" M/m_user");
+          fflush(stdout);
+        }
+      } else {
+        mass_ratio_enabled=0;
+      }
     }                             
-    leftmassterm=pow(massterm, (1.0 / (double)leftinvexp));
-    middlemassterm=pow(massterm, (1.0 / (double)middleinvexp));
-    rightmassterm=pow(massterm, (1.0 / (double)rightinvexp));
 
-    for (upout=1; upout <= 3; upout++) {
-      for (downout=1; downout <=3; downout++) {
-        u=upout;
-        v=downout;
-        if (gcd(u, v) == 1) {
-          updownout=(double)upout / (double)downout;
-          for (piupout=-2; piupout <= 2; piupout++) {
-/*
-            for (pidownout=1; pidownout <= 1; pidownout++) {
-              u=abs(piupout);
-              v=pidownout;
-              if (gcd(u, v) == 1) {
-*/
-                piout=updownout * pow(M_PI, ((float)piupout / (float)pidownout));
-                for (aupout=-2; aupout <= 2; aupout++) {
-                  for (adownout=1; adownout <= 2; adownout++) {
-                    u=abs(aupout);
-                    v=adownout;
-                    if (gcd(u, v) == 1) {
-                      aout=piout * pow(alpha_ref, ((float)aupout / (float)adownout));
-                      for (e2upout=-1; e2upout <= 1; e2upout++) {
-                        e2out=aout * pow(2.0, ((float)e2upout / (float)e2downout));
-// s2w and c2w are calculated separately since they contain significant uncertainty and are reconstructed separately in phase 2
-#ifdef SIN2W
-                        for (s2wupout=-1; s2wupout <= 1; s2wupout++) {
-                          for (s2wdownout=1; s2wdownout <= 2; s2wdownout++) {
-                            u=abs(s2wupout);
-                            v=s2wdownout;
-                            if ((gcd2(u, v) == 1) && ((v % 2) == 0)) {
-                              s2wout=pow(sin2w, ((float)s2wupout / (float)s2wdownout));
-                              for (c2wupout=-1; c2wupout <= 1; c2wupout++) {
-                                for (c2wdownout=1; c2wdownout <= 2; c2wdownout++) {
-                                  u=abs(c2wupout);
-                                  v=c2wdownout;
-                                  if ((gcd2(u, v) == 1) && ((v % 2) == 0)) {
-                                    c2wout=pow(cos2w, ((float)c2wupout / (float)c2wdownout));
-#endif
-                                    mult=multstart;
-                                    for (i=0; i<*nummult; i++) { 
-                                      // test multiplier against left coefficient
-                                      if ((s2wdownout == 1) || (s2wdownout == 2) || (s2wdownout == leftinvexp) || (s2wdownout == (leftinvexp * 2))) {
-                                        if ((c2wdownout == 1) || (c2wdownout == 2) || (c2wdownout == leftinvexp) || (c2wdownout == (leftinvexp * 2))) {
-                                          multiplierout=cleft * leftmassterm * s2wout * c2wout * e2out * mult->mult[abs(leftinvexp)];
-                                          if (interesting(range, multiplierout)) {
-                                            complexity=mult->multcomplexity\
-                                                  + (upout + downout)\
-                                                  + (abs(piupout) + pidownout)\
-                                                  + (abs(aupout) + adownout)\
-                                                  + (abs(e2upout) + e2downout);
-/*
-                                                  + (abs(s2wupout) + s2wdownout)\
-                                                  + (abs(c2wupout) + c2wdownout);
-*/
-                                            coffhit[0]=leftinvexp;
-                                            match->invexp=leftinvexp;
-                                            match->massratio=massratio;
-                                            match->upin=mult->upin;
-                                            match->downin=mult->downin;
-                                            match->piupin=mult->piupin;
-                                            match->pidownin=mult->pidownin;
-                                            match->aupin=mult->aupin;
-                                            match->adownin=mult->adownin;
-                                            match->e2upin=mult->e2upin;
-                                            match->e2downin=mult->e2downin;
-                                            match->nbvupin=mult->nbvupin;
-                                            match->nbsupin=mult->nbsupin;
-                                            match->upout=upout;
-                                            match->downout=downout;
-                                            match->piupout=piupout;
-                                            match->pidownout=pidownout;
-                                            match->aupout=aupout;
-                                            match->adownout=adownout;
-                                            match->e2upout=e2upout;
-                                            match->e2downout=e2downout;
-                                            match->s2wupout=s2wupout;
-                                            match->s2wdownout=s2wdownout;
-                                            match->c2wupout=c2wupout;
-                                            match->c2wdownout=c2wdownout;
-                                            match->matchcomplexity=complexity;
-                                            match->match=multiplierout;
-                                            initUses(&match->uses);
-                                            addUses(&match->uses, &mult->uses);
-                                            if (massratio == 0) {
-                                              match->uses.G=1;
-                                            } else if (massratio == 1) {
-                                              match->uses.v=1;
-                                            } else if (massratio == 2) {
-                                              match->uses.mz=1;
-                                            } else if (massratio == 3) {
-                                              match->uses.mw=1;
-                                            } else if (massratio == 4) {
-                                              match->uses.mh0=1;
-                                            }
-                                            if (aupout != 0) {
-                                              match->uses.alpha_em=1;
-                                            }
-                                            if ((s2wupout != 0) || (c2wupout != 0)) {
-                                              match->uses.sin2w=1;
-                                            }
-                                            match->matchmult=e2out * mult->mult[abs(leftinvexp)];
-                                            *nummatches=*nummatches+1;
-                                            *matchptr=*matchptr+1;
-                                            match=*matchptr;
-                                          }  // if interesting left
-                                        } // sanity check c2w left
-                                      } // sanity check s2w left
+    if (mass_ratio_enabled == 1) {
+      term1_mass_ratio_factor=pow(mass_ratio, (1.0 / (double)nle_state->term1.exp_inv));
+      term2_mass_ratio_factor=pow(mass_ratio, (1.0 / (double)nle_state->term2.exp_inv));
+      term3_mass_ratio_factor=pow(mass_ratio, (1.0 / (double)nle_state->term3.exp_inv));
 
-                                      // test multiplier against middle coefficient
-                                      if ((s2wdownout == 1) || (s2wdownout == 2) || (s2wdownout == middleinvexp) || (s2wdownout == (middleinvexp * 2))) {
-                                        if ((c2wdownout == 1) || (c2wdownout == 2) || (c2wdownout == middleinvexp) || (c2wdownout == (middleinvexp * 2))) {
-                                          multiplierout=cmiddle * middlemassterm * s2wout * c2wout * e2out * mult->mult[abs(middleinvexp)];
-                                          if (interesting(range, multiplierout)) { 
-                                            complexity=mult->multcomplexity\
-                                                  + (upout + downout)\
-                                                  + (abs(piupout) + pidownout)\
-                                                  + (abs(aupout) + adownout)\
-                                                  + (abs(e2upout) + e2downout);
-/*
-                                                  + (abs(s2wupout) + s2wdownout)\
-                                                  + (abs(c2wupout) + c2wdownout);
-*/
-                                            coffhit[1]=middleinvexp;
-                                            match->invexp=middleinvexp;
-                                            match->massratio=massratio;
-                                            match->upin=mult->upin;
-                                            match->downin=mult->downin;
-                                            match->piupin=mult->piupin;
-                                            match->pidownin=mult->pidownin;
-                                            match->aupin=mult->aupin;
-                                            match->adownin=mult->adownin;
-                                            match->e2upin=mult->e2upin;
-                                            match->e2downin=mult->e2downin;
-                                            match->nbvupin=mult->nbvupin;
-                                            match->nbsupin=mult->nbsupin;
-                                            match->upout=upout;
-                                            match->downout=downout;
-                                            match->piupout=piupout;
-                                            match->pidownout=pidownout;
-                                            match->aupout=aupout;
-                                            match->adownout=adownout;
-                                            match->e2upout=e2upout;
-                                            match->e2downout=e2downout;
-                                            match->s2wupout=s2wupout;
-                                            match->s2wdownout=s2wdownout;
-                                            match->c2wupout=c2wupout;
-                                            match->c2wdownout=c2wdownout;
-                                            match->matchcomplexity=complexity;
-                                            match->match=multiplierout;
-                                            initUses(&match->uses);
-                                            addUses(&match->uses, &mult->uses);
-                                            if (massratio == 0) {
-                                              match->uses.G=1;
-                                            } else if (massratio == 1) {
-                                              match->uses.v=1;
-                                            } else if (massratio == 2) {
-                                              match->uses.mz=1;
-                                            } else if (massratio == 3) {
-                                              match->uses.mw=1;
-                                            } else if (massratio == 4) {
-                                              match->uses.mh0=1;
-                                            }
-                                            if (aupout != 0) {
-                                              match->uses.alpha_em=1;
-                                            }
-                                            if ((s2wupout != 0) || (c2wupout != 0)) {
-                                              match->uses.sin2w=1;
-                                            }
-                                            match->matchmult=e2out * mult->mult[abs(middleinvexp)];
-                                            *nummatches=*nummatches+1;
-                                            *matchptr=*matchptr+1;
-                                            match=*matchptr;
-                                          }  // if interesting middle
-                                        } // sanity check c2w middle
-                                      } // sanity check s2w middle
+      for (sin2w_exp_up=-nle_config->outfactor_weak_exp_up_max; sin2w_exp_up <= nle_config->outfactor_weak_exp_up_max; sin2w_exp_up++) {
+        for (sin2w_exp_down=1; sin2w_exp_down <= nle_config->outfactor_weak_exp_down_max; sin2w_exp_down++) {
+          u=abs(sin2w_exp_up);
+          v=sin2w_exp_down;
+          if (gcd(u, v) == 1) {
+            outfactor_sin2w=pow(sin2w, ((float)sin2w_exp_up / (float)sin2w_exp_down));
+            for (cos2w_exp_up=-nle_config->outfactor_weak_exp_up_max; cos2w_exp_up <= nle_config->outfactor_weak_exp_up_max; cos2w_exp_up++) {
+              for (cos2w_exp_down=1; cos2w_exp_down <= nle_config->outfactor_weak_exp_down_max; cos2w_exp_down++) {
+                u=abs(cos2w_exp_up);
+                v=cos2w_exp_down;
+                if (gcd(u, v) == 1) {
+                  outfactor_cos2w=pow(cos2w, ((float)cos2w_exp_up / (float)cos2w_exp_down));
+#ifdef DEBUG_CSCANNER
+                  printf("sin2w_exp_up: %d, sin2w_exp_down: %d, cos2w_exp_up: %d, cos2w_exp_down: %d\n", sin2w_exp_up, sin2w_exp_down, cos2w_exp_up, cos2w_exp_down);
+                  fflush(stdout);
+#endif
+                  outfactors=nle_state->outfactors_precomputed_start;
+                  for (outfactor=0; outfactor < nle_state->outfactors_precomputed_count; outfactor++) {
 
-                                      // test multiplier against right coefficient
-                                      if ((s2wdownout == 1) || (s2wdownout == 2) || (s2wdownout == rightinvexp) || (s2wdownout == (rightinvexp * 2))) {
-                                        if ((c2wdownout == 1) || (c2wdownout == 2) || (c2wdownout == rightinvexp) || (c2wdownout == (rightinvexp * 2))) {
-                                          multiplierout=cright * rightmassterm * s2wout * c2wout * e2out * mult->mult[abs(rightinvexp)];
-                                          if (interesting(range, multiplierout)) { 
-                                            complexity=mult->multcomplexity\
-                                                  + (upout + downout)\
-                                                  + (abs(piupout) + pidownout)\
-                                                  + (abs(aupout) + adownout)\
-                                                  + (abs(e2upout) + e2downout);
-/*
-                                                  + (abs(s2wupout) + s2wdownout)\
-                                                  + (abs(c2wupout) + c2wdownout);
-*/
-                                            coffhit[2]=rightinvexp;
-                                            match->invexp=rightinvexp;
-                                            match->massratio=massratio;
-                                            match->upin=mult->upin;
-                                            match->downin=mult->downin;
-                                            match->piupin=mult->piupin;
-                                            match->pidownin=mult->pidownin;
-                                            match->aupin=mult->aupin;
-                                            match->adownin=mult->adownin;
-                                            match->e2upin=mult->e2upin;
-                                            match->e2downin=mult->e2downin;
-                                            match->nbvupin=mult->nbvupin;
-                                            match->nbsupin=mult->nbsupin;
-                                            match->upout=upout;
-                                            match->downout=downout;
-                                            match->piupout=piupout;
-                                            match->pidownout=pidownout;
-                                            match->aupout=aupout;
-                                            match->adownout=adownout;
-                                            match->e2upout=e2upout;
-                                            match->e2downout=e2downout;
-                                            match->s2wupout=s2wupout;
-                                            match->s2wdownout=s2wdownout;
-                                            match->c2wupout=c2wupout;
-                                            match->c2wdownout=c2wdownout;
-                                            match->matchcomplexity=complexity;
-                                            match->match=multiplierout;
-                                            initUses(&match->uses);
-                                            addUses(&match->uses, &mult->uses);
-                                            if (massratio == 0) {
-                                              match->uses.G=1;
-                                            } else if (massratio == 1) {
-                                              match->uses.v=1;
-                                            } else if (massratio == 2) {
-                                              match->uses.mz=1;
-                                            } else if (massratio == 3) {
-                                              match->uses.mw=1;
-                                            } else if (massratio == 4) {
-                                              match->uses.mh0=1;
-                                            }
-                                            if (aupout != 0) {
-                                              match->uses.alpha_em=1;
-                                            }
-                                            if ((s2wupout != 0) || (c2wupout != 0)) {
-                                              match->uses.sin2w=1;
-                                            }
-                                            match->matchmult=e2out * mult->mult[abs(rightinvexp)];
-                                            *nummatches=*nummatches+1;
-                                            *matchptr=*matchptr+1;
-                                            match=*matchptr;
-                                          }  // if interesting right
-                                        } // sanity check c2w right
-                                      } // sanity check s2w right
-                                      mult++;
-                                    }  // for i
-#ifdef SIN2W
-                                  } // gcd c2wout
-                                } // c2wdownout
-                              } // c2wupout
-                            } // gcd s2wout
-                          } // s2wdownout
-                        } // s2wupout
-#endif
-                      } // e2upout
-                    } // gcd aout
-                  } // adownout
-                } // aupout
-/*
-              } // gcd piout
-            } // pidownout
-*/
-          } // piupout
-        } // gcd updownout
-      } // downout
-    } // upout
-  } // for massratio
-#ifdef SHOWSTATUS
-  printf(".\n");
-#endif
+                    infactors=nle_state->infactors_precomputed_start;
+                    for (infactor=0; infactor < nle_state->infactors_precomputed_count; infactor++) { 
+
+                      // test multiplier against term1 coefficient
+                      if ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term1.exp_inv) || (sin2w_exp_down == (nle_state->term1.exp_inv * 2))) {
+                        if ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term1.exp_inv) || (cos2w_exp_down == (nle_state->term1.exp_inv * 2))) {
+                        multiplier=nle_state->term1.coefficient * term1_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term1.exp_inv)];
+                          if (interesting(phase1_filter, max_int, filter_int, multiplier)) {
+                            nle_state->terms_matched[0]=nle_state->term1.exp_inv;
+                            match->exp_inv=nle_state->term1.exp_inv;
+                            match->smrfactor_mass=mass_ratio_id;
+                            match->infactor_rational_up=infactors->infactor_rational_up;
+                            match->infactor_rational_down=infactors->infactor_rational_down;
+                            match->infactor_2_exp_up=infactors->infactor_2_exp_up;
+                            match->infactor_2_exp_down=infactors->infactor_2_exp_down;
+                            match->infactor_alpha_exp_up=infactors->infactor_alpha_exp_up;
+                            match->infactor_alpha_exp_down=infactors->infactor_alpha_exp_down;
+                            match->infactor_pi_exp_up=infactors->infactor_pi_exp_up;
+                            match->infactor_pi_exp_down=infactors->infactor_pi_exp_down;
+                            match->infactor_nss=infactors->infactor_nss;
+                            match->infactor_nbv=infactors->infactor_nbv;
+                            match->infactor_user_exp_up=infactors->infactor_user_exp_up;
+                            match->infactor_user_exp_down=infactors->infactor_user_exp_down;
+                            match->outfactor_rational_up=outfactors->outfactor_rational_up;
+                            match->outfactor_rational_down=outfactors->outfactor_rational_down;
+                            match->outfactor_2_exp_up=outfactors->outfactor_2_exp_up;
+                            match->outfactor_2_exp_down=outfactors->outfactor_2_exp_down;
+                            match->outfactor_alpha_exp_up=outfactors->outfactor_alpha_exp_up;
+                            match->outfactor_alpha_exp_down=outfactors->outfactor_alpha_exp_down;
+                            match->outfactor_pi_exp_up=outfactors->outfactor_pi_exp_up;
+                            match->outfactor_pi_exp_down=outfactors->outfactor_pi_exp_down;
+                            match->outfactor_sin2w_exp_up=sin2w_exp_up;
+                            match->outfactor_sin2w_exp_down=sin2w_exp_down;
+                            match->outfactor_cos2w_exp_up=cos2w_exp_up;
+                            match->outfactor_cos2w_exp_down=cos2w_exp_down;
+                            match->outfactor_user_exp_up=outfactors->outfactor_user_exp_up;
+                            match->outfactor_user_exp_down=outfactors->outfactor_user_exp_down;
+                            match->static_multiplier=outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term1.exp_inv)]; // excludes sin2w and cos2w that have uncertainty
+                            match->match=multiplier;
+                            match->match_complexity=outfactors->outfactor_complexity\
+                                  + infactors->infactor_complexity\
+                                  + (abs(sin2w_exp_up) + (sin2w_exp_down-1))\
+                                  + (abs(cos2w_exp_up) + (cos2w_exp_down-1));
+                            initUses(&match->match_uses);
+                            addUses(&match->match_uses, &outfactors->outfactor_uses);
+                            addUses(&match->match_uses, &infactors->infactor_uses);
+                            if (mass_ratio_id == 0) {
+                              match->match_uses.G=1;
+                            } else if (mass_ratio_id == 1) {
+                              match->match_uses.v=1;
+                            } else if (mass_ratio_id == 2) {
+                              match->match_uses.mz=1;
+                            } else if (mass_ratio_id == 3) {
+                              match->match_uses.mw=1;
+                            } else if (mass_ratio_id == 4) {
+                              match->match_uses.mh0=1;
+                            } else if (mass_ratio_id == 5) {
+                              match->match_uses.m_user=1;
+                            }
+                            if ((sin2w_exp_up != 0) || (cos2w_exp_up != 0)) {
+                              match->match_uses.sin2w=1;
+                            }
+                            nle_state->phase1_matches_count++;
+                            match++;
+                          }  // if interesting term1
+                        } // sanity check c2w term1
+                      } // sanity check s2w term1
+
+                      // test multiplier against term2 coefficient
+                      if ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term2.exp_inv) || (sin2w_exp_down == (nle_state->term2.exp_inv * 2))) {
+                        if ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term2.exp_inv) || (cos2w_exp_down == (nle_state->term2.exp_inv * 2))) {
+                        multiplier=nle_state->term2.coefficient * term2_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term2.exp_inv)];
+                          if (interesting(phase1_filter, max_int, filter_int, multiplier)) {
+                            nle_state->terms_matched[1]=nle_state->term2.exp_inv;
+                            match->exp_inv=nle_state->term2.exp_inv;
+                            match->smrfactor_mass=mass_ratio_id;
+                            match->infactor_rational_up=infactors->infactor_rational_up;
+                            match->infactor_rational_down=infactors->infactor_rational_down;
+                            match->infactor_2_exp_up=infactors->infactor_2_exp_up;
+                            match->infactor_2_exp_down=infactors->infactor_2_exp_down;
+                            match->infactor_alpha_exp_up=infactors->infactor_alpha_exp_up;
+                            match->infactor_alpha_exp_down=infactors->infactor_alpha_exp_down;
+                            match->infactor_pi_exp_up=infactors->infactor_pi_exp_up;
+                            match->infactor_pi_exp_down=infactors->infactor_pi_exp_down;
+                            match->infactor_nss=infactors->infactor_nss;
+                            match->infactor_nbv=infactors->infactor_nbv;
+                            match->infactor_user_exp_up=infactors->infactor_user_exp_up;
+                            match->infactor_user_exp_down=infactors->infactor_user_exp_down;
+                            match->outfactor_rational_up=outfactors->outfactor_rational_up;
+                            match->outfactor_rational_down=outfactors->outfactor_rational_down;
+                            match->outfactor_2_exp_up=outfactors->outfactor_2_exp_up;
+                            match->outfactor_2_exp_down=outfactors->outfactor_2_exp_down;
+                            match->outfactor_alpha_exp_up=outfactors->outfactor_alpha_exp_up;
+                            match->outfactor_alpha_exp_down=outfactors->outfactor_alpha_exp_down;
+                            match->outfactor_pi_exp_up=outfactors->outfactor_pi_exp_up;
+                            match->outfactor_pi_exp_down=outfactors->outfactor_pi_exp_down;
+                            match->outfactor_sin2w_exp_up=sin2w_exp_up;
+                            match->outfactor_sin2w_exp_down=sin2w_exp_down;
+                            match->outfactor_cos2w_exp_up=cos2w_exp_up;
+                            match->outfactor_cos2w_exp_down=cos2w_exp_down;
+                            match->outfactor_user_exp_up=outfactors->outfactor_user_exp_up;
+                            match->outfactor_user_exp_down=outfactors->outfactor_user_exp_down;
+                            match->static_multiplier=outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term2.exp_inv)]; // excludes sin2w and cos2w that have uncertainty
+                            match->match=multiplier;
+                            match->match_complexity=outfactors->outfactor_complexity\
+                                  + infactors->infactor_complexity\
+                                  + (abs(sin2w_exp_up) + (sin2w_exp_down-1))\
+                                  + (abs(cos2w_exp_up) + (cos2w_exp_down-1));
+                            initUses(&match->match_uses);
+                            addUses(&match->match_uses, &outfactors->outfactor_uses);
+                            addUses(&match->match_uses, &infactors->infactor_uses);
+                            if (mass_ratio_id == 0) {
+                              match->match_uses.G=1;
+                            } else if (mass_ratio_id == 1) {
+                              match->match_uses.v=1;
+                            } else if (mass_ratio_id == 2) {
+                              match->match_uses.mz=1;
+                            } else if (mass_ratio_id == 3) {
+                              match->match_uses.mw=1;
+                            } else if (mass_ratio_id == 4) {
+                              match->match_uses.mh0=1;
+                            } else if (mass_ratio_id == 5) {
+                              match->match_uses.m_user=1;
+                            }
+                            if ((sin2w_exp_up != 0) || (cos2w_exp_up != 0)) {
+                              match->match_uses.sin2w=1;
+                            }
+                            nle_state->phase1_matches_count++;
+                            match++;
+                          }  // if interesting term2
+                        } // sanity check c2w term2
+                      } // sanity check s2w term2
+
+                      // test multiplier against term3 coefficient
+                      if ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term3.exp_inv) || (sin2w_exp_down == (nle_state->term3.exp_inv * 2))) {
+                        if ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term3.exp_inv) || (cos2w_exp_down == (nle_state->term3.exp_inv * 2))) {
+                        multiplier=nle_state->term3.coefficient * term3_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term3.exp_inv)];
+                          if (interesting(phase1_filter, max_int, filter_int, multiplier)) {
+                            nle_state->terms_matched[2]=nle_state->term3.exp_inv;
+                            match->exp_inv=nle_state->term3.exp_inv;
+                            match->smrfactor_mass=mass_ratio_id;
+                            match->infactor_rational_up=infactors->infactor_rational_up;
+                            match->infactor_rational_down=infactors->infactor_rational_down;
+                            match->infactor_2_exp_up=infactors->infactor_2_exp_up;
+                            match->infactor_2_exp_down=infactors->infactor_2_exp_down;
+                            match->infactor_alpha_exp_up=infactors->infactor_alpha_exp_up;
+                            match->infactor_alpha_exp_down=infactors->infactor_alpha_exp_down;
+                            match->infactor_pi_exp_up=infactors->infactor_pi_exp_up;
+                            match->infactor_pi_exp_down=infactors->infactor_pi_exp_down;
+                            match->infactor_nss=infactors->infactor_nss;
+                            match->infactor_nbv=infactors->infactor_nbv;
+                            match->infactor_user_exp_up=infactors->infactor_user_exp_up;
+                            match->infactor_user_exp_down=infactors->infactor_user_exp_down;
+                            match->outfactor_rational_up=outfactors->outfactor_rational_up;
+                            match->outfactor_rational_down=outfactors->outfactor_rational_down;
+                            match->outfactor_2_exp_up=outfactors->outfactor_2_exp_up;
+                            match->outfactor_2_exp_down=outfactors->outfactor_2_exp_down;
+                            match->outfactor_alpha_exp_up=outfactors->outfactor_alpha_exp_up;
+                            match->outfactor_alpha_exp_down=outfactors->outfactor_alpha_exp_down;
+                            match->outfactor_pi_exp_up=outfactors->outfactor_pi_exp_up;
+                            match->outfactor_pi_exp_down=outfactors->outfactor_pi_exp_down;
+                            match->outfactor_sin2w_exp_up=sin2w_exp_up;
+                            match->outfactor_sin2w_exp_down=sin2w_exp_down;
+                            match->outfactor_cos2w_exp_up=cos2w_exp_up;
+                            match->outfactor_cos2w_exp_down=cos2w_exp_down;
+                            match->outfactor_user_exp_up=outfactors->outfactor_user_exp_up;
+                            match->outfactor_user_exp_down=outfactors->outfactor_user_exp_down;
+                            match->static_multiplier=outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term3.exp_inv)]; // excludes sin2w and cos2w that have uncertainty
+                            match->match=multiplier;
+                            match->match_complexity=outfactors->outfactor_complexity\
+                                  + infactors->infactor_complexity\
+                                  + (abs(sin2w_exp_up) + (sin2w_exp_down-1))\
+                                  + (abs(cos2w_exp_up) + (cos2w_exp_down-1));
+                            initUses(&match->match_uses);
+                            addUses(&match->match_uses, &outfactors->outfactor_uses);
+                            addUses(&match->match_uses, &infactors->infactor_uses);
+                            if (mass_ratio_id == 0) {
+                              match->match_uses.G=1;
+                            } else if (mass_ratio_id == 1) {
+                              match->match_uses.v=1;
+                            } else if (mass_ratio_id == 2) {
+                              match->match_uses.mz=1;
+                            } else if (mass_ratio_id == 3) {
+                              match->match_uses.mw=1;
+                            } else if (mass_ratio_id == 4) {
+                              match->match_uses.mh0=1;
+                            } else if (mass_ratio_id == 5) {
+                              match->match_uses.m_user=1;
+                            }
+                            if ((sin2w_exp_up != 0) || (cos2w_exp_up != 0)) {
+                              match->match_uses.sin2w=1;
+                            }
+                            nle_state->phase1_matches_count++;
+                            match++;
+                          }  // if interesting term3
+                        } // sanity check c2w term3
+                      } // sanity check s2w term3
+
+                      infactors++;
+                    } // for infactor
+                    outfactors++;
+                  } // for outfactor
+                } // gcd outfactor_cos2w
+              } // cos2w_exp_down
+            } // cos2w_exp_up
+          } // gcd outfactor_sin2w
+        } // sin2w_exp_down
+      } // sin2w_exp_up
+    } // end if mass_ratio_enabled
+  } // for mass_ratio_id
+  if (nle_config->status_enable ==1) {
+    printf(".\n");
+  }
 }

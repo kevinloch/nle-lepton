@@ -1,10 +1,12 @@
 1. cd src
 
-2. Edit nle-lepton.h to customize compile time options and features and url's
-   Optionally edit reference values and uncertainty ranges in reference.c
+2. Compile with 'make'
 
-3. Compile with 'make'
+3. Manually copy the 'nle-lepton' executable to the directory you wish to run it from (thre is no 'make install' support yet)
 
-4. run ./nle-lepton without any args to display usage.  See readme.txt for additional info about output format
+4. Copy 'nle-lepton.cfg' a destination directory of your choice and edit the options in this file
 
-5. Edit scripts for file locations/urls before using them
+5. run 'nle-lepton', or 'nle-lepton -c filename' if 'nle-lepton.cfg' is not in your current directory or has a different name
+   See README.txt for additional info about command line optinos and output format
+
+6. Edit scripts for file locations/urls before trying to use them

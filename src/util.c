@@ -2,17 +2,30 @@
 #include <math.h>
 #include "nle-lepton.h"
 
-void initUses(input_use *uses) {
+void initUses(nle_input_use_t *uses) {
   uses->alpha_em=0;
+  uses->float_alpha_em=0;
   uses->v=0;
+  uses->float_v=0;
   uses->G=0;
+  uses->float_G=0;
   uses->mz=0;
+  uses->float_mz=0;
   uses->mw=0;
+  uses->float_mw=0;
   uses->mh0=0;
+  uses->float_mh0=0;
   uses->sin2w=0;
+  uses->float_sin2w=0;
+  uses->m_user=0;
+  uses->float_muser=0;
+  uses->mw_mz_mode=0;
+  uses->float_sm1=0;
+  uses->float_sm2=0;
+  uses->float_sm3=0;
 }
 
-void addUses(input_use *dest, input_use *src) {
+void addUses(nle_input_use_t *dest, nle_input_use_t *src) {
     dest->alpha_em= dest->alpha_em || src->alpha_em;
     dest->v=               dest->v || src->v;
     dest->G=               dest->G || src->G;
@@ -20,9 +33,10 @@ void addUses(input_use *dest, input_use *src) {
     dest->mw=             dest->mw || src->mw;
     dest->mh0=           dest->mh0 || src->mh0;
     dest->sin2w=       dest->sin2w || src->sin2w;
+    dest->m_user=     dest->m_user || src->m_user;
 }
 
-void printUses(input_use *uses) {
+void printUses(nle_input_use_t *uses) {
   printf("debug, uses:\n");
   printf("debug, ------------------------------\n");
   printf("debug, alpha_em: %d\n", uses->alpha_em);
@@ -32,6 +46,7 @@ void printUses(input_use *uses) {
   printf("debug, mw:       %d\n", uses->mw);
   printf("debug, mh0:      %d\n", uses->mh0);
   printf("debug, sin2w:    %d\n", uses->sin2w);
+  printf("debug, m_user:   %d\n", uses->m_user);
   printf("debug, ------------------------------\n");
 }
 
@@ -59,12 +74,6 @@ unsigned int gcd(unsigned int u, unsigned int v)
     if (v == 0)
         return u;
 
-/*
-    if ((v == 5) || (v == 7) || (v == 9) || (v == 10) || (v == 11)) {
-        return -1;
-    }
-*/
-
     // look for factors of 2
     if (~u & 1) // u is even
     {
@@ -84,68 +93,30 @@ unsigned int gcd(unsigned int u, unsigned int v)
     return gcd((v - u) >> 1, u);
 }
 
-// from https://en.wikipedia.org/wiki/Binary_GCD_algorithm
-unsigned int gcd2(unsigned int u, unsigned int v)
-{
-    // simple cases (termination)
-    if (u == v)
-        return u;
+void checkSymmetry(int *symmetry, int term1, int term2, int term3) {
 
-    if (u == 0)
-        return v-1;
-
-    if (v == 0)
-        return u;
-
-/*
-    if ((v == 5) || (v == 7) || (v == 9) || (v == 10) || (v == 11)) {
-        return -1;
-    }
-*/
-
-    // look for factors of 2
-    if (~u & 1) // u is even
-    {
-        if (v & 1) // v is odd
-            return gcd(u >> 1, v);
-        else // both u and v are even
-            return gcd(u >> 1, v >> 1) << 1;
-    }
-
-    if (~v & 1) // u is odd, v is even
-        return gcd(u, v >> 1);
-
-    // reduce larger argument
-    if (u > v)
-        return gcd((u - v) >> 1, v);
-
-    return gcd((v - u) >> 1, u);
-}
-
-void checkSymmetry(int *symmetry, int left, int middle, int right) {
-
-  if (left == middle) {
+  if (term1 == term2) {
     *symmetry+=2;
   }
-  if (middle == right) {
+  if (term2 == term3) {
     *symmetry+=2;
   }
-  if (left == right) {
+  if (term1 == term3) {
     *symmetry+=2;
   }
-  if (left == -middle) {
+  if (term1 == -term2) {
     *symmetry+=1;
   }
-  if (middle == -right) {
+  if (term2 == -term3) {
     *symmetry+=1;
   }
-  if (left == -right) {
+  if (term1 == -term3) {
     *symmetry+=1;
   }
 }
-int interesting(int range, double inld) {
-  double rangelow;
-  double rangehigh;
+int interesting(int range, int max_int, int filter_int, double inld) {
+  double rangelow=0.9;
+  double rangehigh=1.1;
   double testld;
   int testint;
 
@@ -177,32 +148,34 @@ int interesting(int range, double inld) {
   }
 
   // test if too big or small
-  if ((inld < 0.620) || (inld > 16.1)) {  // 27=0.037 / 64=0.0156 // 9=0.1 // 16=.0620 // 32=0.0311
+  if ((inld < (1.0 / (max_int + 0.1))) || (inld > (max_int + 0.1))) {
     return(0);
   }
 
-  // test if int > 4 are not divisible by 2 or 3
-  testint=(int)(inld + 0.5);
-  if ((testint > 4) && ((testint % 2) != 0) && ((testint %3) != 0)) {
-    return(0);
+  if (filter_int == 1) {
+    // test if int > 4 are not divisible by 2 or 3
+    testint=(int)(inld + 0.498);
+    if ((testint > 4) && ((testint % 2) != 0) && ((testint %3) != 0)) {
+      return(0);
+    }
   }
 
   // test if close to int
   testld=fmodl(inld, 1.0); 
-  if ((testld >= rangelow) && (testld <=rangehigh)) {
+  if ((testld >= rangelow) && (testld <= rangehigh)) {
     return(1);
   }
 
-  if  (inld < 1.0) {
+  if  ((filter_int == 1) && (inld < 1.0)) {
     //  test if 1/int > 4 are divisible by 2 or 3
-    testint=(int)((1.0 / inld) + 0.5);
+    testint=(int)((1.0 / inld) + 0.498);
     if ((testint > 4) && ((testint % 2) != 0) && ((testint %3) != 0)) {
       return(0);
     }
 
     // test if small number matches 1/int
     testld=fmodl((1.0 / inld), 1.0);
-    if ((testld >= rangelow) && (testld <=rangehigh)) {
+    if ((testld >= rangelow) && (testld <= rangehigh)) {
       return(1);
     }
   }

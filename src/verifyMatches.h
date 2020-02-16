@@ -1,6 +1,6 @@
 #ifndef VERIFY_MATCHES_H
 #define VERIFY_MATCHES_H
 
-int verifyMatches(matches *matchstart, int *nummatches, char *exponents, int leftinvexp, int middleinvexp, int rightinvexp, int random_input_count, int minsymmetry, int maxcomplexity);
+void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state);
 
 #endif // VERIFY_MATCHES_H

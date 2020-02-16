@@ -3,62 +3,80 @@
 
 void printUsage() {
 
+printf("nle-lepton version %s\n", NLE_VERSION);
 printf("\n\
-nle-lepton version %s\n", NLE_VERSION);
-printf("\n\
-usage: nle-lepton <seed> <exponentlimit> <phase1filter> <minsymmetry> <maxcomplexity>\n\
+NAME\n\
+     nle-lepton -- Find polynomial-like non-linear equations that solve for the three charged lepton masses, or any three solution masses\n\
 \n\
- example: nle-lepton 0 12 5 70 65 (no external seed, exponents from -1/12 to +1/12, phase1 filter of 1x10^-5,\n\
-                             minimum phase 2 symmetry of 70, maximum phase 2 complexity of 65. (recommended values).\n\
+SYNOPSIS\n\
+     nle-lepton [-c filename] [-h] [-s seed]\n\
+ \n\
+OPTIONS:\n\
+     -c filename\n\
+          Set configuration file name (default: nle-lepton.cfg)\n\
 \n\
- example: nle-lepton 1000000 26 6 30 150 (with an external seed, exponents from -1/26 to +1/26, phase1 fitler of 1x10^-6,\n\
-                                       minimum phase 2 symmetry of 30, maximum phase 2 complexity of 150).\n\
+     -h\n\
+          Show help\n\
 \n\
- This program searches for polynomial-like non-linear equations that generate the observed charged lepton masses from simple coefficients. These three-term\n\
- (plus constant offset) formulas include rational exponents between -1 and 1 and are designed to give three positive real roots representing the charged\n\
- lepton masses. This is unlike conventional polynomials with integer exponents that have positive and negative roots and would require twice as many\n\
- non-constant terms.  Another interesting effect of this approach is that the charged lepton mass spectrum can be replicated with relatively small coefficients\n\
- on each term, often in the range of 0.1 to 10.  With traditional polynomials some coefficients would be quite large and vary dramatically between terms.\n\
- To ensure each term is dimensionless, the charged lepton masses are combined with a reference mass inside each term as a mass ratio.  The reference masses\n\
- currently supported are the Planck mass \"mp\", Higgs vacuum expectation value \"v\", Z boson mass \"mz\", W boson mass \"mw\", and Higgs boson mass \"mH0\".\n\
+     -s seed\n\
+          Set external random seed.   This is combined with internal clock-based seeds to initialize srand48();\n\
 \n\
- Processing is broken into two phases.   Phase 1 starts with the known charged lepton masses, solves a proposed formula for the three coefficients and searches\n\
- for interesting multipliers (factors) for those coefficients. Phase 2 reverses the process by converting the coefficient factors from phase 1 to exact\n\
- formulas and solving them for the charged lepton masses and other outputs.  These results are then compared to their experimental values and uncertainties.\n\
+DESCRIPTON\n\
+ nle-lepton is a user-configurable tool to search for polynomial-like non-linear equations (NLE's) that generate the three charged lepton masses or any three\n\
+ \"solution masses\" (sm1, sm2, sm3) specified by the user.  The NLE's are designed to have three positive real roots corresponding to the three solution masses.\n\
+ This concept might explain why there are exaclty three generations of matter and an empirical formula might provide insight into the fermion mass generation\n\
+ process.  The solution masses and their uncertainties are user-configurable so they can be set to rest masses, running-masses or any desired values of\n\
+ interest.  As an open source project the source code can be modified to add additional equation types or coefficient factors to be tested. nle-lepton uses a\n\
+ configuration file (by default nle-lepton.cfg).   Edit that file to change search parameters and experimental reference values.\n\
 \n\
- Phase 1:\n\
-   A random combination of three exponents are selected and put in the correct order to generate three real positive roots.  The three charged lepton masses\n\
-   are used as inputs with the Tau mass being varied randomly within it's experimental uncertainty range each time phase 1 is run. The electron\n\
-   mass is temporarily used as the reference mass in each term.\n\
+ nle-lepton currently supports \"3-term\" mode, which uses three mass terms plus a constant term of -1, with a different exponent on each mass term. Exponents are\n\
+ currently limited to fractional values between -1 and 1, excluding zero.  The use of fractional exponents allows the charged lepton mass spectrum to be\n\
+ replicated with relatively small coefficients on each term, often in the range of 0.1 to 10.  With traditional integer exponent polynomials some coefficients\n\
+ would be much larger or smaller and vary dramatically between terms. To ensure each term is dimensionless, the solution masses are combined with a reference\n\
+ mass in  side each term as a \"solution mass ratio\".  The reference masses currently supported are the Planck mass \"mp\", Higgs vacuum expectation value \"v\", Z\n\
+ boson mass \"mz\", W  boson mass \"mw\", and Higgs boson mass \"mH0\".  \n\
 \n\
-   This formula is then solved for the coefficients of each of the three exponent terms (left, middle, right).  Each coefficient is then multiplied by a\n\
-   series of test multipliers (including the actual reference masses) to see if the result is close enough to a relatively small integer rational number. The\n\
-   phase 1 limit determines which results are close enough to pass to phase 2.\n\
+ Since fractional exponent terms might represent a relative length scale derived from a higher dimensional manifold, n-ball volume (nbv) and n-sphere surface\n\
+ area (nss) geometric constant factors are included.  For example the geometric factor for the common 3-ball volume nbv[3]=4pi/3.  This appears in the formula\n\
+ for the radius r of a 3-ball with volume V as r=(V/nbv[3])^(1/3).\n\
 \n\
- Phase 2:\n\
-   Formulas are constructed with the interesting ingredients found in phase 1 and then solved for the three charged lepton masses and other variables. In\n\
-   phase 2 each exponent term is allowed to have a different mass ratio, as long as the product of the mass ratio and factors generates the correct total\n\
-   value for that term.\n\
+ Processing is broken into two phases.\n\
 \n\
-   Before solving each proposed formula, all of the experimentally known variables are ranked by relative standard uncertainty and the three with the highest\n\
-   uncertainty are used as outputs (solved for) with the rest used as inputs.  Only results with all outputs within experimental uncertainty are shown unless\n\
-   the ALWAYS_SHOW_RESULTS compile time directive is set in nle-lepton.h.\n\
+ Phase 1 - solve for coefficients using the known masses and then attempt to factor the coefficients\n\
+   Randomly selected exponents put in the correct order with sign changes between terms to generate three real positive roots.  The three solution masses are\n\
+   used as inputs and temporarily paired with reference mass \"v\" as a dimensionless solution mass ratio.  Inputs with experimental uncertainty are selected\n\
+   randomly within their uncertainty range each time phase 1 is run.  \n\
 \n\
-   Symmetry and complexity scores are assigned to each result based on the numerical values in the multiplier, with higher symmetry and lower complexity\n\
-   generally meaning a simpler formula. Minimum symmetry and maximum complexity filters are provided to restrict the formulas allowed to be solved.\n\
-   This can greatly speed up finding the most interesting formulas as cpu time is not wasted solving the much more common higher complexity formulas.\n\
+   The formula is solved for the coefficients of each mass term.  These coefficients are then multiplied by a series of possible factor combinations and the\n\
+   other reference masses.  Interesting matches to these factors as defined by 'phase1_int_match_max' and 'phase1_filter' in nle-lepton.cfg are saved for\n\
+   processing in phase 2.\n\
 \n\
- seed            External integer used as part of a seed for srand48() along with second and microsecond clock data.\n\
-                 This can help separate threads started at the same time on the same machine have different seeds.\n\
-                 Recommended value is <cpu_index>*1000000 where 1 <= cpu_index <= 999.\n\
+   Up to this point factoring of the coefficients has been done on each term independently of the others.  When these terms are combined into complete formulas\n\
+   in phase 2 each unique combination of potential factors for each term needs to be tried.  This often results in thousands of formulas to be processed.  To\n\
+   avoid processing uninteresting formulas, symmetry and complexity scores are assigned to each combination of terms with higher symmetry and lower complexity\n\
+   generally meaning a simpler and more interesting formula. The configuration options 'phase2_symmetry_min' and 'phase2_complexity_max' are provided to\n\
+   filter the formulas allowed to be passed to phase 2.\n\
 \n\
- exponent limit  Maximum inverse exponent (3 allows for exponents of -1, +1, -1/2, +1/2, -1/3, +1/3).\n\
+ Phase 2 - validate proposed formulas against experimental uncertainties of outputs:\n\
+   In phase 2 processing is reversed - formulas are constructed with the factors found in phase 1 and then solved for the three solution masses and/or other\n\
+   outputs.  Before solving each proposed formula, the experimentally known variables used in the formula are ranked by relative standard uncertainty and the\n\
+   three (in 3-term mode) with the highest uncertainty are used as outputs (solved for) with the rest used as inputs.  This allows for the lowest possible\n\
+   relative uncertainty in the outputs.  Only results with all outputs within 'phase2_results_window' (default=1.1) of experimental uncertainty are shown unless\n\
+   'phase2_results_always' is set to 'yes'.\n\
 \n\
- phase1 limit    Threshold for selecting (multiplier * coefficient) for further processing if the result is\n\
-                 this close to an integer or simple rational number. (threshold = 1x10^-inlimit)\n\
+ This two phase approach allows for rapid scanning of possible coefficient factors without having to solve a NLE each time a different coefficient factor is\n\
+ tried.  This allows for billions of coefficient factors and trillions of coefficient, exponent and mass ratio  combinations to be tested as efficiently as\n\
+ possible.\n\
 \n\
- minsymmetry:    Minimum multiplier symmetry allowed to be processed in phase 2.\n\
+ Each phase1 + coefficient scan + phase2 validation is stateless: exponents and variable inputs are randomly selected and can operate indepentenly of and \n\
+ parallel to other threads. Validated results from phase 2 can optionally be uploaded to a remote server as soon as they are found.  This allows for massive \n\
+ scaling using inexpensive \"spot\" instances on popular cloud services.  Sample cloud remote control scripts are provided in scripts/aws in the source tree.\n\
 \n\
- maxcomplexity:  Maximum multiplier complexity allowed to be processed in phase 2.\n\
+CAUTION\n\
+ Ultimately the results from nle-lepton need to be reviewed by a physicist to determine any significance or usefulness (if any) of any result.  It is possible\n\
+ that NLE's are the wrong approach to this problem or that the right ingredients (formula structure, factors) are not included yet. The author fully expects\n\
+ that further development will be required before a useful formula offering clues to the underlying physics of fermion mass generation is found (if ever).\n\
+ Regardless, nle-lepton  has been designed to be a flexible and extendable platform for conducting such searches.  See ToDo.txt in the source tree for planned\n\
+ features.\n\
 ");
 }

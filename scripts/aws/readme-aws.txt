@@ -4,9 +4,10 @@
 ### Use responsibly and start with small instances/vcpus until you understand how it works
 ### and how much it will cost you.  Always manually set a termination date a few days in the future
 ### in case you forget they are running.   The default is one year!  Set up AWS billing alerts.
+### Keep in mind this entire exercise is likely a big waste of time and money!
 ###
 
-These files will help you run the lepton formula search program on as many AWS instances as you want.
+These files will help you run nle-lepton on as many AWS instances as you want.
 The program is stateless and uses random startup seeding to be extremely parallelizable.  All results are
 immediately uploaded to the server you configure in the source code so you can use cost-effective spot
 instances without risk of data loss.
@@ -25,13 +26,13 @@ Instructions:
 
 5. Edit user-data.txt and start.sh with the desired url(s).
 
-6. Edit nle-lepton.cfg with the desired arguments and put on your webserver.
+6. Edit nle-lepton.cfg with the desired options and put on your webserver.
 
 7. Create a spot fleet request in the cheapest availability zone (currently US-EAST2 Ohio).   You can use a fixed instance type or specify number of vcpus.
    The default aws Linux AMI is fine.
    Make sure all of the instance types you let it choose from are the same architecture as what you compiled on (5* for example).   5c, 5d, 5n will all work
-   with the same executable.  Copy and paste the contents of user-data.txt to the 'user data' field so it will start everything automatically.  Select 'maintain capacity'
-   with 'terminate instances' option.   Set other options like security groups, expiration time as desired.
+   with the same executable.  Copy and paste the *entire* contents of user-data.txt, including all lines that start with '#'  to the 'user data' field so it will start 
+   everything automatically.  Select 'maintain capacity'  with 'terminate instances' option.   Set other options like security groups, expiration time as desired.
 
 8. Once started the instances should grab start.sh and then grab nle-lepton.cfg and the executable from your webserver and start as many threads as there are vcpus on the server.
 
