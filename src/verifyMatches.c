@@ -18,7 +18,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   struct timespec start_time;
   struct timespec end_time;
   double elapsed_time;
-  double precision;
+  double precision=1.0E99;
   int tmpmatchup;
   int tmpmatchdown;
   int tmpmatchcomplexity;
@@ -36,7 +36,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   term1_match=nle_state->term1.matches_start;
   nle_state->term1.matches_count=0;
   for (i=0; i < nle_state->phase1_matches_count; i++) {
-    if (phase1_match->exp_inv == nle_state->term1.exp_inv) {
+    if (phase1_match->term_id == 1) {
      // determine integer/rational match value
       if (phase1_match->match > 1.0) {
        tmpmatchup=(int)(phase1_match->match + 0.5);
@@ -54,6 +54,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         if (tmphash == temp_match->match_hash) {
           if (tmpmatchcomplexity < temp_match->match_complexity) {
             // replace
+            temp_match->term_id=1;
             temp_match->exp_inv=phase1_match->exp_inv;
             temp_match->smrfactor_mass=phase1_match->smrfactor_mass;
             temp_match->infactor_rational_up=phase1_match->infactor_rational_up;
@@ -98,6 +99,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
       } // end for j
       if (dupe == 0) {
         // insert
+        term1_match->term_id=1;
         term1_match->exp_inv=phase1_match->exp_inv;
         term1_match->smrfactor_mass=phase1_match->smrfactor_mass;
         term1_match->infactor_rational_up=phase1_match->infactor_rational_up;
@@ -146,7 +148,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   term2_match=nle_state->term2.matches_start;
   nle_state->term2.matches_count=0;
   for (i=0; i < nle_state->phase1_matches_count; i++) {
-    if (phase1_match->exp_inv == nle_state->term2.exp_inv) {
+    if (phase1_match->term_id == 2) {
      // determine integer/rational match value
       if (phase1_match->match > 1.0) {
        tmpmatchup=(int)(phase1_match->match + 0.5);
@@ -164,6 +166,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         if (tmphash == temp_match->match_hash) {
           if (tmpmatchcomplexity < temp_match->match_complexity) {
             // replace
+            temp_match->term_id=2;
             temp_match->exp_inv=phase1_match->exp_inv;
             temp_match->smrfactor_mass=phase1_match->smrfactor_mass;
             temp_match->infactor_rational_up=phase1_match->infactor_rational_up;
@@ -208,6 +211,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
       } // end for j
       if (dupe ==0) {
         // insert
+        term2_match->term_id=2;
         term2_match->exp_inv=phase1_match->exp_inv;
         term2_match->smrfactor_mass=phase1_match->smrfactor_mass;
         term2_match->infactor_rational_up=phase1_match->infactor_rational_up;
@@ -256,7 +260,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   term3_match=nle_state->term3.matches_start;
   nle_state->term3.matches_count=0;
   for (i=0; i < nle_state->phase1_matches_count; i++) {
-    if (phase1_match->exp_inv == nle_state->term3.exp_inv) {
+    if (phase1_match->term_id == 3) {
      // determine integer/rational match value
       if (phase1_match->match > 1.0) {
        tmpmatchup=(int)(phase1_match->match + 0.5);
@@ -274,6 +278,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         if (tmphash == temp_match->match_hash) {
           if (tmpmatchcomplexity < temp_match->match_complexity) {
             // replace
+            temp_match->term_id=3;
             temp_match->exp_inv=phase1_match->exp_inv;
             temp_match->smrfactor_mass=phase1_match->smrfactor_mass;
             temp_match->infactor_rational_up=phase1_match->infactor_rational_up;
@@ -318,6 +323,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
       } // end for j
       if (dupe ==0) {
         // insert
+        term3_match->term_id=3;
         term3_match->exp_inv=phase1_match->exp_inv;
         term3_match->smrfactor_mass=phase1_match->smrfactor_mass;
         term3_match->infactor_rational_up=phase1_match->infactor_rational_up;
@@ -385,26 +391,44 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
 
         // calculate symmetry score.   This measures how many factors are identical or inverse identical between the dfferent terms
         symmetry=0;
-        checkSymmetry(&symmetry, (term1_match->match_up * term1_match->outfactor_rational_down), (term2_match->match_up * term2_match->outfactor_rational_down), (term3_match->match_up * term3_match->outfactor_rational_down));
-        checkSymmetry(&symmetry, (term1_match->match_down * term1_match->outfactor_rational_up), (term2_match->match_down * term2_match->outfactor_rational_up), (term3_match->match_down * term3_match->outfactor_rational_up));
-        checkSymmetry(&symmetry, term1_match->outfactor_2_exp_up, term2_match->outfactor_2_exp_up, term3_match->outfactor_2_exp_up);
-        checkSymmetry(&symmetry, term1_match->outfactor_pi_exp_up, term2_match->outfactor_pi_exp_up, term3_match->outfactor_pi_exp_up);
-        checkSymmetry(&symmetry, (term1_match->outfactor_alpha_exp_up * term1_match->outfactor_alpha_exp_down), (term2_match->outfactor_alpha_exp_up * term2_match->outfactor_alpha_exp_down), (term3_match->outfactor_alpha_exp_up * term3_match->outfactor_alpha_exp_down));
-        checkSymmetry(&symmetry, (term1_match->outfactor_sin2w_exp_up * term1_match->outfactor_sin2w_exp_down), (term2_match->outfactor_sin2w_exp_up * term2_match->outfactor_sin2w_exp_down), (term3_match->outfactor_sin2w_exp_up * term3_match->outfactor_sin2w_exp_down));
-        checkSymmetry(&symmetry, (term1_match->outfactor_cos2w_exp_up * term1_match->outfactor_cos2w_exp_down), (term2_match->outfactor_cos2w_exp_up * term2_match->outfactor_cos2w_exp_down), (term3_match->outfactor_cos2w_exp_up * term3_match->outfactor_cos2w_exp_down));
-        checkSymmetry(&symmetry, term1_match->infactor_rational_up, term2_match->infactor_rational_up, term3_match->infactor_rational_up);
-        checkSymmetry(&symmetry, term1_match->infactor_rational_down, term2_match->infactor_rational_down, term3_match->infactor_rational_down);
-        checkSymmetry(&symmetry, term1_match->infactor_nbv, term2_match->infactor_nbv, term3_match->infactor_nbv);
-        checkSymmetry(&symmetry, term1_match->infactor_nss, term2_match->infactor_nss, term3_match->infactor_nss);
-        checkSymmetry(&symmetry, term1_match->infactor_2_exp_up, term2_match->infactor_2_exp_up, term3_match->infactor_2_exp_up);
-        checkSymmetry(&symmetry, term1_match->infactor_pi_exp_up, term2_match->infactor_pi_exp_up, term3_match->infactor_pi_exp_up);
-        checkSymmetry(&symmetry, (term1_match->infactor_alpha_exp_up * term1_match->infactor_alpha_exp_down), (term2_match->infactor_alpha_exp_up * term2_match->infactor_alpha_exp_down), (term3_match->infactor_alpha_exp_up * term3_match->infactor_alpha_exp_down));
+        if (nle_config->nle_mode == 2) {
+          checkSymmetry2(&symmetry, (term1_match->match_up * term1_match->outfactor_rational_down), (term2_match->match_up * term2_match->outfactor_rational_down));
+          checkSymmetry2(&symmetry, (term1_match->match_down * term1_match->outfactor_rational_up), (term2_match->match_down * term2_match->outfactor_rational_up));
+          checkSymmetry2(&symmetry, term1_match->outfactor_2_exp_up, term2_match->outfactor_2_exp_up);
+          checkSymmetry2(&symmetry, term1_match->outfactor_pi_exp_up, term2_match->outfactor_pi_exp_up);
+          checkSymmetry2(&symmetry, (term1_match->outfactor_alpha_exp_up * term1_match->outfactor_alpha_exp_down), (term2_match->outfactor_alpha_exp_up * term2_match->outfactor_alpha_exp_down));
+          checkSymmetry2(&symmetry, (term1_match->outfactor_sin2w_exp_up * term1_match->outfactor_sin2w_exp_down), (term2_match->outfactor_sin2w_exp_up * term2_match->outfactor_sin2w_exp_down));
+          checkSymmetry2(&symmetry, (term1_match->outfactor_cos2w_exp_up * term1_match->outfactor_cos2w_exp_down), (term2_match->outfactor_cos2w_exp_up * term2_match->outfactor_cos2w_exp_down));
+          checkSymmetry2(&symmetry, term1_match->infactor_rational_up, term2_match->infactor_rational_up);
+          checkSymmetry2(&symmetry, term1_match->infactor_rational_down, term2_match->infactor_rational_down);
+          checkSymmetry2(&symmetry, term1_match->infactor_nbv, term2_match->infactor_nbv);
+          checkSymmetry2(&symmetry, term1_match->infactor_nss, term2_match->infactor_nss);
+          checkSymmetry2(&symmetry, term1_match->infactor_2_exp_up, term2_match->infactor_2_exp_up);
+          checkSymmetry2(&symmetry, term1_match->infactor_pi_exp_up, term2_match->infactor_pi_exp_up);
+          checkSymmetry2(&symmetry, (term1_match->infactor_alpha_exp_up * term1_match->infactor_alpha_exp_down), (term2_match->infactor_alpha_exp_up * term2_match->infactor_alpha_exp_down));
+        } else if (nle_config->nle_mode == 3) {
+          checkSymmetry3(&symmetry, (term1_match->match_up * term1_match->outfactor_rational_down), (term2_match->match_up * term2_match->outfactor_rational_down), (term3_match->match_up * term3_match->outfactor_rational_down));
+          checkSymmetry3(&symmetry, (term1_match->match_down * term1_match->outfactor_rational_up), (term2_match->match_down * term2_match->outfactor_rational_up), (term3_match->match_down * term3_match->outfactor_rational_up));
+          checkSymmetry3(&symmetry, term1_match->outfactor_2_exp_up, term2_match->outfactor_2_exp_up, term3_match->outfactor_2_exp_up);
+          checkSymmetry3(&symmetry, term1_match->outfactor_pi_exp_up, term2_match->outfactor_pi_exp_up, term3_match->outfactor_pi_exp_up);
+          checkSymmetry3(&symmetry, (term1_match->outfactor_alpha_exp_up * term1_match->outfactor_alpha_exp_down), (term2_match->outfactor_alpha_exp_up * term2_match->outfactor_alpha_exp_down), (term3_match->outfactor_alpha_exp_up * term3_match->outfactor_alpha_exp_down));
+          checkSymmetry3(&symmetry, (term1_match->outfactor_sin2w_exp_up * term1_match->outfactor_sin2w_exp_down), (term2_match->outfactor_sin2w_exp_up * term2_match->outfactor_sin2w_exp_down), (term3_match->outfactor_sin2w_exp_up * term3_match->outfactor_sin2w_exp_down));
+          checkSymmetry3(&symmetry, (term1_match->outfactor_cos2w_exp_up * term1_match->outfactor_cos2w_exp_down), (term2_match->outfactor_cos2w_exp_up * term2_match->outfactor_cos2w_exp_down), (term3_match->outfactor_cos2w_exp_up * term3_match->outfactor_cos2w_exp_down));
+          checkSymmetry3(&symmetry, term1_match->infactor_rational_up, term2_match->infactor_rational_up, term3_match->infactor_rational_up);
+          checkSymmetry3(&symmetry, term1_match->infactor_rational_down, term2_match->infactor_rational_down, term3_match->infactor_rational_down);
+          checkSymmetry3(&symmetry, term1_match->infactor_nbv, term2_match->infactor_nbv, term3_match->infactor_nbv);
+          checkSymmetry3(&symmetry, term1_match->infactor_nss, term2_match->infactor_nss, term3_match->infactor_nss);
+          checkSymmetry3(&symmetry, term1_match->infactor_2_exp_up, term2_match->infactor_2_exp_up, term3_match->infactor_2_exp_up);
+          checkSymmetry3(&symmetry, term1_match->infactor_pi_exp_up, term2_match->infactor_pi_exp_up, term3_match->infactor_pi_exp_up);
+          checkSymmetry3(&symmetry, (term1_match->infactor_alpha_exp_up * term1_match->infactor_alpha_exp_down), (term2_match->infactor_alpha_exp_up * term2_match->infactor_alpha_exp_down), (term3_match->infactor_alpha_exp_up * term3_match->infactor_alpha_exp_down));
+        }
         if ((symmetry >= nle_config->phase2_symmetry_min) && (complexity <= nle_config->phase2_complexity_max)) {
-         if ((nle_config->phase2_check_nbv_nss == 0) || ((term1_match->infactor_nbv == term2_match->infactor_nbv) && (term1_match->infactor_nbv == term3_match->infactor_nbv) && (term1_match->infactor_nss == term2_match->infactor_nss) && (term1_match->infactor_nss == term3_match-> infactor_nss))) { // consistency check
-           if ((nle_config->phase2_check_weak == 0) || ((term1_match->outfactor_sin2w_exp_up == term2_match->outfactor_sin2w_exp_up) && (term1_match->outfactor_sin2w_exp_up == term3_match->outfactor_sin2w_exp_up)\
-                                                     && (term1_match->outfactor_sin2w_exp_down == term2_match->outfactor_sin2w_exp_down) && (term1_match->outfactor_sin2w_exp_down == term3_match->outfactor_sin2w_exp_down)\
-                                                     && (term1_match->outfactor_cos2w_exp_up == term2_match->outfactor_cos2w_exp_up) && (term1_match->outfactor_cos2w_exp_up == term3_match->outfactor_cos2w_exp_up)\
-                                                     && (term1_match->outfactor_cos2w_exp_down == term2_match->outfactor_cos2w_exp_down) && (term1_match->outfactor_cos2w_exp_down == term3_match->outfactor_cos2w_exp_down))) {
+         if ((nle_config->phase2_check_nbv_nss == 0) || ((term1_match->infactor_nbv == term2_match->infactor_nbv) && ((nle_config->nle_mode == 2) || (term1_match->infactor_nbv == term3_match->infactor_nbv))\
+                                                      && (term1_match->infactor_nss == term2_match->infactor_nss) && ((nle_config->nle_mode == 2) || (term1_match->infactor_nss == term3_match->infactor_nss)))) { // consistency check
+           if ((nle_config->phase2_check_weak == 0) || ((term1_match->outfactor_sin2w_exp_up == term2_match->outfactor_sin2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_up == term3_match->outfactor_sin2w_exp_up))\
+                                                     && (term1_match->outfactor_sin2w_exp_down == term2_match->outfactor_sin2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_down == term3_match->outfactor_sin2w_exp_down))\
+                                                     && (term1_match->outfactor_cos2w_exp_up == term2_match->outfactor_cos2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_up == term3_match->outfactor_cos2w_exp_up))\
+                                                     && (term1_match->outfactor_cos2w_exp_down == term2_match->outfactor_cos2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_down == term3_match->outfactor_cos2w_exp_down)))) {
 
               initUses(&term3_uses);
               addUses(&term3_uses, &term3_match->match_uses);

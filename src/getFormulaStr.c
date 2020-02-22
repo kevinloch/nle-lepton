@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "nle-lepton.h"
 
-void getFormulaStr(char *formula_str, nle_phase1_match_t *current_match) {
+void getFormulaStr(char *formula_str, nle_phase1_match_t *current_match, int nle_mode) {
   // creates a complete text string representation of a single formula term
   int upout;
   int downout;
@@ -140,8 +140,14 @@ void getFormulaStr(char *formula_str, nle_phase1_match_t *current_match) {
     sprintf(massstr,       "    M/mp    ");
     sprintf(massstrinv,    "    mp/M    ");
   } else if (current_match->smrfactor_mass == 1) {
-    sprintf(massstr,       "    M/v     ");
-    sprintf(massstrinv,    "    v/M     ");
+    if ((nle_mode == 2) && (current_match->term_id == 3)) {
+      // for 2-term mixed mode, we use smrfactor_mass == 1 as placeholder for third term so we don't want it to show in equation str
+      sprintf(massstr,       "            ");
+      sprintf(massstrinv,    "            ");
+    } else {
+      sprintf(massstr,       "    M/v     ");
+      sprintf(massstrinv,    "    v/M     ");
+    }
   } else if (current_match->smrfactor_mass == 2) {
     sprintf(massstr,       "    M/mZ    ");
     sprintf(massstrinv,    "    mZ/M    ");

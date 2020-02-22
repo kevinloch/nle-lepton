@@ -93,7 +93,17 @@ unsigned int gcd(unsigned int u, unsigned int v)
     return gcd((v - u) >> 1, u);
 }
 
-void checkSymmetry(int *symmetry, int term1, int term2, int term3) {
+void checkSymmetry2(int *symmetry, int term1, int term2) {
+
+  if (term1 == term2) {
+    *symmetry+=2;
+  }
+  if (term1 == -term2) {
+    *symmetry+=1;
+  }
+}
+
+void checkSymmetry3(int *symmetry, int term1, int term2, int term3) {
 
   if (term1 == term2) {
     *symmetry+=2;
@@ -114,6 +124,7 @@ void checkSymmetry(int *symmetry, int term1, int term2, int term3) {
     *symmetry+=1;
   }
 }
+
 int interesting(int range, int max_int, int filter_int, double inld) {
   double rangelow=0.9;
   double rangehigh=1.1;

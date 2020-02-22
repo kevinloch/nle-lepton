@@ -166,57 +166,57 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                                  + abs(nbvupin)\
                                                  + abs(userupin) + (userdownin-1);
                                           for (i=1; i<= nle_config->exp_inv_max; i++) {
-                                            if (i==1) {
+                                            if (i == 1) {
                                               multiplier->infactor_multiplier[1]=infactor * pow(nbv[1], (float)nbvupin) * pow(nss[1], (float)nssupin);
-                                            } else if (i==2) {
+                                            } else if (i == 2) {
                                               multiplier->infactor_multiplier[2]=pow(infactor * pow(nbv[2], (float)nbvupin) * pow(nss[2], (float)nssupin), (1.0 / 2.0));
-                                            } else if (i==3) {
+                                            } else if (i == 3) {
                                               multiplier->infactor_multiplier[3]=pow(infactor * pow(nbv[3], (float)nbvupin) * pow(nss[3], (float)nssupin), (1.0 / 3.0));
-                                            } else if (i==4) {
+                                            } else if (i == 4) {
                                               multiplier->infactor_multiplier[4]=pow(infactor * pow(nbv[4], (float)nbvupin) * pow(nss[4], (float)nssupin), (1.0 / 4.0));
-                                            } else if (i==5) {
+                                            } else if (i == 5) {
                                               multiplier->infactor_multiplier[5]=pow(infactor * pow(nbv[5], (float)nbvupin) * pow(nss[5], (float)nssupin), (1.0 / 5.0));
-                                            } else if (i==6) {
+                                            } else if (i == 6) {
                                               multiplier->infactor_multiplier[6]=pow(infactor * pow(nbv[6], (float)nbvupin) * pow(nss[6], (float)nssupin), (1.0 / 6.0));
-                                            } else if (i==7) {
+                                            } else if (i == 7) {
                                               multiplier->infactor_multiplier[7]=pow(infactor * pow(nbv[7], (float)nbvupin) * pow(nss[7], (float)nssupin), (1.0 / 7.0));
-                                            } else if (i==8) {
+                                            } else if (i == 8) {
                                               multiplier->infactor_multiplier[8]=pow(infactor * pow(nbv[8], (float)nbvupin) * pow(nss[8], (float)nssupin), (1.0 / 8.0));
-                                            } else if (i==9) {
+                                            } else if (i == 9) {
                                               multiplier->infactor_multiplier[9]=pow(infactor * pow(nbv[9], (float)nbvupin) * pow(nss[9], (float)nssupin), (1.0 / 9.0));
-                                            } else if (i==10) {
+                                            } else if (i == 10) {
                                               multiplier->infactor_multiplier[10]=pow(infactor * pow(nbv[10], (float)nbvupin) * pow(nss[10], (float)nssupin), (1.0 / 10.0));
-                                            } else if (i==11) {
+                                            } else if (i == 11) {
                                               multiplier->infactor_multiplier[11]=pow(infactor * pow(nbv[11], (float)nbvupin) * pow(nss[11], (float)nssupin), (1.0 / 11.0));
-                                            } else if (i==12) {
+                                            } else if (i == 12) {
                                               multiplier->infactor_multiplier[12]=pow(infactor * pow(nbv[12], (float)nbvupin) * pow(nss[12], (float)nssupin), (1.0 / 12.0));
-                                            } else if (i==13) {
+                                            } else if (i == 13) {
                                               multiplier->infactor_multiplier[13]=pow(infactor * pow(nbv[13], (float)nbvupin) * pow(nss[13], (float)nssupin), (1.0 / 13.0));
-                                            } else if (i==14) {
+                                            } else if (i == 14) {
                                               multiplier->infactor_multiplier[14]=pow(infactor * pow(nbv[14], (float)nbvupin) * pow(nss[14], (float)nssupin), (1.0 / 14.0));
-                                            } else if (i==15) {
+                                            } else if (i == 15) {
                                               multiplier->infactor_multiplier[15]=pow(infactor * pow(nbv[15], (float)nbvupin) * pow(nss[15], (float)nssupin), (1.0 / 15.0));
-                                            } else if (i==16) {
+                                            } else if (i == 16) {
                                               multiplier->infactor_multiplier[16]=pow(infactor * pow(nbv[16], (float)nbvupin) * pow(nss[16], (float)nssupin), (1.0 / 16.0));
-                                            } else if (i==17) {
+                                            } else if (i == 17) {
                                               multiplier->infactor_multiplier[17]=pow(infactor * pow(nbv[17], (float)nbvupin) * pow(nss[17], (float)nssupin), (1.0 / 17.0));
-                                            } else if (i==18) {
+                                            } else if (i == 18) {
                                               multiplier->infactor_multiplier[18]=pow(infactor * pow(nbv[18], (float)nbvupin) * pow(nss[18], (float)nssupin), (1.0 / 18.0));
-                                            } else if (i==19) {
+                                            } else if (i == 19) {
                                               multiplier->infactor_multiplier[19]=pow(infactor * pow(nbv[19], (float)nbvupin) * pow(nss[19], (float)nssupin), (1.0 / 19.0));
-                                            } else if (i==20) {
+                                            } else if (i == 20) {
                                               multiplier->infactor_multiplier[20]=pow(infactor * pow(nbv[20], (float)nbvupin) * pow(nss[20], (float)nssupin), (1.0 / 20.0));
-                                            } else if (i==21) {
+                                            } else if (i == 21) {
                                               multiplier->infactor_multiplier[21]=pow(infactor * pow(nbv[21], (float)nbvupin) * pow(nss[21], (float)nssupin), (1.0 / 21.0));
-                                            } else if (i==22) {
+                                            } else if (i == 22) {
                                               multiplier->infactor_multiplier[22]=pow(infactor * pow(nbv[22], (float)nbvupin) * pow(nss[22], (float)nssupin), (1.0 / 22.0));
-                                            } else if (i==23) {
+                                            } else if (i == 23) {
                                               multiplier->infactor_multiplier[23]=pow(infactor * pow(nbv[23], (float)nbvupin) * pow(nss[23], (float)nssupin), (1.0 / 23.0));
-                                            } else if (i==24) {
+                                            } else if (i == 24) {
                                               multiplier->infactor_multiplier[24]=pow(infactor * pow(nbv[24], (float)nbvupin) * pow(nss[24], (float)nssupin), (1.0 / 24.0));
-                                            } else if (i==25) {
+                                            } else if (i == 25) {
                                               multiplier->infactor_multiplier[25]=pow(infactor * pow(nbv[25], (float)nbvupin) * pow(nss[25], (float)nssupin), (1.0 / 25.0));
-                                            } else if (i==26) {
+                                            } else if (i == 26) {
                                               multiplier->infactor_multiplier[26]=pow(infactor * pow(nbv[26], (float)nbvupin) * pow(nss[26], (float)nssupin), (1.0 / 26.0));
                                             }  // if i
 #ifdef DEBUG_INFACTOR

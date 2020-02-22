@@ -118,8 +118,8 @@ int main(int argc, char **argv) {
   }
 
   // check operating mode
-  if (nle_config.nle_mode != 3) {
-    printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  3 is the only supported mode in this version.\n", nle_config.nle_mode);
+  if ((nle_config.nle_mode != 3) && (nle_config.nle_mode != 2)) {
+    printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  2 and 3 are the only supported modes in this version.\n", nle_config.nle_mode);
     exit(1);
   }
 
@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
     solveNLEforCoefficients(&nle_config, &nle_state);
     if (nle_state.phase1_matches_count > 0) {
       coefficients_matched=0;
-      for (i=0; i<=2; i++) {
+      for (i=0; i <= 2; i++) {
         if (nle_state.terms_matched[i] != 0) {
           coefficients_matched++;
         }
@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
         }
       }
     } else {
-      if (nle_config.status_enable ==1) {
+      if (nle_config.status_enable == 1) {
         printf("status, No interesting coefficient multipliers found\n");
         fflush(stdout);
       }

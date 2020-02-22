@@ -26,6 +26,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   int valid_result;
   double phase2_results_window;
   char exec_str[352];
+  char mass_str[32];
   char out_str_01[320];
   char out_str_02[320];
   char out_str_03[320];
@@ -245,9 +246,9 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   clock_gettime(CLOCK_REALTIME, &start_time);
 
   // generate formula strings for each term
-  getFormulaStr(term1_formula_str, nle_state->term1.current_match);
-  getFormulaStr(term2_formula_str, nle_state->term2.current_match);
-  getFormulaStr(term3_formula_str, nle_state->term3.current_match);
+  getFormulaStr(term1_formula_str, nle_state->term1.current_match, nle_config->nle_mode);
+  getFormulaStr(term2_formula_str, nle_state->term2.current_match, nle_config->nle_mode);
+  getFormulaStr(term3_formula_str, nle_state->term3.current_match, nle_config->nle_mode);
 
 #ifdef DEBUG20
   printf("term1=%s\n", term1_formula_str);
@@ -1008,9 +1009,15 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                           term2_coefficient=(term2_static / term2_sin2w) / term2_cos2w;
                           term3_coefficient=(term3_static / term3_sin2w) / term3_cos2w;
 
-                          sm1_test=(term1_coefficient * pow(term1_massratio_sm1, term1_exp)) - (term2_coefficient * pow(term2_massratio_sm1, term2_exp)) + (term3_coefficient * pow(term3_massratio_sm1, term3_exp)) - 1.0;
-                          sm2_test=(term1_coefficient * pow(term1_massratio_sm2, term1_exp)) - (term2_coefficient * pow(term2_massratio_sm2, term2_exp)) + (term3_coefficient * pow(term3_massratio_sm2, term3_exp)) - 1.0;
-                          sm3_test=(term1_coefficient * pow(term1_massratio_sm3, term1_exp)) - (term2_coefficient * pow(term2_massratio_sm3, term2_exp)) + (term3_coefficient * pow(term3_massratio_sm3, term3_exp)) - 1.0;
+                          if (nle_config->nle_mode == 2) {
+                            sm1_test=pow((term1_coefficient * pow(term1_massratio_sm1, term1_exp)), 2.0) - (term3_coefficient * term1_coefficient * pow(term1_massratio_sm1, term1_exp) * term2_coefficient * pow(term2_massratio_sm1, term2_exp)) + pow((term2_coefficient * pow(term2_massratio_sm1, term2_exp)), 2.0) - 1.0;
+                            sm2_test=pow((term1_coefficient * pow(term1_massratio_sm2, term1_exp)), 2.0) - (term3_coefficient * term1_coefficient * pow(term1_massratio_sm2, term1_exp) * term2_coefficient * pow(term2_massratio_sm2, term2_exp)) + pow((term2_coefficient * pow(term2_massratio_sm2, term2_exp)), 2.0) - 1.0;
+                            sm3_test=pow((term1_coefficient * pow(term1_massratio_sm3, term1_exp)), 2.0) - (term3_coefficient * term1_coefficient * pow(term1_massratio_sm3, term1_exp) * term2_coefficient * pow(term2_massratio_sm3, term2_exp)) + pow((term2_coefficient * pow(term2_massratio_sm3, term2_exp)), 2.0) - 1.0;
+                          } else {
+                            sm1_test=(term1_coefficient * pow(term1_massratio_sm1, term1_exp)) - (term2_coefficient * pow(term2_massratio_sm1, term2_exp)) + (term3_coefficient * pow(term3_massratio_sm1, term3_exp)) - 1.0;
+                            sm2_test=(term1_coefficient * pow(term1_massratio_sm2, term1_exp)) - (term2_coefficient * pow(term2_massratio_sm2, term2_exp)) + (term3_coefficient * pow(term3_massratio_sm2, term3_exp)) - 1.0;
+                            sm3_test=(term1_coefficient * pow(term1_massratio_sm3, term1_exp)) - (term2_coefficient * pow(term2_massratio_sm3, term2_exp)) + (term3_coefficient * pow(term3_massratio_sm3, term3_exp)) - 1.0;
+                          }
 
 #ifdef DEBUG23
                           printf("debug, exponents: %s, samples: %lld, term1:   %.6e, term1static:   %.6e, term1s2w:   %.6e, term1c2w:   %.6e, term1s2wupout:   %d, term1s2wdownout:   %d, term1c2wupout:   %d, term1c2wdownout:   %d\n", nle_state->exponents_str, samples, term1_coefficient, term1_static, term1_sin2w, term1_sin2w, nle_state->term1.current_match->outfactor_sin2w_exp_up, nle_state->term1.current_match->outfactor_sin2w_exp_down, nle_state->term1.current_match->outfactor_cos2w_exp_up, nle_state->term1.current_match->outfactor_cos2w_exp_down);
@@ -1375,33 +1382,53 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
 
     // calculate symmetry score.   This measures how many factors are identical or inverse identical between the different terms
     symmetry=0;
-    checkSymmetry(&symmetry, (nle_state->term1.current_match->match_up * nle_state->term1.current_match->outfactor_rational_down), (nle_state->term2.current_match->match_up * nle_state->term2.current_match->outfactor_rational_down), (nle_state->term3.current_match->match_up * nle_state->term3.current_match->outfactor_rational_down));
-    checkSymmetry(&symmetry, (nle_state->term1.current_match->match_down * nle_state->term1.current_match->outfactor_rational_up), (nle_state->term2.current_match->match_down * nle_state->term2.current_match->outfactor_rational_up), (nle_state->term3.current_match->match_down * nle_state->term3.current_match->outfactor_rational_up));
-    checkSymmetry(&symmetry, nle_state->term1.current_match->outfactor_2_exp_up, nle_state->term2.current_match->outfactor_2_exp_up, nle_state->term3.current_match->outfactor_2_exp_up);
-    checkSymmetry(&symmetry, nle_state->term1.current_match->outfactor_pi_exp_up, nle_state->term2.current_match->outfactor_pi_exp_up, nle_state->term3.current_match->outfactor_pi_exp_up);
-    checkSymmetry(&symmetry, (nle_state->term1.current_match->outfactor_alpha_exp_up * nle_state->term1.current_match->outfactor_alpha_exp_down), (nle_state->term2.current_match->outfactor_alpha_exp_up * nle_state->term2.current_match->outfactor_alpha_exp_down), (nle_state->term3.current_match->outfactor_alpha_exp_up * nle_state->term3.current_match->outfactor_alpha_exp_down));
-    checkSymmetry(&symmetry, (nle_state->term1.current_match->outfactor_sin2w_exp_up * nle_state->term1.current_match->outfactor_sin2w_exp_down), (nle_state->term2.current_match->outfactor_sin2w_exp_up * nle_state->term2.current_match->outfactor_sin2w_exp_down), (nle_state->term3.current_match->outfactor_sin2w_exp_up * nle_state->term3.current_match->outfactor_sin2w_exp_down));
-    checkSymmetry(&symmetry, (nle_state->term1.current_match->outfactor_cos2w_exp_up * nle_state->term1.current_match->outfactor_cos2w_exp_down), (nle_state->term2.current_match->outfactor_cos2w_exp_up * nle_state->term2.current_match->outfactor_cos2w_exp_down), (nle_state->term3.current_match->outfactor_cos2w_exp_up * nle_state->term3.current_match->outfactor_cos2w_exp_down));
-    checkSymmetry(&symmetry, nle_state->term1.current_match->infactor_rational_up, nle_state->term2.current_match->infactor_rational_up, nle_state->term3.current_match->infactor_rational_up);
-    checkSymmetry(&symmetry, nle_state->term1.current_match->infactor_rational_down, nle_state->term2.current_match->infactor_rational_down, nle_state->term3.current_match->infactor_rational_down);
-    checkSymmetry(&symmetry, nle_state->term1.current_match->infactor_nbv, nle_state->term2.current_match->infactor_nbv, nle_state->term3.current_match->infactor_nbv);
-    checkSymmetry(&symmetry, nle_state->term1.current_match->infactor_nss, nle_state->term2.current_match->infactor_nss, nle_state->term3.current_match->infactor_nss);
-    checkSymmetry(&symmetry, nle_state->term1.current_match->infactor_2_exp_up, nle_state->term2.current_match->infactor_2_exp_up, nle_state->term3.current_match->infactor_2_exp_up);
-    checkSymmetry(&symmetry, nle_state->term1.current_match->infactor_pi_exp_up, nle_state->term2.current_match->infactor_pi_exp_up, nle_state->term3.current_match->infactor_pi_exp_up);
-    checkSymmetry(&symmetry, (nle_state->term1.current_match->infactor_alpha_exp_up * nle_state->term1.current_match->infactor_alpha_exp_down), (nle_state->term2.current_match->infactor_alpha_exp_up * nle_state->term2.current_match->infactor_alpha_exp_down), (nle_state->term3.current_match->infactor_alpha_exp_up * nle_state->term3.current_match->infactor_alpha_exp_down));
+    if (nle_config->nle_mode == 2) {
+      checkSymmetry2(&symmetry, (nle_state->term1.current_match->match_up * nle_state->term1.current_match->outfactor_rational_down), (nle_state->term2.current_match->match_up * nle_state->term2.current_match->outfactor_rational_down));
+      checkSymmetry2(&symmetry, (nle_state->term1.current_match->match_down * nle_state->term1.current_match->outfactor_rational_up), (nle_state->term2.current_match->match_down * nle_state->term2.current_match->outfactor_rational_up));
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->outfactor_2_exp_up, nle_state->term2.current_match->outfactor_2_exp_up);
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->outfactor_pi_exp_up, nle_state->term2.current_match->outfactor_pi_exp_up);
+      checkSymmetry2(&symmetry, (nle_state->term1.current_match->outfactor_alpha_exp_up * nle_state->term1.current_match->outfactor_alpha_exp_down), (nle_state->term2.current_match->outfactor_alpha_exp_up * nle_state->term2.current_match->outfactor_alpha_exp_down));
+      checkSymmetry2(&symmetry, (nle_state->term1.current_match->outfactor_sin2w_exp_up * nle_state->term1.current_match->outfactor_sin2w_exp_down), (nle_state->term2.current_match->outfactor_sin2w_exp_up * nle_state->term2.current_match->outfactor_sin2w_exp_down));
+      checkSymmetry2(&symmetry, (nle_state->term1.current_match->outfactor_cos2w_exp_up * nle_state->term1.current_match->outfactor_cos2w_exp_down), (nle_state->term2.current_match->outfactor_cos2w_exp_up * nle_state->term2.current_match->outfactor_cos2w_exp_down));
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->infactor_rational_up, nle_state->term2.current_match->infactor_rational_up);
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->infactor_rational_down, nle_state->term2.current_match->infactor_rational_down);
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->infactor_nbv, nle_state->term2.current_match->infactor_nbv);
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->infactor_nss, nle_state->term2.current_match->infactor_nss);
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->infactor_2_exp_up, nle_state->term2.current_match->infactor_2_exp_up);
+      checkSymmetry2(&symmetry, nle_state->term1.current_match->infactor_pi_exp_up, nle_state->term2.current_match->infactor_pi_exp_up);
+      checkSymmetry2(&symmetry, (nle_state->term1.current_match->infactor_alpha_exp_up * nle_state->term1.current_match->infactor_alpha_exp_down), (nle_state->term2.current_match->infactor_alpha_exp_up * nle_state->term2.current_match->infactor_alpha_exp_down));
+    } else if (nle_config->nle_mode == 3) {
+      checkSymmetry3(&symmetry, (nle_state->term1.current_match->match_up * nle_state->term1.current_match->outfactor_rational_down), (nle_state->term2.current_match->match_up * nle_state->term2.current_match->outfactor_rational_down), (nle_state->term3.current_match->match_up * nle_state->term3.current_match->outfactor_rational_down));
+      checkSymmetry3(&symmetry, (nle_state->term1.current_match->match_down * nle_state->term1.current_match->outfactor_rational_up), (nle_state->term2.current_match->match_down * nle_state->term2.current_match->outfactor_rational_up), (nle_state->term3.current_match->match_down * nle_state->term3.current_match->outfactor_rational_up));
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->outfactor_2_exp_up, nle_state->term2.current_match->outfactor_2_exp_up, nle_state->term3.current_match->outfactor_2_exp_up);
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->outfactor_pi_exp_up, nle_state->term2.current_match->outfactor_pi_exp_up, nle_state->term3.current_match->outfactor_pi_exp_up);
+      checkSymmetry3(&symmetry, (nle_state->term1.current_match->outfactor_alpha_exp_up * nle_state->term1.current_match->outfactor_alpha_exp_down), (nle_state->term2.current_match->outfactor_alpha_exp_up * nle_state->term2.current_match->outfactor_alpha_exp_down), (nle_state->term3.current_match->outfactor_alpha_exp_up * nle_state->term3.current_match->outfactor_alpha_exp_down));
+      checkSymmetry3(&symmetry, (nle_state->term1.current_match->outfactor_sin2w_exp_up * nle_state->term1.current_match->outfactor_sin2w_exp_down), (nle_state->term2.current_match->outfactor_sin2w_exp_up * nle_state->term2.current_match->outfactor_sin2w_exp_down), (nle_state->term3.current_match->outfactor_sin2w_exp_up * nle_state->term3.current_match->outfactor_sin2w_exp_down));
+      checkSymmetry3(&symmetry, (nle_state->term1.current_match->outfactor_cos2w_exp_up * nle_state->term1.current_match->outfactor_cos2w_exp_down), (nle_state->term2.current_match->outfactor_cos2w_exp_up * nle_state->term2.current_match->outfactor_cos2w_exp_down), (nle_state->term3.current_match->outfactor_cos2w_exp_up * nle_state->term3.current_match->outfactor_cos2w_exp_down));
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->infactor_rational_up, nle_state->term2.current_match->infactor_rational_up, nle_state->term3.current_match->infactor_rational_up);
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->infactor_rational_down, nle_state->term2.current_match->infactor_rational_down, nle_state->term3.current_match->infactor_rational_down);
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->infactor_nbv, nle_state->term2.current_match->infactor_nbv, nle_state->term3.current_match->infactor_nbv);
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->infactor_nss, nle_state->term2.current_match->infactor_nss, nle_state->term3.current_match->infactor_nss);
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->infactor_2_exp_up, nle_state->term2.current_match->infactor_2_exp_up, nle_state->term3.current_match->infactor_2_exp_up);
+      checkSymmetry3(&symmetry, nle_state->term1.current_match->infactor_pi_exp_up, nle_state->term2.current_match->infactor_pi_exp_up, nle_state->term3.current_match->infactor_pi_exp_up);
+      checkSymmetry3(&symmetry, (nle_state->term1.current_match->infactor_alpha_exp_up * nle_state->term1.current_match->infactor_alpha_exp_down), (nle_state->term2.current_match->infactor_alpha_exp_up * nle_state->term2.current_match->infactor_alpha_exp_down), (nle_state->term3.current_match->infactor_alpha_exp_up * nle_state->term3.current_match->infactor_alpha_exp_down));
+    }
 
     combined_score = (float)complexity / (float)symmetry;
 
-    // generate formula strings for each term
-    getFormulaStr(term1_formula_str, nle_state->term1.current_match);
-    getFormulaStr(term2_formula_str, nle_state->term2.current_match);
-    getFormulaStr(term3_formula_str, nle_state->term3.current_match);
+    if (nle_config->nle_mode == 2) {
+      sprintf(mass_str, "M%d%d", nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass);
+    } else if (nle_config->nle_mode == 3) {
+      sprintf(mass_str, "M%d%d%d", nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term3.current_match->smrfactor_mass);
+    } else {
+      mass_str[0]=0;
+    }
 
-    sprintf(out_str_01, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 01, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash);
+    sprintf(out_str_01, "result, %.4f, %3d, %3d, %s, %s, %12lld, 01, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash);
     printf("%s\n", out_str_01);
-    sprintf(out_str_02, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 02, |Parameter   ||         Value         | Std. Err. | Rel. Err. ||       Reference       | Std. Err. | Rel. Err. ||    Diff.    | Rel. Diff.  | Used as input | Used as output |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash);
+    sprintf(out_str_02, "result, %.4f, %3d, %3d, %s, %s, %12lld, 02, |Parameter   ||         Value         | Std. Err. | Rel. Err. ||       Reference       | Std. Err. | Rel. Err. ||    Diff.    | Rel. Diff.  | Used as input | Used as output |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash);
     printf("%s\n", out_str_02);
-    sprintf(out_str_03, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 03, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash);
+    sprintf(out_str_03, "result, %.4f, %3d, %3d, %s, %s, %12lld, 03, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash);
     printf("%s\n", out_str_03);
     if (nle_state->all_uses.alpha_em == 1) {
       if (nle_state->all_uses.float_alpha_em == 1 ) {
@@ -1411,7 +1438,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_04, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 04, | alpha_em   || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, alpha_out_c, alpha_out_error, alpha_out_relerror, nle_config->ref_alpha, nle_config->ref_alpha_error, nle_config->ref_alpha_relerror, alpha_out_diff, alpha_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_04, "result, %.4f, %3d, %3d, %s, %s, %12lld, 04, | alpha_em   || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, alpha_out_c, alpha_out_error, alpha_out_relerror, nle_config->ref_alpha, nle_config->ref_alpha_error, nle_config->ref_alpha_relerror, alpha_out_diff, alpha_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_04);
     } else {
       out_str_04[0]=0;
@@ -1424,7 +1451,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_05, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 05, | v          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, v_out_c, v_out_error, v_out_relerror, nle_config->ref_v, nle_config->ref_v_error, nle_config->ref_v_relerror, v_out_diff, v_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_05, "result, %.4f, %3d, %3d, %s, %s, %12lld, 05, | v          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, v_out_c, v_out_error, v_out_relerror, nle_config->ref_v, nle_config->ref_v_error, nle_config->ref_v_relerror, v_out_diff, v_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_05);
     } else {
       out_str_05[0]=0;
@@ -1437,7 +1464,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_06, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 06, | mZ         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, mz_out_c, mz_out_error, mz_out_relerror, nle_config->ref_mz, nle_config->ref_mz_error, nle_config->ref_mz_relerror, mz_out_diff, mz_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_06, "result, %.4f, %3d, %3d, %s, %s, %12lld, 06, | mZ         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, mz_out_c, mz_out_error, mz_out_relerror, nle_config->ref_mz, nle_config->ref_mz_error, nle_config->ref_mz_relerror, mz_out_diff, mz_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_06);
     } else {
       out_str_06[0]=0;
@@ -1450,7 +1477,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_07, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 07, | G          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, G_out_c, G_out_error, G_out_relerror, nle_config->ref_G, nle_config->ref_G_error, nle_config->ref_G_relerror, G_out_diff, G_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_07, "result, %.4f, %3d, %3d, %s, %s, %12lld, 07, | G          || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, G_out_c, G_out_error, G_out_relerror, nle_config->ref_G, nle_config->ref_G_error, nle_config->ref_G_relerror, G_out_diff, G_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_07);
     } else {
       out_str_07[0]=0;
@@ -1463,7 +1490,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_08, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 08, | mW         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, mw_out_c, mw_out_error, mw_out_relerror, nle_config->ref_mw, nle_config->ref_mw_error, nle_config->ref_mw_relerror, mw_out_diff, mw_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_08, "result, %.4f, %3d, %3d, %s, %s, %12lld, 08, | mW         || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, mw_out_c, mw_out_error, mw_out_relerror, nle_config->ref_mw, nle_config->ref_mw_error, nle_config->ref_mw_relerror, mw_out_diff, mw_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_08);
     } else {
       out_str_08[0]=0;
@@ -1479,7 +1506,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_09, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 09, | sin2w      || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, sin2w_out_c, sin2w_out_error, sin2w_out_relerror, nle_config->ref_sin2w, nle_config->ref_sin2w_error, nle_config->ref_sin2w_relerror, sin2w_out_diff, sin2w_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_09, "result, %.4f, %3d, %3d, %s, %s, %12lld, 09, | sin2w      || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, sin2w_out_c, sin2w_out_error, sin2w_out_relerror, nle_config->ref_sin2w, nle_config->ref_sin2w_error, nle_config->ref_sin2w_relerror, sin2w_out_diff, sin2w_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_09);
     } else {
       out_str_09[0]=0;
@@ -1492,7 +1519,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_10, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 10, | mH0        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, mh0_out_c, mh0_out_error, mh0_out_relerror, nle_config->ref_mh0, nle_config->ref_mh0_error, nle_config->ref_mh0_relerror, mh0_out_diff, mh0_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_10, "result, %.4f, %3d, %3d, %s, %s, %12lld, 10, | mH0        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, mh0_out_c, mh0_out_error, mh0_out_relerror, nle_config->ref_mh0, nle_config->ref_mh0_error, nle_config->ref_mh0_relerror, mh0_out_diff, mh0_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_10);
     } else {
       out_str_10[0]=0;
@@ -1505,7 +1532,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         sprintf(used_as_input, "*");
         sprintf(used_as_output, " ");
       }
-      sprintf(out_str_11, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 11, | m_user     || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, muser_out_c, muser_out_error, muser_out_relerror, nle_config->smrfactor_mass_user, nle_config->smrfactor_mass_user_error, nle_config->smrfactor_mass_user_relerror, muser_out_diff, muser_out_reldiff, used_as_input, used_as_output);
+      sprintf(out_str_11, "result, %.4f, %3d, %3d, %s, %s, %12lld, 11, | m_user     || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, muser_out_c, muser_out_error, muser_out_relerror, nle_config->smrfactor_mass_user, nle_config->smrfactor_mass_user_error, nle_config->smrfactor_mass_user_relerror, muser_out_diff, muser_out_reldiff, used_as_input, used_as_output);
       printf("%s\n", out_str_11);
     } else {
       out_str_11[0]=0;
@@ -1517,7 +1544,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
       sprintf(used_as_input, "*");
       sprintf(used_as_output, " ");
     }
-    sprintf(out_str_12, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 12, | sm1        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, sm1_out_c, sm1_out_error, sm1_out_relerror, nle_config->ref_sm1, nle_config->ref_sm1_error, nle_config->ref_sm1_relerror, sm1_out_diff, sm1_out_reldiff, used_as_input, used_as_output);
+    sprintf(out_str_12, "result, %.4f, %3d, %3d, %s, %s, %12lld, 12, | sm1        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, sm1_out_c, sm1_out_error, sm1_out_relerror, nle_config->ref_sm1, nle_config->ref_sm1_error, nle_config->ref_sm1_relerror, sm1_out_diff, sm1_out_reldiff, used_as_input, used_as_output);
     printf("%s\n", out_str_12);
     if (nle_state->all_uses.float_sm2 == 1) {
       sprintf(used_as_input, " ");
@@ -1526,7 +1553,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
       sprintf(used_as_input, "*");
       sprintf(used_as_output, " ");
     }
-    sprintf(out_str_13, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 13, | sm2        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, sm2_out_c, sm2_out_error, sm2_out_relerror, nle_config->ref_sm2, nle_config->ref_sm2_error, nle_config->ref_sm2_relerror, sm2_out_diff, sm2_out_reldiff, used_as_input, used_as_output);
+    sprintf(out_str_13, "result, %.4f, %3d, %3d, %s, %s, %12lld, 13, | sm2        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, sm2_out_c, sm2_out_error, sm2_out_relerror, nle_config->ref_sm2, nle_config->ref_sm2_error, nle_config->ref_sm2_relerror, sm2_out_diff, sm2_out_reldiff, used_as_input, used_as_output);
     printf("%s\n", out_str_13);
     if (nle_state->all_uses.float_sm3 == 1) {
       sprintf(used_as_input, " ");
@@ -1535,9 +1562,9 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
       sprintf(used_as_input, "*");
       sprintf(used_as_output, " ");
     }
-    sprintf(out_str_14, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 14, | sm3        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, sm3_out_c, sm3_out_error, sm3_out_relerror, nle_config->ref_sm3, nle_config->ref_sm3_error, nle_config->ref_sm3_relerror, sm3_out_diff, sm3_out_reldiff, used_as_input, used_as_output);
+    sprintf(out_str_14, "result, %.4f, %3d, %3d, %s, %s, %12lld, 14, | sm3        || %.15e | %.3e | %.3e || %.15e | %.3e | %.3e || %11.4e | %11.4e |       %s       |       %s        |", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, sm3_out_c, sm3_out_error, sm3_out_relerror, nle_config->ref_sm3, nle_config->ref_sm3_error, nle_config->ref_sm3_relerror, sm3_out_diff, sm3_out_reldiff, used_as_input, used_as_output);
     printf("%s\n", out_str_14);
-    sprintf(out_str_15, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 15, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash);
+    sprintf(out_str_15, "result, %.4f, %3d, %3d, %s, %s, %12lld, 15, +------------++-----------------------+-----------------------++-----------------------+-----------+-----------++-------------+-------------+---------------+----------------+", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash);
     printf("%s\n", out_str_15);
 
     // if outfactor_user appears in any term display it's value on next line
@@ -1553,17 +1580,20 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
       sprintf(user_in_str, "                    ");
     }
 
-    sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 16, formula: term1 - term2 + term3 - 1 = 0, %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, user_out_str, user_in_str);
+    if (nle_config->nle_mode == 2) {
+      sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 - (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user_out_str, user_in_str);
+    } else if (nle_config->nle_mode == 3) {
+      sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1 - term2 + term3 - 1 = 0, %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user_out_str, user_in_str);
+    }
     printf("%s\n", out_str_16);
-    sprintf(out_str_17, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 17, term1=%s", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, term1_formula_str);
+    sprintf(out_str_17, "result, %.4f, %3d, %3d, %s, %s, %12lld, 17, term1=%s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, term1_formula_str);
     printf("%s\n", out_str_17);
-    sprintf(out_str_18, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 18, term2=%s", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, term2_formula_str);
+    sprintf(out_str_18, "result, %.4f, %3d, %3d, %s, %s, %12lld, 18, term2=%s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, term2_formula_str);
     printf("%s\n", out_str_18);
-    sprintf(out_str_19, "result, %.4f, %3d, %3d, %s, M%d%d%d, %12lld, 19, term3=%s", combined_score, symmetry, complexity, nle_state->exponents_str, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, result_hash, term3_formula_str);
+    sprintf(out_str_19, "result, %.4f, %3d, %3d, %s, %s, %12lld, 19, term3=%s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, term3_formula_str);
     printf("%s\n", out_str_19);
     fflush(stdout);
     if (nle_config->upload_results_enable == 1) {
-      if (complexity <= nle_config->phase2_complexity_max) {
         sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
         system(exec_str);
         sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_02, 320));
@@ -1618,7 +1648,6 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         system(exec_str);
         sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_19, 320));
         system(exec_str);
-      } // end if complexity
     } // end if upload_results_enable
   } // end if score
   return(precision_last);

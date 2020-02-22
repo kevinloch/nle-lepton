@@ -1,3 +1,11 @@
+4.1  - Fixed bug in selectOutputs() that would not allow user-defined mass to be used as output
+     - Fixed bug in generateExponents() that affected term3 when exp_neg_enable=no
+     - Fixed bug in http results upload that would filter some results even when phase2_results_always=yes
+     - Updated default Higgs boson reference value to 125.35 +/- 0.15 GeV published by CMS collaboration 
+         https://cds.cern.ch/record/2691211/files/HIG-19-004-pas.pdf
+     - term_id is now used as key in match tables instead of exp_inv
+     - Initial development support for 2-term mixed (squared) mode, where a third term is generated synthetically from two base terms.
+  
 4.0  - First version to use an external configuration file (nle-lepton.cfg) to set search parameters
      - See nle-lepton.cfg for complete list of supported options
      - New types nle_config_t and nle_state_t greatly simplify arguments passed between functions

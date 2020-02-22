@@ -109,8 +109,8 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->ref_mz_error=0.0021E9;
   nle_config->ref_mw=80.379E9;
   nle_config->ref_mw_error=0.012E9;
-  nle_config->ref_mh0=125.18E9;
-  nle_config->ref_mh0_error=0.16E9;
+  nle_config->ref_mh0=125.35E9;
+  nle_config->ref_mh0_error=0.15E9;
   nle_config->ref_sin2w=0.22311;
   nle_config->ref_sin2w_error=0.00027;
   nle_config->ref_G=6.67430E-11;

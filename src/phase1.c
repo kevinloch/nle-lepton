@@ -3,6 +3,7 @@
 #include <math.h> // pow
 #include <time.h>
 #include "nle-lepton.h"
+#include "util.h"
 #include "cscanner.h"
 
 //#define DEBUG10
@@ -80,6 +81,7 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   double c3_center[6];
   double c3_range[6];
   double c3_range_new;
+  double two_term_test=0.0;
 
   // starting v4.0 denominator is always v for this step, other mass ratio factors are now swapped out in cscanner()
   term1_mass_sm1=  pow(((double)nle_state->random_sample_sm1 / nle_state->random_sample_v), (1.0 / (double)nle_state->term1.exp_inv));
@@ -88,9 +90,11 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   term2_mass_sm1=pow(((double)nle_state->random_sample_sm1 / nle_state->random_sample_v), (1.0 / (double)nle_state->term2.exp_inv));
   term2_mass_sm2=pow(((double)nle_state->random_sample_sm2 / nle_state->random_sample_v), (1.0 / (double)nle_state->term2.exp_inv));
   term2_mass_sm3=pow(((double)nle_state->random_sample_sm3 / nle_state->random_sample_v), (1.0 / (double)nle_state->term2.exp_inv));
-  term3_mass_sm1= pow(((double)nle_state->random_sample_sm1 / nle_state->random_sample_v), (1.0 / (double)nle_state->term3.exp_inv));
-  term3_mass_sm2= pow(((double)nle_state->random_sample_sm2 / nle_state->random_sample_v), (1.0 / (double)nle_state->term3.exp_inv));
-  term3_mass_sm3= pow(((double)nle_state->random_sample_sm3 / nle_state->random_sample_v), (1.0 / (double)nle_state->term3.exp_inv));
+  if (nle_config->nle_mode > 2) {
+    term3_mass_sm1= pow(((double)nle_state->random_sample_sm1 / nle_state->random_sample_v), (1.0 / (double)nle_state->term3.exp_inv));
+    term3_mass_sm2= pow(((double)nle_state->random_sample_sm2 / nle_state->random_sample_v), (1.0 / (double)nle_state->term3.exp_inv));
+    term3_mass_sm3= pow(((double)nle_state->random_sample_sm3 / nle_state->random_sample_v), (1.0 / (double)nle_state->term3.exp_inv));
+  }
 
   if (nle_config->status_enable == 1) {
     printf("status, Solving phase 1 formula for coefficients, exponents: %s\n", nle_state->exponents_str);
@@ -252,23 +256,46 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
           }
 #endif
           if (good_coefficients == 1) {
-            sm1_test_term1=c1[ordering] * term1_mass_sm1;
-            sm1_test_term2=c2[ordering] * term2_mass_sm1;
-            sm1_test_term3=c3[ordering] * term3_mass_sm1;
+            if (nle_config->nle_mode == 2) {
+              // for 2-term mixed mode, we will use term3 as a pseudo term for the mixing of terms 1 and 2
+              // This enables us to always solve the NLE regardless of whether the mass spectrum is allowed by the exponents
+              // Once solved we will test whether c3 has the correct relationship to c1 and c2
+              sm1_test_term1=c1[ordering] * term1_mass_sm1 * term1_mass_sm1;
+              sm1_test_term2=c2[ordering] * term2_mass_sm1 * term2_mass_sm1;
+              sm1_test_term3=c3[ordering] * term1_mass_sm1 * term2_mass_sm1;
+ 
+              sm2_test_term1=c1[ordering] * term1_mass_sm2 * term1_mass_sm2;
+              sm2_test_term2=c2[ordering] * term2_mass_sm2 * term2_mass_sm2;
+              sm2_test_term3=c3[ordering] * term1_mass_sm2 * term2_mass_sm2;
+
+              sm3_test_term1=c1[ordering] * term1_mass_sm3 * term1_mass_sm3;
+              sm3_test_term2=c2[ordering] * term2_mass_sm3 * term2_mass_sm3;
+              sm3_test_term3=c3[ordering] * term1_mass_sm3 * term2_mass_sm3;
+              sm1_test=sm1_test_term1 + sm1_test_term2 - sm1_test_term3 - 1.0;
+              sm2_test=sm2_test_term1 + sm2_test_term2 - sm2_test_term3 - 1.0;
+            } else if (nle_config->nle_mode == 3) {
+              sm1_test_term1=c1[ordering] * term1_mass_sm1;
+              sm1_test_term2=c2[ordering] * term2_mass_sm1;
+              sm1_test_term3=c3[ordering] * term3_mass_sm1;
   
-            sm2_test_term1=c1[ordering] * term1_mass_sm2;
-            sm2_test_term2=c2[ordering] * term2_mass_sm2;
-            sm2_test_term3=c3[ordering] * term3_mass_sm2;
+              sm2_test_term1=c1[ordering] * term1_mass_sm2;
+              sm2_test_term2=c2[ordering] * term2_mass_sm2;
+              sm2_test_term3=c3[ordering] * term3_mass_sm2;
 
-            sm3_test_term1=c1[ordering] * term1_mass_sm3;
-            sm3_test_term2=c2[ordering] * term2_mass_sm3;
-            sm3_test_term3=c3[ordering] * term3_mass_sm3;
+              sm3_test_term1=c1[ordering] * term1_mass_sm3;
+              sm3_test_term2=c2[ordering] * term2_mass_sm3;
+              sm3_test_term3=c3[ordering] * term3_mass_sm3;
+              sm1_test=sm1_test_term1 - sm1_test_term2 + sm1_test_term3 - 1.0;
+              sm2_test=sm2_test_term1 - sm2_test_term2 + sm2_test_term3 - 1.0;
+            }
 
-            sm1_test=sm1_test_term1 - sm1_test_term2 + sm1_test_term3 - 1.0;
-            sm2_test=sm2_test_term1 - sm2_test_term2 + sm2_test_term3 - 1.0;
             if ((progress[ordering] < ratio_grace_period) || (((fabs(sm1_test) / fabs(sm2_test)) < test_ratio) && ((fabs(sm2_test) / fabs(sm1_test)) < test_ratio))) {
-              sm3_test=sm3_test_term1 - sm3_test_term2 + sm3_test_term3 - 1.0;
-                if ((progress[ordering] < ratio_grace_period) || (((fabs(sm1_test) / fabs(sm3_test)) < test_ratio) && ((fabs(sm3_test) / fabs(sm1_test)) < test_ratio) &&\
+              if (nle_config->nle_mode == 2) {
+                sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
+              } else if (nle_config->nle_mode == 3) {
+                sm3_test=sm3_test_term1 - sm3_test_term2 + sm3_test_term3 - 1.0;
+              }
+              if ((progress[ordering] < ratio_grace_period) || (((fabs(sm1_test) / fabs(sm3_test)) < test_ratio) && ((fabs(sm3_test) / fabs(sm1_test)) < test_ratio) &&\
                                                                 ((fabs(sm2_test) / fabs(sm3_test)) < test_ratio) && ((fabs(sm3_test) / fabs(sm2_test)) < test_ratio))) {
 #ifdef DEBUG12
                 printf("debug, etest: %.3e, utest: %.3e, ttest: %.3e, sm1_test_term1: %.3e, sm1_test_term2: %.3e, sm1_test_term3: %.3e, sm2_test_term1: %.3e, sm2_test_term2: %.3e, sm2_test_term3: %.3e, sm3_test_term1: %.3e, sm3_test_term2: %.3e, sm3_test_term3: %.3e\n", sm1_test, sm2_test, sm3_test, sm1_test_term1, sm1_test_term2, sm1_test_term3, sm2_test_term1, sm2_test_term2, sm2_test_term3, sm3_test_term1, sm3_test_term2, sm3_test_term3);
@@ -332,28 +359,45 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
 
   if (nle_config->status_enable ==1) {
-    printf("status, Solved  phase 1 formula for coefficients, random input: %i, exponents:  %s, sm3: %.9e, samples: %lld, ordering: %d, precision: %.3e (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->random_sample_sm3, samples, best_ordering, precision, elapsed_time);
+    if (nle_config->nle_mode == 2) {
+      two_term_test=c3_center[best_ordering] / (sqrt(c1_center[best_ordering] * c2_center[best_ordering]));
+      printf("status, Solved  phase 1 formula for coefficients, random input: %i, exponents:  %s, sm3: %.9e, samples: %lld, ordering: %d, two_term_test: %.9e, precision: %.3e (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->random_sample_sm3, samples, best_ordering, two_term_test, precision, elapsed_time);
+    } else if (nle_config->nle_mode == 3) {
+      printf("status, Solved  phase 1 formula for coefficients, random input: %i, exponents:  %s, sm3: %.9e, samples: %lld, ordering: %d, precision: %.3e (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->random_sample_sm3, samples, best_ordering, precision, elapsed_time);
+    }
     printf("status, +------------+------------+----------+-----------------+-----------------+-----------------+-----------------+\n");
     printf("status, | Exponents  | Mass ratio | NLE term |   Coefficient   |  C * term(sm1)  |  C * term(sm2)  |  C * term(sm3)  |\n");
     printf("status, +------------+------------+----------+-----------------+-----------------+-----------------+-----------------+\n");
-    printf("status, | %10s |    M/v     |  term1   | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
-    printf("status, | %10s |    M/v     |  term2   | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
-    printf("status, | %10s |    M/v     |  term3   | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c3_center[best_ordering], sm1_test_term3, sm2_test_term3, sm3_test_term3);
+    if (nle_config->nle_mode == 2) {
+      printf("status, | %10s |    M/v     |  t1^2    | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
+      printf("status, | %10s |    M/v     |  t2^2    | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
+      printf("status, | %10s |    M/v     | t1 * t2  | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c3_center[best_ordering], sm1_test_term3, sm2_test_term3, sm3_test_term3);
+    } else if (nle_config->nle_mode == 3) {
+      printf("status, | %10s |    M/v     |  term1   | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
+      printf("status, | %10s |    M/v     |  term2   | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
+      printf("status, | %10s |    M/v     |  term3   | %.9e | %.9e | %.9e | %.9e |\n", nle_state->exponents_str, c3_center[best_ordering], sm1_test_term3, sm2_test_term3, sm3_test_term3);
+    }
     printf("status, +------------+------------+----------+-----------------+-----------------+-----------------+-----------------+\n");
     fflush(stdout);
 
     // for debugging very long phase 1 solutions
     //exit(0);
-
-    printf("status, Scanning for coefficient multipliers that match interesting integer or simple rational numbers and mass ratio: ");
-    fflush(stdout);
   }
-  nle_state->term1.coefficient=c1_center[best_ordering];
-  nle_state->term2.coefficient=c2_center[best_ordering];
-  nle_state->term3.coefficient=c3_center[best_ordering];
+
   matches_count_start=nle_state->phase1_matches_count;
   clock_gettime(CLOCK_REALTIME, &starttime);
+  if (nle_config->nle_mode == 2) {
+    // in two term mode take the square root of c1 and c2 and use two_term_test as c3
+    nle_state->term1.coefficient=sqrt(c1_center[best_ordering]);
+    nle_state->term2.coefficient=sqrt(c2_center[best_ordering]);
+    nle_state->term3.coefficient=two_term_test;
+  } else {
+    nle_state->term1.coefficient=c1_center[best_ordering];
+    nle_state->term2.coefficient=c2_center[best_ordering];
+    nle_state->term3.coefficient=c3_center[best_ordering];
+  }
   cscanner(nle_config, nle_state);
+
   clock_gettime(CLOCK_REALTIME, &endtime);
   matches_count_end=nle_state->phase1_matches_count;
   elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
