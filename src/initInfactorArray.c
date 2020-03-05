@@ -29,6 +29,7 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
   double nss[27];
   double userin;
   double infactor;
+  int upcomplexity, downcomplexity;
 
   unsigned int u, v;
   int i;
@@ -121,7 +122,7 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                       u=abs(aupin);
                       v=adownin;
                       if (gcd(u, v) == 1) {
-                        ain=pow(nle_config->ref_alpha, ((float)aupin / (float)adownin));
+                        ain=pow(nle_config->ref_alpha_em, ((float)aupin / (float)adownin));
 
                         for (piupin=-nle_config->infactor_pi_exp_up_max; piupin <= nle_config->infactor_pi_exp_up_max; piupin++) {
                           for (pidownin=1; pidownin <= nle_config->infactor_pi_exp_down_max; pidownin++) {
@@ -142,7 +143,7 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                           userin=pow(nle_config->infactor_user, ((float)userupin / (float)userdownin));
                                           infactor=updownin * e2in * ain * piin * userin;
 #ifdef DEBUG_INFACTOR
-                                          printf("debug, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, nssup: %d, nbvup: %d, userup: %d, userdown: %d, infactor: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upin, downin, e2upin, e2downin, aupin, adownin, piupin, pidownin, nssupin, nbvupin, userupin, userdownin, infactor, updownin, e2in, ain, piin, userin);
+                                          printf("debug, infactorInit, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, nssup: %d, nbvup: %d, userup: %d, userdown: %d, infactor: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upin, downin, e2upin, e2downin, aupin, adownin, piupin, pidownin, nssupin, nbvupin, userupin, userdownin, infactor, updownin, e2in, ain, piin, userin);
                                           fflush(stdout);
 #endif
                                           multiplier->infactor_rational_up=upin;
@@ -157,8 +158,19 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                           multiplier->infactor_nbv=nbvupin;
                                           multiplier->infactor_user_exp_up=userupin;
                                           multiplier->infactor_user_exp_down=userdownin;
+                                          // ignore 1 on rationals
+                                          if (upin == 1) {
+                                            upcomplexity=0;
+                                          } else {
+                                            upcomplexity=upin;
+                                          }
+                                          if (downin == 1) {
+                                            downcomplexity=0;
+                                          } else {
+                                            downcomplexity=downin;
+                                          }
                                           multiplier->infactor_complexity=\
-                                                 upin + downin\
+                                                 upcomplexity + downcomplexity\
                                                  + abs(e2upin) + (e2downin-1)\
                                                  + abs(aupin) + (adownin-1)\
                                                  + abs(piupin) + (pidownin-1)\
@@ -220,7 +232,7 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                               multiplier->infactor_multiplier[26]=pow(infactor * pow(nbv[26], (float)nbvupin) * pow(nss[26], (float)nssupin), (1.0 / 26.0));
                                             }  // if i
 #ifdef DEBUG_INFACTOR
-                                            printf("debug, i: %d, multiplier: %.9e\n", i, multiplier->infactor_multiplier[i]);
+                                            printf("debug, infactorInit, i: %d, multiplier: %.9e\n", i, multiplier->infactor_multiplier[i]);
                                             fflush(stdout);
 #endif
                                           } // for i
@@ -230,7 +242,7 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                           }
                                           nle_state->infactors_precomputed_count++;
 #ifdef DEBUG_INFACTOR
-                                          printf("debug, count: %d\n", nle_state->infactors_precomputed_count);
+                                          printf("debug, infactorInit, count: %d\n", nle_state->infactors_precomputed_count);
                                           fflush(stdout);
 #endif
                                           multiplier++;

@@ -38,6 +38,7 @@
 #include "usage.h"
 #include "initInfactorArray.h"
 #include "initOutfactorArray.h"
+#include "initSmrfactorArray.h"
 #include "phase1.h"
 #include "verifyMatches.h"
 #include "generateExponents.h"
@@ -90,6 +91,8 @@ int main(int argc, char **argv) {
   double testrand;
   double r;
   int i;
+  int smrfactor_seq;
+  nle_smrfactor_precomputed_t *smrfactors;
   int coefficients_matched;
   long seedsec;
   long seedus;
@@ -121,6 +124,17 @@ int main(int argc, char **argv) {
   if ((nle_config.nle_mode != 3) && (nle_config.nle_mode != 2)) {
     printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  2 and 3 are the only supported modes in this version.\n", nle_config.nle_mode);
     exit(1);
+  }
+
+  // check 2-term and 1-minus are used together
+  if ((nle_config.smrfactor_1minus_enable == 1) && (nle_config.nle_mode != 2)) {
+    printf("init, Error: in nle-lepton.cfg, nle_mode must be set to 2 when smrfactor_1minus_enable=yes\n");
+    fflush(stdout);
+    exit(1);
+  }
+  if ((nle_config.nle_mode == 2) && (nle_config.smrfactor_1minus_enable == 0)) {
+    printf("init, Warning: in nle-lepton.cfg, smrfactor_1minus_enable should be set to yes when nle_mode=2\n");
+    fflush(stdout);
   }
 
   // check if all forced exponents or none
@@ -159,6 +173,15 @@ int main(int argc, char **argv) {
   nle_state.term2.matches_start = (nle_phase1_match_t *)malloc(100000 * sizeof(nle_phase1_match_t));
   nle_state.term3.matches_start = (nle_phase1_match_t *)malloc(100000 * sizeof(nle_phase1_match_t));
 
+  // allocate memory for and initialize precomupted smrfactor array if smrfactor_1minus_enable == 1
+  // otherwise set smrfactor count to zero
+  if (nle_config.smrfactor_1minus_enable == 1) {
+    nle_state.smrfactors_precomputed_start=(nle_smrfactor_precomputed_t *)malloc(1000000 * sizeof(nle_smrfactor_precomputed_t));
+    initSmrfactorArray(&nle_config, &nle_state);
+  } else {
+    nle_state.smrfactors_precomputed_count=0;
+  }
+
   // allocate memory for and initialize precomupted infactor array
   nle_state.infactors_precomputed_start=(nle_infactor_precomputed_t *)malloc(1000000 * sizeof(nle_infactor_precomputed_t));
   initInfactorArray(&nle_config, &nle_state);
@@ -175,55 +198,95 @@ int main(int argc, char **argv) {
     // generate valid exponents
     generateExponents(&nle_config, &nle_state);
 
-    // generate random samples of experimental values
-    r=drand48();
-    nle_state.random_sample_sm1=((nle_config.ref_sm1 - nle_config.ref_sm1_error) + (r * 2.0 * nle_config.ref_sm1_error));
-    r=drand48();
-    nle_state.random_sample_sm2=((nle_config.ref_sm2 - nle_config.ref_sm2_error) + (r * 2.0 * nle_config.ref_sm2_error));
-    r=drand48();
-    nle_state.random_sample_sm3=((nle_config.ref_sm3 - nle_config.ref_sm3_error) + (r * 2.0 * nle_config.ref_sm3_error));
-    r=drand48();
-    nle_state.random_sample_v=((nle_config.ref_v - nle_config.ref_v_error) + (r * 2.0 * nle_config.ref_v_error));
-    r=drand48();
-    nle_state.random_sample_alpha=((nle_config.ref_alpha - nle_config.ref_alpha_error) + (r * 2.0 * nle_config.ref_alpha_error));
-    r=drand48();
-    nle_state.random_sample_G=((nle_config.ref_G - nle_config.ref_G_error) + (r * 2.0 * nle_config.ref_G_error));
-    nle_state.random_sample_mp=nle_config.ref_kg_to_ev * sqrt(nle_config.ref_hbar * nle_config.ref_c / nle_state.random_sample_G);
-    r=drand48();
-    nle_state.random_sample_mz=((nle_config.ref_mz - nle_config.ref_mz_error) + (r * 2.0 * nle_config.ref_mz_error));
-    r=drand48();
-    nle_state.random_sample_mw=((nle_config.ref_mw - nle_config.ref_mw_error) + (r * 2.0 * nle_config.ref_mw_error));
-    r=drand48();
-    nle_state.random_sample_sin2w=((nle_config.ref_sin2w - nle_config.ref_sin2w_error) + (r * 2.0 * nle_config.ref_sin2w_error));
-    r=drand48();
-    nle_state.random_sample_mh0=((nle_config.ref_mh0 - nle_config.ref_mh0_error) + (r * 2.0 * nle_config.ref_mh0_error));
-    r=drand48();
-    nle_state.random_sample_muser=((nle_config.smrfactor_mass_user - nle_config.smrfactor_mass_user_error) + (r * 2.0 * nle_config.smrfactor_mass_user_error));
-
-    // phase 1
-    solveNLEforCoefficients(&nle_config, &nle_state);
-    if (nle_state.phase1_matches_count > 0) {
-      coefficients_matched=0;
-      for (i=0; i <= 2; i++) {
-        if (nle_state.terms_matched[i] != 0) {
-          coefficients_matched++;
-        }
-      }
-      if (coefficients_matched == 3) {
-        // phase 2
-        verifyMatches(&nle_config, &nle_state);
-      } else {
-        if (nle_config.status_enable ==1) {
-          printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
-          fflush(stdout);
-        }
-      }
+    if (nle_config.phase1_random_samples_enable == 1) {
+      // generate random samples of experimental values each time phase 1 is run
+      r=drand48();
+      nle_state.input_sample_sm1=((nle_config.ref_sm1 - nle_config.ref_sm1_error) + (r * 2.0 * nle_config.ref_sm1_error));
+      r=drand48();
+      nle_state.input_sample_sm2=((nle_config.ref_sm2 - nle_config.ref_sm2_error) + (r * 2.0 * nle_config.ref_sm2_error));
+      r=drand48();
+      nle_state.input_sample_sm3=((nle_config.ref_sm3 - nle_config.ref_sm3_error) + (r * 2.0 * nle_config.ref_sm3_error));
+      r=drand48();
+      nle_state.input_sample_v=((nle_config.ref_v - nle_config.ref_v_error) + (r * 2.0 * nle_config.ref_v_error));
+      r=drand48();
+      nle_state.input_sample_alpha_em=((nle_config.ref_alpha_em - nle_config.ref_alpha_em_error) + (r * 2.0 * nle_config.ref_alpha_em_error));
+      r=drand48();
+      nle_state.input_sample_alpha_w=((nle_config.ref_alpha_w - nle_config.ref_alpha_w_error) + (r * 2.0 * nle_config.ref_alpha_w_error));
+      r=drand48();
+      nle_state.input_sample_G=((nle_config.ref_G - nle_config.ref_G_error) + (r * 2.0 * nle_config.ref_G_error));
+      nle_state.input_sample_mp=nle_config.ref_kg_to_ev * sqrt(nle_config.ref_hbar * nle_config.ref_c / nle_state.input_sample_G);
+      r=drand48();
+      nle_state.input_sample_mz=((nle_config.ref_mz - nle_config.ref_mz_error) + (r * 2.0 * nle_config.ref_mz_error));
+      r=drand48();
+      nle_state.input_sample_mw=((nle_config.ref_mw - nle_config.ref_mw_error) + (r * 2.0 * nle_config.ref_mw_error));
+      r=drand48();
+      nle_state.input_sample_sin2w=((nle_config.ref_sin2w - nle_config.ref_sin2w_error) + (r * 2.0 * nle_config.ref_sin2w_error));
+      r=drand48();
+      nle_state.input_sample_mh0=((nle_config.ref_mh0 - nle_config.ref_mh0_error) + (r * 2.0 * nle_config.ref_mh0_error));
+      r=drand48();
+      nle_state.input_sample_muser=((nle_config.smrfactor_mass_user - nle_config.smrfactor_mass_user_error) + (r * 2.0 * nle_config.smrfactor_mass_user_error));
     } else {
-      if (nle_config.status_enable == 1) {
-        printf("status, No interesting coefficient multipliers found\n");
-        fflush(stdout);
+      // set input_sample to center reference values
+      nle_state.input_sample_sm1=nle_config.ref_sm1;
+      nle_state.input_sample_sm2=nle_config.ref_sm2;
+      nle_state.input_sample_sm3=nle_config.ref_sm3;
+      nle_state.input_sample_v=nle_config.ref_v;
+      nle_state.input_sample_alpha_em=nle_config.ref_alpha_em;
+      nle_state.input_sample_alpha_w=nle_config.ref_alpha_w;
+      nle_state.input_sample_G=nle_config.ref_G;
+      nle_state.input_sample_mp=nle_config.ref_kg_to_ev * sqrt(nle_config.ref_hbar * nle_config.ref_c / nle_state.input_sample_G);
+      nle_state.input_sample_mz=nle_config.ref_mz;
+      nle_state.input_sample_mw=nle_config.ref_mw;
+      nle_state.input_sample_sin2w=nle_config.ref_sin2w;
+      nle_state.input_sample_mh0=nle_config.ref_mh0;
+      nle_state.input_sample_muser=nle_config.smrfactor_mass_user;
+    }
+
+    // sequence through smrfactors if smrfactor_1minus is enabled, otherwise run once when smrfactor_seq == 0
+    smrfactors=nle_state.smrfactors_precomputed_start;
+    for (smrfactor_seq=0; smrfactor_seq <= nle_state.smrfactors_precomputed_count; smrfactor_seq++) {
+      // here we would cycle through enabled smrfactor_mass but for testing just use v
+      if ((nle_state.smrfactors_precomputed_count > 0) && (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
+        nle_state.term1.smrfactor=smrfactors->smrfactor_multiplier;
+        nle_state.term1.smrfactor_mass=1;
       }
-    } // end nummatches
+      if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
+      // temp force smrfactor
+      nle_state.term1.smrfactor=4.0  / nle_config.ref_alpha_em;
+      nle_state.term1.smrfactor_mass=1;
+
+
+
+        // phase 1
+        for (i=0; i<=2; i++) {
+          nle_state.terms_matched[i]=0;
+        }
+        solveNLEforCoefficients(&nle_config, &nle_state);
+        if (nle_state.phase1_matches_count > 0) {
+          coefficients_matched=0;
+          for (i=0; i <= 2; i++) {
+            if (nle_state.terms_matched[i] != 0) {
+              coefficients_matched++;
+            }
+          }
+          if (coefficients_matched == 3) {
+            // phase 2
+            verifyMatches(&nle_config, &nle_state);
+          } else {
+            if (nle_config.status_enable ==1) {
+              printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+              fflush(stdout);
+            }
+          }
+        } else {
+          if (nle_config.status_enable == 1) {
+            printf("status, No interesting coefficient multipliers found\n");
+            fflush(stdout);
+          }
+        } // end nummatches
+        smrfactors++;
+      } // end smrfactor_seq ||
+    } // end smrfactor_seq && 
   } // end while 1
   exit(0);
 }   

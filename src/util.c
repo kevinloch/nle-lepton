@@ -126,35 +126,30 @@ void checkSymmetry3(int *symmetry, int term1, int term2, int term3) {
 }
 
 int interesting(int range, int max_int, int filter_int, double inld) {
-  double rangelow=0.9;
-  double rangehigh=1.1;
+  double offset=0.01;
+  double max_remainder=0.02;
   double testld;
   int testint;
 
-/*
-  if (range == 2) {
-    rangehigh=1.01;
-    rangelow=0.99;
-*/
   if (range == 3) {
-    rangehigh=1.001;
-    rangelow=0.999;
+    offset=       0.001; 
+    max_remainder=0.002;
   } else if (range == 4) {
-    rangehigh=1.0001;
-    rangelow=0.9999;
+    offset=       0.0001;
+    max_remainder=0.0002;
   } else if (range == 5) {
-    rangehigh=1.00001;
-    rangelow=0.99999;
+    offset=       0.00001;
+    max_remainder=0.00002;
   } else if (range == 6) {
-    rangehigh=1.000001;
-    rangelow=0.999999;
+    offset=       0.000001;
+    max_remainder=0.000002;
 /*
   } else if (range == 7) {
-    rangehigh=1.0000001;
-    rangelow=0.9999999;
+    offset=       0.0000001;
+    max_remainder=0.0000002;
   } else if (range == 8) {
-    rangehigh=1.00000001;
-    rangelow=0.99999999;
+    offset=       0.00000001
+    max_remainder=0.00000002;
 */
   }
 
@@ -163,30 +158,32 @@ int interesting(int range, int max_int, int filter_int, double inld) {
     return(0);
   }
 
-  if (filter_int == 1) {
-    // test if int > 4 are not divisible by 2 or 3
-    testint=(int)(inld + 0.498);
-    if ((testint > 4) && ((testint % 2) != 0) && ((testint %3) != 0)) {
-      return(0);
+  if (inld > 1.0) {
+    if (filter_int == 1) {
+      // test if int > 4 are not divisible by 2 or 3
+      testint=(int)(inld + 0.498);
+      if ((testint > 4) && ((testint % 2) != 0) && ((testint % 3) != 0)) {
+        return(0);
+      }
     }
-  }
 
-  // test if close to int
-  testld=fmodl(inld, 1.0); 
-  if ((testld >= rangelow) && (testld <= rangehigh)) {
-    return(1);
-  }
-
-  if  ((filter_int == 1) && (inld < 1.0)) {
-    //  test if 1/int > 4 are divisible by 2 or 3
-    testint=(int)((1.0 / inld) + 0.498);
-    if ((testint > 4) && ((testint % 2) != 0) && ((testint %3) != 0)) {
-      return(0);
+    // test if close to int
+    testld=fmod((inld + offset), 1.0); 
+    if (testld <= max_remainder) {
+      return(1);
+    }
+  } else {
+    if (filter_int == 1) {
+      //  test if 1/int > 4 are divisible by 2 or 3
+      testint=(int)((1.0 / inld) + 0.498);
+      if ((testint > 4) && ((testint % 2) != 0) && ((testint % 3) != 0)) {
+        return(0);
+      }
     }
 
     // test if small number matches 1/int
-    testld=fmodl((1.0 / inld), 1.0);
-    if ((testld >= rangelow) && (testld <= rangehigh)) {
+    testld=fmod(((1.0 / inld) + offset), 1.0);
+    if (testld <= max_remainder) {
       return(1);
     }
   }

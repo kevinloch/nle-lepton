@@ -28,6 +28,7 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->exp_inv_3seq_limit=9;
   nle_config->exp_inv_4seq_limit=6;
   nle_config->exp_neg_enable=1;
+  nle_config->phase1_random_samples_enable=1;
   nle_config->phase1_filter=5;
   nle_config->phase1_int_match_max=16;
   nle_config->phase1_int_match_filter=1;
@@ -82,9 +83,15 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->outfactor_pi_exp_down_max=2;
   nle_config->outfactor_weak_exp_up_max=0;
   nle_config->outfactor_weak_exp_down_max=1;
-  nle_config->outfactor_user=1.0;
-  nle_config->outfactor_user_exp_up_max=0;
-  nle_config->outfactor_user_exp_down_max=1;
+  nle_config->outfactor_user1=1.0;
+  nle_config->outfactor_user1_exp_up_max=0;
+  nle_config->outfactor_user1_exp_down_max=1;
+  nle_config->outfactor_user2=1.0;
+  nle_config->outfactor_user2_exp_up_max=0;
+  nle_config->outfactor_user2_exp_down_max=1;
+  nle_config->outfactor_user3=1.0;
+  nle_config->outfactor_user3_exp_up_max=0;
+  nle_config->outfactor_user3_exp_down_max=1;
   nle_config->outfactor_rmr_exp_up_max=0;
   nle_config->outfactor_rmr_exp_down_max=1;
   nle_config->outfactor_rmr_mp_enable=0;
@@ -101,8 +108,10 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->ref_e=1.602176634E-19;
   nle_config->ref_ev_to_kg=1.78266192162790E-36;
   nle_config->ref_kg_to_ev=5.60958860380445E35;
-  nle_config->ref_alpha=7.2973525693E-3;
-  nle_config->ref_alpha_error=0.0000000011E-3;
+  nle_config->ref_alpha_em=7.2973525693E-3;
+  nle_config->ref_alpha_em_error=0.0000000011E-3;
+  nle_config->ref_alpha_w=3.0E-7;
+  nle_config->ref_alpha_w_error=2.0E-7;
   nle_config->ref_v=246.219651E9;
   nle_config->ref_v_error=0.000063E9;
   nle_config->ref_mz=91.1876E9;
@@ -189,6 +198,7 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionInt(&nle_config->exp_inv_3seq_limit, option, value, "exp_inv_3seq_limit");
   checkOptionInt(&nle_config->exp_inv_4seq_limit, option, value, "exp_inv_4seq_limit");
   checkOptionBool(&nle_config->exp_neg_enable, option, value, "exp_neg_enable");
+  checkOptionBool(&nle_config->phase1_random_samples_enable, option, value, "phase1_random_samples_enable");
   checkOptionInt(&nle_config->phase1_filter, option, value, "phase1_filter");
   checkOptionInt(&nle_config->phase1_int_match_max, option, value, "phase1_int_match_max");
   checkOptionBool(&nle_config->phase1_int_match_filter, option, value, "phase1_int_match_filter");
@@ -243,9 +253,15 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionInt(&nle_config->outfactor_pi_exp_down_max, option, value, "outfactor_pi_exp_down_max");
   checkOptionInt(&nle_config->outfactor_weak_exp_up_max, option, value, "outfactor_weak_exp_up_max");
   checkOptionInt(&nle_config->outfactor_weak_exp_down_max, option, value, "outfactor_weak_exp_down_max");
-  checkOptionDouble(&nle_config->outfactor_user, option, value, "outfactor_user");
-  checkOptionInt(&nle_config->outfactor_user_exp_up_max, option, value, "outfactor_user_exp_up_max");
-  checkOptionInt(&nle_config->outfactor_user_exp_down_max, option, value, "outfactor_user_exp_down_max");
+  checkOptionDouble(&nle_config->outfactor_user1, option, value, "outfactor_user1");
+  checkOptionInt(&nle_config->outfactor_user1_exp_up_max, option, value, "outfactor_user1_exp_up_max");
+  checkOptionInt(&nle_config->outfactor_user1_exp_down_max, option, value, "outfactor_user1_exp_down_max");
+  checkOptionDouble(&nle_config->outfactor_user2, option, value, "outfactor_user2");
+  checkOptionInt(&nle_config->outfactor_user2_exp_up_max, option, value, "outfactor_user2_exp_up_max");
+  checkOptionInt(&nle_config->outfactor_user2_exp_down_max, option, value, "outfactor_user2_exp_down_max");
+  checkOptionDouble(&nle_config->outfactor_user3, option, value, "outfactor_user3");
+  checkOptionInt(&nle_config->outfactor_user3_exp_up_max, option, value, "outfactor_user3_exp_up_max");
+  checkOptionInt(&nle_config->outfactor_user3_exp_down_max, option, value, "outfactor_user3_exp_down_max");
   checkOptionInt(&nle_config->outfactor_rmr_exp_up_max, option, value, "outfactor_rmr_exp_up_max");
   checkOptionInt(&nle_config->outfactor_rmr_exp_down_max, option, value, "outfactor_rmr_exp_down_max");
   checkOptionBool(&nle_config->outfactor_rmr_mp_enable, option, value, "outfactor_rmr_mp_enable");
@@ -261,8 +277,10 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionDouble(&nle_config->ref_e, option, value, "ref_e");
   checkOptionDouble(&nle_config->ref_ev_to_kg, option, value, "ref_ev_to_kg");
   checkOptionDouble(&nle_config->ref_kg_to_ev, option, value, "ref_kg_to_ev");
-  checkOptionDouble(&nle_config->ref_alpha, option, value, "ref_alpha");
-  checkOptionDouble(&nle_config->ref_alpha_error, option, value, "ref_alpha_error");
+  checkOptionDouble(&nle_config->ref_alpha_em, option, value, "ref_alpha_em");
+  checkOptionDouble(&nle_config->ref_alpha_em_error, option, value, "ref_alpha_em_error");
+  checkOptionDouble(&nle_config->ref_alpha_w, option, value, "ref_alpha_w");
+  checkOptionDouble(&nle_config->ref_alpha_w_error, option, value, "ref_alpha_w_error");
   checkOptionDouble(&nle_config->ref_v, option, value, "ref_v");
   checkOptionDouble(&nle_config->ref_v_error, option, value, "ref_v_error");
   checkOptionDouble(&nle_config->ref_mz, option, value, "ref_mz");
@@ -335,7 +353,8 @@ int loadConfig(nle_config_t *nle_config) {
   } // end while input_line_raw
 
   // set relative uncertainties
-  nle_config->ref_alpha_relerror=nle_config->ref_alpha_error / nle_config->ref_alpha;
+  nle_config->ref_alpha_em_relerror=nle_config->ref_alpha_em_error / nle_config->ref_alpha_em;
+  nle_config->ref_alpha_w_relerror=nle_config->ref_alpha_w_error / nle_config->ref_alpha_w;
   nle_config->ref_sm1_relerror=nle_config->ref_sm1_error / nle_config->ref_sm1;
   nle_config->ref_sm2_relerror=nle_config->ref_sm2_error / nle_config->ref_sm2;
   nle_config->ref_sm3_relerror=nle_config->ref_sm3_error / nle_config->ref_sm3;

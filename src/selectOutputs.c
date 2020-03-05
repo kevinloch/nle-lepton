@@ -56,7 +56,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   i_1=-1;
   for (i=0; i<= 10; i++) {
     if ((i == 0) && (nle_state->all_uses.alpha_em == 1)) {
-      rel_error=nle_config->ref_alpha_relerror;
+      rel_error=nle_config->ref_alpha_em_relerror;
       if (rel_error > u_1) {
         u_1=rel_error;
         i_1=i; 
@@ -129,7 +129,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   i_2=-1;
   for (i=0; i<= 10; i++) {
     if ((i == 0) && (nle_state->all_uses.alpha_em == 1)) {
-      rel_error=nle_config->ref_alpha_relerror;
+      rel_error=nle_config->ref_alpha_em_relerror;
       if ((rel_error > u_2) && (rel_error < u_1)) {
         u_2=rel_error;
         i_2=i;
@@ -202,7 +202,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   i_3=-1;
   for (i=0; i<= 10; i++) {
     if ((i == 0) && (nle_state->all_uses.alpha_em == 1)) {
-      rel_error=nle_config->ref_alpha_relerror;
+      rel_error=nle_config->ref_alpha_em_relerror;
       if ((rel_error > u_3) && (rel_error < u_2)) {
         u_3=rel_error;
         i_3=i;

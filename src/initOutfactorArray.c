@@ -18,13 +18,18 @@ void initOutfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
   int piupout=0, pidownout=1;
   int aupout=0, adownout=1;
   int e2upout=0, e2downout=2;
-  int userupout=0, userdownout=1;
+  int user1upout=0, user1downout=1;
+  int user2upout=0, user2downout=1;
+  int user3upout=0, user3downout=1;
   double updownout;
   double piout;
   double aout;
   double e2out;
-  double userout;
+  double user1out;
+  double user2out;
+  double user3out;
   double outfactor;
+  int upcomplexity, downcomplexity;
 
   unsigned int u, v;
   nle_outfactor_precomputed_t *multiplier;
@@ -54,7 +59,7 @@ void initOutfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                       u=abs(aupout);
                       v=adownout;
                       if (gcd(u, v) == 1) {
-                        aout=pow(nle_config->ref_alpha, ((float)aupout / (float)adownout));
+                        aout=pow(nle_config->ref_alpha_em, ((float)aupout / (float)adownout));
 
                         for (piupout=-nle_config->outfactor_pi_exp_up_max; piupout <= nle_config->outfactor_pi_exp_up_max; piupout++) {
                           for (pidownout=1; pidownout <= nle_config->outfactor_pi_exp_down_max; pidownout++) {
@@ -63,47 +68,85 @@ void initOutfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                             if (gcd(u, v) == 1) {
                               piout=pow(M_PI, ((float)piupout / (float)pidownout));
  
-                              for (userupout=-nle_config->outfactor_user_exp_up_max; userupout <= nle_config->outfactor_user_exp_up_max; userupout++) {
-                                for (userdownout=1; userdownout <= nle_config->outfactor_user_exp_down_max; userdownout++) {
-                                  u=abs(userupout);
-                                  v=userdownout;
+                              for (user1upout=-nle_config->outfactor_user1_exp_up_max; user1upout <= nle_config->outfactor_user1_exp_up_max; user1upout++) {
+                                for (user1downout=1; user1downout <= nle_config->outfactor_user1_exp_down_max; user1downout++) {
+                                  u=abs(user1upout);
+                                  v=user1downout;
                                   if (gcd(u, v) == 1) {
-                                    userout=pow(nle_config->outfactor_user, ((float)userupout / (float)userdownout));
-                                    outfactor=updownout * e2out * aout * piout * userout;
+                                    user1out=pow(nle_config->outfactor_user1, ((float)user1upout / (float)user1downout));
+
+                                    for (user2upout=-nle_config->outfactor_user2_exp_up_max; user2upout <= nle_config->outfactor_user2_exp_up_max; user2upout++) {
+                                      for (user2downout=1; user2downout <= nle_config->outfactor_user2_exp_down_max; user2downout++) {
+                                        u=abs(user2upout);
+                                        v=user2downout;
+                                        if (gcd(u, v) == 1) {
+                                          user2out=pow(nle_config->outfactor_user2, ((float)user2upout / (float)user2downout));
+
+                                          for (user3upout=-nle_config->outfactor_user3_exp_up_max; user3upout <= nle_config->outfactor_user3_exp_up_max; user3upout++) {
+                                            for (user3downout=1; user3downout <= nle_config->outfactor_user3_exp_down_max; user3downout++) {
+                                              u=abs(user3upout);
+                                              v=user3downout;
+                                              if (gcd(u, v) == 1) {
+                                                user3out=pow(nle_config->outfactor_user3, ((float)user3upout / (float)user3downout));
+
+                                                outfactor=updownout * e2out * aout * piout * user1out * user2out * user3out;
 #ifdef DEBUG_OUTFACTOR
-                                    printf("debug, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, userup: %d, userdown: %d, outfactor: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upout, downout, e2upout, e2downout, aupout, adownout, piupout, pidownout, userupout, userdownout, outfactor, updownout, e2out, aout, piout, userout);
-                                    fflush(stdout);
+                                                printf("debug, outfactorInit, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, use1rup: %d, user1down: %d, use2rup: %d, user2down: %d, use3rup: %d, user3down: %d, outfactor: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user1: %.9e, user2: %.9e, user3: %.9e\n", upout, downout, e2upout, e2downout, aupout, adownout, piupout, pidownout, user1upout, user1downout, user2upout, user2downout, user3upout, user3downout, outfactor, updownout, e2out, aout, piout, user1out, user2out, user3out);
+                                                fflush(stdout);
 #endif
-                                    multiplier->outfactor_rational_up=upout;
-                                    multiplier->outfactor_rational_down=downout;
-                                    multiplier->outfactor_2_exp_up=e2upout;
-                                    multiplier->outfactor_2_exp_down=e2downout;
-                                    multiplier->outfactor_alpha_exp_up=aupout;
-                                    multiplier->outfactor_alpha_exp_down=adownout;
-                                    multiplier->outfactor_pi_exp_up=piupout;
-                                    multiplier->outfactor_pi_exp_down=pidownout;
-                                    multiplier->outfactor_user_exp_up=userupout;
-                                    multiplier->outfactor_user_exp_down=userdownout;
-                                    multiplier->outfactor_complexity=\
-                                           upout + downout\
-                                           + abs(e2upout) + (e2downout-1)\
-                                           + abs(aupout) + (adownout-1)\
-                                           + abs(piupout) + (pidownout-1)\
-                                           + abs(userupout) + (userdownout-1);
-                                    multiplier->outfactor_multiplier=outfactor; 
-                                    initUses(&multiplier->outfactor_uses);
-                                    if (aupout != 0) {
-                                      multiplier->outfactor_uses.alpha_em=1;
-                                    }
-                                    nle_state->outfactors_precomputed_count++;
+                                                multiplier->outfactor_rational_up=upout;
+                                                multiplier->outfactor_rational_down=downout;
+                                                multiplier->outfactor_2_exp_up=e2upout;
+                                                multiplier->outfactor_2_exp_down=e2downout;
+                                                multiplier->outfactor_alpha_exp_up=aupout;
+                                                multiplier->outfactor_alpha_exp_down=adownout;
+                                                multiplier->outfactor_pi_exp_up=piupout;
+                                                multiplier->outfactor_pi_exp_down=pidownout;
+                                                multiplier->outfactor_user1_exp_up=user1upout;
+                                                multiplier->outfactor_user1_exp_down=user1downout;
+                                                multiplier->outfactor_user2_exp_up=user2upout;
+                                                multiplier->outfactor_user2_exp_down=user2downout;
+                                                multiplier->outfactor_user3_exp_up=user3upout;
+                                                multiplier->outfactor_user3_exp_down=user3downout;
+                                                // ignore 1 on rationals
+                                                if (upout == 1) {
+                                                  upcomplexity=0;
+                                                } else {
+                                                  upcomplexity=upout;
+                                                }
+                                                if (downout == 1) {
+                                                  downcomplexity=0;
+                                                } else {
+                                                  downcomplexity=downout;
+                                                }
+                                                multiplier->outfactor_complexity=\
+                                                       upcomplexity + downcomplexity\
+                                                       + abs(e2upout) + (e2downout-1)\
+                                                       + abs(aupout) + (adownout-1)\
+                                                       + abs(piupout) + (pidownout-1)\
+                                                       + abs(user1upout) + (user1downout-1)\
+                                                       + abs(user2upout) + (user2downout-1)\
+                                                       + abs(user3upout) + (user3downout-1);
+                                                multiplier->outfactor_multiplier=outfactor; 
+                                                initUses(&multiplier->outfactor_uses);
+                                                if (aupout != 0) {
+                                                  multiplier->outfactor_uses.alpha_em=1;
+                                                }
+                                                nle_state->outfactors_precomputed_count++;
 #ifdef DEBUG_OUTFACTOR
-                                    printf("debug, count: %d\n", nle_state->outfactors_precomputed_count);
-                                    fflush(stdout);
+                                                printf("debug, outfactorInit, count: %d\n", nle_state->outfactors_precomputed_count);
+                                                fflush(stdout);
 #endif
-                                    multiplier++;
-                                  } // gcd user
-                                } // down user
-                              } // up user
+                                                multiplier++;
+                                              } // gcd user3
+                                            } // down user3
+                                          } // up user3
+                                        } // gcd user2
+                                      } // down user2
+                                    } // up user2
+                                  } // gcd user1
+                                } // down user1
+                              } // up user1
                             } // gcd pi
                           } // pidown
                         } // piup

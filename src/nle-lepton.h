@@ -1,11 +1,13 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.1"
+#define NLE_VERSION "4.2-dev"
 
 typedef struct {
   int alpha_em;
   int float_alpha_em;
+  int alpha_w;
+  int float_alpha_w;
   int v;
   int float_v;
   int G;
@@ -25,6 +27,22 @@ typedef struct {
   int float_sm2;
   int float_sm3;
 } nle_input_use_t;
+
+typedef struct {
+  int smrfactor_rational_up;
+  int smrfactor_rational_down;
+  int smrfactor_2_exp_up;
+  int smrfactor_2_exp_down;
+  int smrfactor_alpha_exp_up;
+  int smrfactor_alpha_exp_down;
+  int smrfactor_pi_exp_up;
+  int smrfactor_pi_exp_down;
+  int smrfactor_user_exp_up;
+  int smrfactor_user_exp_down;
+  int smrfactor_complexity;
+  nle_input_use_t smrfactor_uses;
+  double smrfactor_multiplier;
+} nle_smrfactor_precomputed_t;
 
 typedef struct {
   int infactor_rational_up;
@@ -53,8 +71,12 @@ typedef struct {
   int outfactor_alpha_exp_down;
   int outfactor_pi_exp_up;
   int outfactor_pi_exp_down;
-  int outfactor_user_exp_up;
-  int outfactor_user_exp_down;
+  int outfactor_user1_exp_up;
+  int outfactor_user1_exp_down;
+  int outfactor_user2_exp_up;
+  int outfactor_user2_exp_down;
+  int outfactor_user3_exp_up;
+  int outfactor_user3_exp_down;
   int outfactor_complexity;
   nle_input_use_t outfactor_uses;
   double outfactor_multiplier;
@@ -92,8 +114,12 @@ typedef struct {
   int outfactor_rmr_reference_mass2;
   int outfactor_rmr_exp_up;
   int outfactor_rmr_exp_down;
-  int outfactor_user_exp_up;
-  int outfactor_user_exp_down;
+  int outfactor_user1_exp_up;
+  int outfactor_user1_exp_down;
+  int outfactor_user2_exp_up;
+  int outfactor_user2_exp_down;
+  int outfactor_user3_exp_up;
+  int outfactor_user3_exp_down;
   double static_multiplier;
   double match;
   int match_up;
@@ -104,7 +130,6 @@ typedef struct {
 } nle_phase1_match_t;
 
 typedef struct {
-  int term_id;
   int exp_inv;
   int smrfactor_mass;
   int smrfactor_1minus;
@@ -119,6 +144,7 @@ typedef struct {
   double smrfactor_user;
   int smrfactor_user_exp_up;
   int smrfactor_user_exp_down;
+  double smrfactor;
   double coefficient;
   nle_phase1_match_t *matches_start;
   int matches_count;
@@ -127,23 +153,26 @@ typedef struct {
 
 typedef struct {
   int phase1_seq;
-  double random_sample_sm1;
-  double random_sample_sm2;
-  double random_sample_sm3;
-  double random_sample_alpha;
-  double random_sample_v;
-  double random_sample_mz;
-  double random_sample_mw;
-  double random_sample_sin2w;
-  double random_sample_G;
-  double random_sample_mp;
-  double random_sample_mh0;
-  double random_sample_muser;
+  double input_sample_sm1;
+  double input_sample_sm2;
+  double input_sample_sm3;
+  double input_sample_alpha_em;
+  double input_sample_alpha_w;
+  double input_sample_v;
+  double input_sample_mz;
+  double input_sample_mw;
+  double input_sample_sin2w;
+  double input_sample_G;
+  double input_sample_mp;
+  double input_sample_mh0;
+  double input_sample_muser;
   char exponents_str[20];
   nle_term_state_t term1;
   nle_term_state_t term2;
   nle_term_state_t term3;
   nle_term_state_t term4;
+  nle_smrfactor_precomputed_t *smrfactors_precomputed_start;
+  int smrfactors_precomputed_count;
   nle_infactor_precomputed_t *infactors_precomputed_start;
   int infactors_precomputed_count;
   nle_outfactor_precomputed_t *outfactors_precomputed_start;
@@ -152,6 +181,7 @@ typedef struct {
   int phase1_matches_count;
   int terms_matched[5];
   nle_input_use_t all_uses;
+  int current_symmetry;
 } nle_state_t;
 
 typedef struct {
@@ -179,6 +209,7 @@ typedef struct {
   int exp_inv_3seq_limit;
   int exp_inv_4seq_limit;
   int exp_neg_enable;
+  int phase1_random_samples_enable;
   int phase1_filter;
   int phase1_int_match_max;
   int phase1_int_match_filter;
@@ -234,9 +265,15 @@ typedef struct {
   int outfactor_pi_exp_down_max;
   int outfactor_weak_exp_up_max;
   int outfactor_weak_exp_down_max;
-  double outfactor_user;
-  int outfactor_user_exp_up_max;
-  int outfactor_user_exp_down_max;
+  double outfactor_user1;
+  int outfactor_user1_exp_up_max;
+  int outfactor_user1_exp_down_max;
+  double outfactor_user2;
+  int outfactor_user2_exp_up_max;
+  int outfactor_user2_exp_down_max;
+  double outfactor_user3;
+  int outfactor_user3_exp_up_max;
+  int outfactor_user3_exp_down_max;
   int outfactor_rmr_exp_up_max;
   int outfactor_rmr_exp_down_max;
   int outfactor_rmr_mp_enable;
@@ -253,9 +290,12 @@ typedef struct {
   double ref_e;
   double ref_ev_to_kg;
   double ref_kg_to_ev;
-  double ref_alpha;
-  double ref_alpha_error;
-  double ref_alpha_relerror;
+  double ref_alpha_em;
+  double ref_alpha_em_error;
+  double ref_alpha_em_relerror;
+  double ref_alpha_w;
+  double ref_alpha_w_error;
+  double ref_alpha_w_relerror;
   double ref_v;
   double ref_v_error;
   double ref_v_relerror;
