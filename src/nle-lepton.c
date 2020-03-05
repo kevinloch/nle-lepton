@@ -251,12 +251,6 @@ int main(int argc, char **argv) {
         nle_state.term1.smrfactor_mass=1;
       }
       if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
-      // temp force smrfactor
-      nle_state.term1.smrfactor=4.0  / nle_config.ref_alpha_em;
-      nle_state.term1.smrfactor_mass=1;
-
-
-
         // phase 1
         for (i=0; i<=2; i++) {
           nle_state.terms_matched[i]=0;
