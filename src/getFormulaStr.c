@@ -1,6 +1,64 @@
 #include <stdio.h>
 #include "nle-lepton.h"
 
+void getSmrfStr(nle_config_t *nle_config, char *smrf_str, nle_smrfactor_precomputed_t *current_smrfactors, double smrfactor) {
+  // creates a text string representation of the current solution mass ratio factors
+
+  int upsmr;
+  int downsmr;
+  char e2smr[32];
+  char updownsmr[32];
+  char pismr[32];
+  char asmr[32];
+  char usmr[32];
+
+  upsmr=current_smrfactors->smrfactor_rational_up;
+  downsmr=current_smrfactors->smrfactor_rational_down;
+  if ((upsmr == 1) && (downsmr == 1)) {
+    sprintf(updownsmr, "       ");
+  } else {
+    sprintf(updownsmr, "(%2d/%2d)", upsmr, downsmr);
+  }
+
+  if (current_smrfactors->smrfactor_2_exp_up == 0) {
+    sprintf(e2smr, "        ");
+  } else {
+    sprintf(e2smr, "2^(%2d/%d)", current_smrfactors->smrfactor_2_exp_up, current_smrfactors->smrfactor_2_exp_down);
+  }
+
+  if (current_smrfactors->smrfactor_pi_exp_up == 0) {
+    sprintf(pismr, "         ");
+  } else {
+    if ((current_smrfactors->smrfactor_pi_exp_up == 1) && (current_smrfactors->smrfactor_pi_exp_down == 1)) {
+      sprintf(pismr, "pi       ");
+    } else {
+      sprintf(pismr, "pi^(%2d/%d)", current_smrfactors->smrfactor_pi_exp_up, current_smrfactors->smrfactor_pi_exp_down);
+    }
+  }
+
+  if (current_smrfactors->smrfactor_alpha_exp_up == 0) {
+    sprintf(asmr, "        ");
+  } else {
+    if ((current_smrfactors->smrfactor_alpha_exp_up == 1) && (current_smrfactors->smrfactor_alpha_exp_down == 1)) {
+      sprintf(asmr, "a       ");
+    } else {
+      sprintf(asmr, "a^(%2d/%d)", current_smrfactors->smrfactor_alpha_exp_up, current_smrfactors->smrfactor_alpha_exp_down);
+    }
+  }
+
+  if (current_smrfactors->smrfactor_user_exp_up == 0) {
+    sprintf(usmr, "           ");
+  } else {
+    if ((current_smrfactors->smrfactor_user_exp_up == 1) && (current_smrfactors->smrfactor_user_exp_down == 1)) {
+      sprintf(usmr, "usmr       ");
+    } else {
+      sprintf(usmr, "usmr^(%2d/%d)", current_smrfactors->smrfactor_user_exp_up, current_smrfactors->smrfactor_user_exp_down);
+    }
+  }
+
+  sprintf(smrf_str, "'%s %s %s %s %s'=%.9e", updownsmr, e2smr, pismr, asmr, usmr, smrfactor);
+}
+
 void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match_t *current_match) {
   // creates a complete text string representation of a single formula term
   int upout;

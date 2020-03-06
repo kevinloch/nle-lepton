@@ -5,13 +5,15 @@
 #include "nle-lepton.h"
 #include "util.h"
 #include "cscanner.h"
+#include "getFormulaStr.h"
 
 //#define DEBUG10
 //#define DEBUG11
 //#define DEBUG12
 
-void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
+int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   // solve a three term polynomial-like non-linear equation for the unknown coefficients given known roots (particle masses)
+  // returns 0 if equation was solved, 1 if failed
   int i;
   long long samples=0;
   struct timespec starttime;
@@ -21,6 +23,7 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   int matches_count_end;
   int good_coefficients;
   int c2_gt_c1, c2_gt_c3, c1_gt_c3;
+  char smrf_str[80];
 
   clock_gettime(CLOCK_REALTIME, &starttime);
 
@@ -129,6 +132,13 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     stalledrange_multiplier=17.0; // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
     slowcheckpoint=1000000;       // progress point to check on slow processes
     stuckprecision=1.0E-2;        // if precision is not past this level by slowcheckpoint, try resetting
+  }
+
+  // load smrfactor string if (1-smr) enabled
+  if (nle_config->smrfactor_1minus_enable == 1) {
+    getSmrfStr(nle_config, smrf_str, nle_state->term1.current_smrfactors, nle_state->term1.smrfactor);
+  } else {
+    smrf_str[0]=0;
   }
 
   // starting v4.0 denominator is always v for this step, other mass ratio factors are now swapped out in cscanner()
@@ -573,9 +583,9 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
       if (nle_config->nle_mode == 2) {
         if (nle_config->smrfactor_1minus_enable == 1) {
-          printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, smrf: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, nle_state->term1.smrfactor, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), samples, best_ordering, best_precision_last, elapsed_time);
+          printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, samples: %lld, ordering: %d, smrf: %s, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), samples, best_ordering, smrf_str, best_precision_last, elapsed_time);
           // verbose for testing
-          //printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, smrf: %.14e, alpha_w: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, sm1_test_1: %.9Le, sm1_test_2: %.9Le, sm1_test_3: %.9Le, sm2_test_1: %.9Le, sm2_test_2: %.9Le, sm2_test_3: %.9Le, sm3_test_1: %.9Le, sm3_test_2: %.9Le, sm3_test_3: %.9Le, dr_c: %.9Le, dr_e: %.9Le, dr_u: %.9Le, dr_t: %.9Le, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, nle_state->term1.smrfactor, nle_state->input_sample_alpha_w, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), sm1_test_term1, sm1_test_term2, sm1_test_term3, sm2_test_term1, sm2_test_term2, sm2_test_term3, sm3_test_term1, sm3_test_term2, sm3_test_term3, dynamicrange_c[best_ordering], dynamicrange_sm1[best_ordering], dynamicrange_sm2[best_ordering], dynamicrange_sm3[best_ordering], samples, best_ordering, best_precision_last, elapsed_time);
+          //printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, alpha_w: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, sm1_test_1: %.9Le, sm1_test_2: %.9Le, sm1_test_3: %.9Le, sm2_test_1: %.9Le, sm2_test_2: %.9Le, sm2_test_3: %.9Le, sm3_test_1: %.9Le, sm3_test_2: %.9Le, sm3_test_3: %.9Le, dr_c: %.9Le, dr_e: %.9Le, dr_u: %.9Le, dr_t: %.9Le, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, nle_state->input_sample_alpha_w, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), sm1_test_term1, sm1_test_term2, sm1_test_term3, sm2_test_term1, sm2_test_term2, sm2_test_term3, sm3_test_term1, sm3_test_term2, sm3_test_term3, dynamicrange_c[best_ordering], dynamicrange_sm1[best_ordering], dynamicrange_sm2[best_ordering], dynamicrange_sm3[best_ordering], samples, best_ordering, best_precision_last, elapsed_time);
         } else {
           printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.9e, samples: %lld, ordering: %d, two_term_test: %.9Le, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, samples, best_ordering, two_term_test, precision, elapsed_time);
         }
@@ -619,7 +629,7 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         nle_state->term3.coefficient=(double)two_term_test;
         if (nle_config->status_enable == 1) {
           if (nle_config->smrfactor_1minus_enable == 1) {
-            printf("status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, smrf: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, nle_state->term1.smrfactor, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
+            printf("status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, smrf: %s\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), smrf_str);
             fflush(stdout);
           } else {
             printf("status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
@@ -656,7 +666,15 @@ void solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       clock_gettime(CLOCK_REALTIME, &endtime);
       elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
       two_term_test=c3_center[best_ordering] / (sqrtl(c1_center[best_ordering] * c2_center[best_ordering]));
-      printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, smrf: %.14e (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, nle_state->term1.smrfactor, elapsed_time);
+      if (nle_config->smrfactor_1minus_enable == 1) {
+        printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, smrf: %s (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, smrf_str, elapsed_time);
+      } else {
+        printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, elapsed_time);
+      }
     }
+    // we failed, return 1
+    return(1);
   } // end if best_precision_last
+  // success, return 0
+  return(0);
 }

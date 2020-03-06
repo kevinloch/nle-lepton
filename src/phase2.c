@@ -46,12 +46,12 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   char out_str_17[320];
   char out_str_18[320];
   char out_str_19[320];
+  char out_str_20[320];
   char used_as_input[5];
   char used_as_output[5];
   char user1_out_str[32];
   char user2_out_str[32];
   char user3_out_str[32];
-  char smrfactor_str[32];
   char user_in_str[32];
   long long result_hash;
   int complexity;
@@ -61,6 +61,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   char term1_formula_str[288];
   char term2_formula_str[288];
   char term3_formula_str[288];
+  char smrf_str[80];
   int symmetry;
   float combined_score;
  
@@ -87,16 +88,6 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   double range_multiplier;
   long long stalled;
   int progress;
-
-  // these tunings affect speed and reliability, adjust with extreme care
-  double precision_target=1.0E-11;      // solve NLE to this level of precision
-  double test_ratio=25.0;               // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
-  int ratio_grace_period=3;             // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
-  int stalled_limit=500000;             // most formulas can be solved with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
-  double default_range_multiplier=5.0;  // lowest practical range multiplier, fastest for most formulas
-  double stalled_range_multiplier=10.0; // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
-  int slow_checkpoint=1000000;          // progress point to check on slow processes
-  double stuck_precision=1.0E-2;        // if precision is not past this level by slow_checkpoint, try resetting
 
   // mc outputs
   double alpha=0;
@@ -246,17 +237,70 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   double muser_out_diff=0;
   double muser_out_reldiff=0;
 
+  // tuneables
+  double precision_target;
+  double test_ratio;
+  int ratio_grace_period;
+  int stalled_limit;
+  double default_range_multiplier;
+  double stalled_range_multiplier;
+  int slow_checkpoint;
+  double stuck_precision;
+
+  // these tunings affect speed and reliability, adjust with extreme care
+  if (nle_config->smrfactor_1minus_enable == 1) {
+    // 2-term mode with 1-smr
+    precision_target=1.0E-11;      // solve NLE to this level of precision
+    test_ratio=25.0;               // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
+    ratio_grace_period=3;             // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
+    stalled_limit=500000;             // most formulas can be solved with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
+    default_range_multiplier=3.0;  // lowest practical range multiplier, fastest for most formulas
+    stalled_range_multiplier=3.0;  // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
+    slow_checkpoint=1000000;          // progress point to check on slow processes
+    stuck_precision=1.0E+30;       // if precision is not past this level by slow_checkpoint, try resetting
+  } else if (nle_config->nle_mode == 2) {
+    // 2-term mode without 1-smr
+    precision_target=1.0E-11;      // solve NLE to this level of precision
+    test_ratio=25.0;               // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
+    ratio_grace_period=3;             // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
+    stalled_limit=500000;             // most formulas can be solved with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
+    default_range_multiplier=1.0;  // lowest practical range multiplier, fastest for most formulas
+    stalled_range_multiplier=2.0;  // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
+    slow_checkpoint=1000000;          // progress point to check on slow processes
+    stuck_precision=1.0E+30;       // if precision is not past this level by slow_checkpoint, try resetting
+  } else {
+    // 3-term mode
+    precision_target=1.0E-11;      // solve NLE to this level of precision
+    test_ratio=25.0;               // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
+    ratio_grace_period=3;             // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
+    stalled_limit=500000;             // most formulas can be solved with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
+    default_range_multiplier=5.0;  // lowest practical range multiplier, fastest for most formulas
+    stalled_range_multiplier=10.0; // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
+    slow_checkpoint=1000000;          // progress point to check on slow processes
+    stuck_precision=1.0E-2;        // if precision is not past this level by slow_checkpoint, try resetting
+  }
+
   clock_gettime(CLOCK_REALTIME, &start_time);
+
+  smrf_str[0]=0;
 
   // generate formula strings for each term
   getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
   getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
   getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
+  if (nle_config->smrfactor_1minus_enable == 1) {
+    getSmrfStr(nle_config, smrf_str, nle_state->term1.current_smrfactors, nle_state->term1.smrfactor);
+  } else {
+    smrf_str[0]=0;
+  }
 
 #ifdef DEBUG20
   printf("debug, term1=%s\n", term1_formula_str);
   printf("debug, term2=%s\n", term2_formula_str);
   printf("debug, term3=%s\n", term3_formula_str);
+  if (nle_config->smrfactor_1minus_enable == 1) {
+    printf("debug, smrf= %s\n", smrf_str);
+  }
   fflush(stdout);
 #endif
 
@@ -1587,19 +1631,8 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
       sprintf(user_in_str, "                    ");
     }
 
-    // if 1-smr is enabled display smrfactor on next line
-    if (nle_config->smrfactor_1minus_enable == 1) {
-      sprintf(smrfactor_str, "smrf=%.9e,", nle_state->term1.smrfactor);
-    } else {
-      smrfactor_str[0]=0;
-    }
-
     if (nle_config->nle_mode == 2) {
-      if (nle_config->smrfactor_1minus_enable == 1) {
-        sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 + (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str, smrfactor_str);
-      } else {
-        sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 - (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
-      }
+      sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 - (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
     } else if (nle_config->nle_mode == 3) {
       sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1 - term2 + term3 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
     }
@@ -1610,6 +1643,10 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
     printf("%s\n", out_str_18);
     sprintf(out_str_19, "result, %.4f, %3d, %3d, %s, %s, %12lld, 19, term3=%s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, term3_formula_str);
     printf("%s\n", out_str_19);
+    if (nle_config->smrfactor_1minus_enable == 1) {
+      sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str);
+      printf("%s\n", out_str_20);
+    }
     fflush(stdout);
     if (nle_config->upload_results_enable == 1) {
         sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
@@ -1666,6 +1703,10 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
         system(exec_str);
         sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_19, 320));
         system(exec_str);
+        if (nle_config->smrfactor_1minus_enable == 1) {
+          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_20, 320));
+          system(exec_str);
+        }
     } // end if upload_results_enable
   } // end if score
   return(precision_last);

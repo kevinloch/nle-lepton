@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
   int coefficients_matched;
   long seedsec;
   long seedus;
+  int failed;
 
   // initialize nle_config to default values
   initConfig(&nle_config);
@@ -245,9 +246,12 @@ int main(int argc, char **argv) {
     // sequence through smrfactors if smrfactor_1minus is enabled, otherwise run once when smrfactor_seq == 0
     smrfactors=nle_state.smrfactors_precomputed_start;
     for (smrfactor_seq=0; smrfactor_seq <= nle_state.smrfactors_precomputed_count; smrfactor_seq++) {
-      // here we would cycle through enabled smrfactor_mass but for testing just use v
+      // here we would cycle through enabled smrfactor_mass but for now only v is supported
       if ((nle_state.smrfactors_precomputed_count > 0) && (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
+        nle_state.term1.current_smrfactors=smrfactors;
+        nle_state.term2.current_smrfactors=smrfactors;
         nle_state.term1.smrfactor=smrfactors->smrfactor_multiplier;
+        nle_state.term2.smrfactor=smrfactors->smrfactor_multiplier;
         nle_state.term1.smrfactor_mass=1;
         nle_state.term2.smrfactor_mass=1;
       }
@@ -256,7 +260,7 @@ int main(int argc, char **argv) {
         for (i=0; i<=2; i++) {
           nle_state.terms_matched[i]=0;
         }
-        solveNLEforCoefficients(&nle_config, &nle_state);
+        failed=solveNLEforCoefficients(&nle_config, &nle_state);
         if (nle_state.phase1_matches_count > 0) {
           coefficients_matched=0;
           for (i=0; i <= 2; i++) {
@@ -274,7 +278,7 @@ int main(int argc, char **argv) {
             }
           }
         } else {
-          if (nle_config.status_enable == 1) {
+          if ((nle_config.status_enable == 1) && (failed == 0)) {
             printf("status, No interesting coefficient multipliers found\n");
             fflush(stdout);
           }

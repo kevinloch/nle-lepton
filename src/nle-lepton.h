@@ -133,22 +133,12 @@ typedef struct {
   int exp_inv;
   int smrfactor_mass;
   int smrfactor_1minus;
-  int smrfactor_rational_up;
-  int smrfactor_rational_down;
-  int smrfactor_2_exp_up;
-  int smrfactor_2_exp_down;
-  int smrfactor_alpha_exp_up;
-  int smrfactor_alpha_exp_down;
-  int smrfactor_pi_exp_up;
-  int smrfactor_pi_exp_down;
-  double smrfactor_user;
-  int smrfactor_user_exp_up;
-  int smrfactor_user_exp_down;
   double smrfactor;
   double coefficient;
   nle_phase1_match_t *matches_start;
   int matches_count;
   nle_phase1_match_t *current_match;
+  nle_smrfactor_precomputed_t *current_smrfactors;
 } nle_term_state_t;
 
 typedef struct {
