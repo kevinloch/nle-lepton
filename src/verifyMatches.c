@@ -5,6 +5,12 @@
 #include "util.h"
 #include "phase2.h"
 
+//#define DEBUG_VERIFY
+
+#ifdef DEBUG_VERIFY
+#include "getFormulaStr.h"
+#endif
+
 void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   //  separate the match table into a separate list for each exponent, then test all unique combinations of coefficients
   int i,j;
@@ -31,6 +37,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   nle_input_use_t term3_uses;
   int complexity;
   int symmetry;
+#ifdef DEBUG_VERIFY
+  char term1_formula_str[288];
+  char term2_formula_str[288];
+  char term3_formula_str[288];
+#endif
 
   // extract all term1 coefficients
   phase1_match=nle_state->phase1_matches_start;
@@ -59,13 +70,23 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         downcomplexity=tmpmatchdown;
       }
       tmpmatchcomplexity=(phase1_match->match_complexity + upcomplexity + downcomplexity);
-
+#ifdef DEBUG_VERIFY
+      printf("debug, term1, match_seq: %d, tmpmatchup: %d, tmpmatchdown: %d, tmpmatchcomplexity: %d, tmphash: %lld\n", i, tmpmatchup, tmpmatchdown, tmpmatchcomplexity, tmphash);
+      getFormulaStr(nle_config, term1_formula_str, phase1_match);
+      printf("debug, term1, phase1_match=%s\n", term1_formula_str);
+      fflush(stdout);
+#endif
       // search existing match table for dupes and see if we have lower complexity
       temp_match=nle_state->term1.matches_start;
       dupe=0;
       for (j=0; j< nle_state->term1.matches_count; j++) {
         if (tmphash == temp_match->match_hash) {
-          if (tmpmatchcomplexity < temp_match->match_complexity) {
+          if (tmpmatchcomplexity <= temp_match->match_complexity) {
+#ifdef DEBUG_VERIFY
+            printf("debug, term1, replace, tmpmatchcomplexity: %d, temp_match->match_complexity: %d, tmphash: %lld\n", tmpmatchcomplexity, temp_match->match_complexity, tmphash);
+            getFormulaStr(nle_config, term1_formula_str, temp_match);
+            printf("debug, term1, replace, old:=%s\n", term1_formula_str);
+#endif
             // replace
             temp_match->term_id=1;
             temp_match->exp_inv=phase1_match->exp_inv;
@@ -108,6 +129,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             temp_match->match_hash=tmphash;
             initUses(&temp_match->match_uses);
             addUses(&temp_match->match_uses, &phase1_match->match_uses);
+#ifdef DEBUG_VERIFY
+            getFormulaStr(nle_config, term1_formula_str, temp_match);
+            printf("debug, term1, replace, new:=%s\n", term1_formula_str);
+            fflush(stdout);
+#endif
           }
           dupe=1;
           break;
@@ -157,6 +183,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         term1_match->match_hash=tmphash;
         initUses(&term1_match->match_uses);
         addUses(&term1_match->match_uses, &phase1_match->match_uses);
+#ifdef DEBUG_VERIFY
+        getFormulaStr(nle_config, term1_formula_str, term1_match);
+        printf("debug, term1, addnew term1=%s\n", term1_formula_str);
+       fflush(stdout);
+#endif
         nle_state->term1.matches_count++;
         term1_match++;
       } // end if not dupe
@@ -191,13 +222,23 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         downcomplexity=tmpmatchdown;
       }                                         
       tmpmatchcomplexity=(phase1_match->match_complexity + upcomplexity + downcomplexity);
-
+#ifdef DEBUG_VERIFY
+      printf("debug, term2, match_seq: %d, tmpmatchup: %d, tmpmatchdown: %d, tmpmatchcomplexity: %d, tmphash: %lld\n", i, tmpmatchup, tmpmatchdown, tmpmatchcomplexity, tmphash);
+      getFormulaStr(nle_config, term2_formula_str, phase1_match);
+      printf("debug, term2, phase1_match=%s\n", term2_formula_str);
+      fflush(stdout);
+#endif
       // search existing match table for dupes and see if we have lower complexity
       temp_match=nle_state->term2.matches_start;
       dupe=0;
       for (j=0; j< nle_state->term2.matches_count; j++) {
         if (tmphash == temp_match->match_hash) {
-          if (tmpmatchcomplexity < temp_match->match_complexity) {
+          if (tmpmatchcomplexity <= temp_match->match_complexity) {
+#ifdef DEBUG_VERIFY
+            printf("debug, term2, replace, tmpmatchcomplexity: %d, temp_match->match_complexity: %d, tmpmash: %lld\n", tmpmatchcomplexity, temp_match->match_complexity, tmphash);
+            getFormulaStr(nle_config, term2_formula_str, temp_match);
+            printf("debug, term2, replace, old:=%s\n", term2_formula_str);
+#endif
             // replace
             temp_match->term_id=2;
             temp_match->exp_inv=phase1_match->exp_inv;
@@ -240,6 +281,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             temp_match->match_hash=tmphash;
             initUses(&temp_match->match_uses);
             addUses(&temp_match->match_uses, &phase1_match->match_uses);
+#ifdef DEBUG_VERIFY
+            getFormulaStr(nle_config, term2_formula_str, temp_match);
+            printf("debug, term2, replace, new:=%s\n", term2_formula_str);
+           fflush(stdout);
+#endif
           }
           dupe=1;
           break;
@@ -289,6 +335,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         term2_match->match_hash=tmphash;
         initUses(&term2_match->match_uses);
         addUses(&term2_match->match_uses, &phase1_match->match_uses);
+#ifdef DEBUG_VERIFY
+        getFormulaStr(nle_config, term2_formula_str, term2_match);
+        printf("debug, term2, addnew term2=%s\n", term2_formula_str);
+        fflush(stdout);
+#endif
         nle_state->term2.matches_count++;
         term2_match++;
       } // end if not dupe
@@ -323,13 +374,23 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         downcomplexity=tmpmatchdown;
       }                                         
       tmpmatchcomplexity=(phase1_match->match_complexity + upcomplexity + downcomplexity);
-
+#ifdef DEBUG_VERIFY
+      printf("debug, term3, match_seq: %d, tmpmatchup: %d, tmpmatchdown: %d, tmpmatchcomplexity: %d, tmphash: %lld\n", i, tmpmatchup, tmpmatchdown, tmpmatchcomplexity, tmphash);
+      getFormulaStr(nle_config, term3_formula_str, phase1_match);
+      printf("debug, term3, phase1_match=%s\n", term3_formula_str);
+      fflush(stdout);
+#endif
       // search existing match table for dupes and see if we have lower complexity
       temp_match=nle_state->term3.matches_start;
       dupe=0;
       for (j=0; j< nle_state->term3.matches_count; j++) {
         if (tmphash == temp_match->match_hash) {
-          if (tmpmatchcomplexity < temp_match->match_complexity) {
+          if (tmpmatchcomplexity <= temp_match->match_complexity) {
+#ifdef DEBUG_VERIFY
+            printf("debug, term3, replace, tmpmatchcomplexity: %d, temp_match->match_complexity: %d, tmphash: %lld\n", tmpmatchcomplexity, temp_match->match_complexity, tmphash);
+            getFormulaStr(nle_config, term3_formula_str, temp_match);
+            printf("debug, term3, replace, old:=%s\n", term3_formula_str);
+#endif
             // replace
             temp_match->term_id=3;
             temp_match->exp_inv=phase1_match->exp_inv;
@@ -372,6 +433,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             temp_match->match_hash=tmphash;
             initUses(&temp_match->match_uses);
             addUses(&temp_match->match_uses, &phase1_match->match_uses);
+#ifdef DEBUG_VERIFY
+            getFormulaStr(nle_config, term3_formula_str, temp_match);
+            printf("debug, term3, replace, new:=%s\n", term3_formula_str);
+            fflush(stdout);
+#endif
           }
           dupe=1;
           break;
@@ -421,6 +487,11 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         term3_match->match_hash=tmphash;
         initUses(&term3_match->match_uses);
         addUses(&term3_match->match_uses, &phase1_match->match_uses);
+#ifdef DEBUG_VERIFY
+        getFormulaStr(nle_config, term3_formula_str, term3_match);
+        printf("debug, term3, addnew term3=%s\n", term3_formula_str);
+        fflush(stdout);
+#endif
         nle_state->term3.matches_count++;
         term3_match++;
       } // end if not dupe
@@ -437,15 +508,33 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
     fflush(stdout);
   }
   for (t1=0; t1 < nle_state->term1.matches_count; t1++) {
+#ifdef DEBUG_VERIFY
+    nle_state->term1.current_match=term1_match;
+    getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
+    printf("term1=%s\n", term1_formula_str);
+    fflush(stdout);
+#endif
     initUses(&term1_uses);
     addUses(&term1_uses, &term1_match->match_uses);
     term2_match=nle_state->term2.matches_start;
     for (t2=0; t2 < nle_state->term2.matches_count; t2++) {
+#ifdef DEBUG_VERIFY
+      nle_state->term2.current_match=term2_match;
+      getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
+      printf("term2=%s\n", term2_formula_str);
+      fflush(stdout);
+#endif
       initUses(&term2_uses);
       addUses(&term2_uses, &term2_match->match_uses);
       term3_match=nle_state->term3.matches_start;
       for (t3=0; t3 < nle_state->term3.matches_count; t3++) {
         combo++;
+#ifdef DEBUG_VERIFY
+        nle_state->term3.current_match=term3_match;
+        getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
+        printf("term3=%s\n", term3_formula_str);
+        fflush(stdout);
+#endif
 
         // calculate complexity score
         complexity=term1_match->match_complexity + term2_match->match_complexity + term3_match->match_complexity;

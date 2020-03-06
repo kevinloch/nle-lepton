@@ -254,9 +254,9 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
 
 #ifdef DEBUG20
-  printf("term1=%s\n", term1_formula_str);
-  printf("term2=%s\n", term2_formula_str);
-  printf("term3=%s\n", term3_formula_str);
+  printf("debug, term1=%s\n", term1_formula_str);
+  printf("debug, term2=%s\n", term2_formula_str);
+  printf("debug, term3=%s\n", term3_formula_str);
   fflush(stdout);
 #endif
 
@@ -967,9 +967,14 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
 
                           if (nle_state->term1.smrfactor_1minus == 1) {
                             term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / v)), term1_exp);
-                            term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / v)), term1_exp);
                             // check if (1-smr) is negative for heaviest mass state
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3)) < 0) {
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / v)) < 0) {
+                              term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / v)), term1_exp);
+                            } else {
+                              term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / v)), term1_exp);
+                            }
+                            // check if (1-smr) is negative for heaviest mass state
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / v)) < 0) {
                               term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / v)), term1_exp);
                             } else {
                               term1_mass_sm3=pow((1.0 - (nle_state->term1.smrfactor * sm3 / v)), term1_exp);

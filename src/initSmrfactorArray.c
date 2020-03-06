@@ -72,7 +72,7 @@ void initSmrfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                     usersmr=pow(nle_config->smrfactor_user, ((float)userupsmr / (float)userdownsmr));
                                     smrfactor=updownsmr * e2smr * asmr * pismr * usersmr;
 #ifdef DEBUG_SMRFACTOR
-                                    printf("debug, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, userup: %d, userdown: %d, smrfactor: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upsmr, downsmr, e2upsmr, e2downsmr, aupsmr, adownsmr, piupsmr, pidownsmr, userupsmr, userdownsmr, smrfactor, updownsmr, e2smr, asmr, pismr, usersmr);
+                                    printf("debug, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, userup: %d, userdown: %d, smrf: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upsmr, downsmr, e2upsmr, e2downsmr, aupsmr, adownsmr, piupsmr, pidownsmr, userupsmr, userdownsmr, smrfactor, updownsmr, e2smr, asmr, pismr, usersmr);
                                     fflush(stdout);
 #endif
                                     multiplier->smrfactor_rational_up=upsmr;

@@ -1,7 +1,5 @@
 To Do:
  - Improve speed of phase 1 and phase 2 for difficult formulas (generally those with sequential high inverse exponents like E+24+25+26)
  - Test for ratios of reference masses in coefficient factors and/or constant term
- - Support for either (1 - M/rm) or (M/rm) on each term (currently just M/rm is supported)
- - Support for two term squared (to generate three terms from the original two) formulas
  - Support for four term formulas without constant term (one zero mass root and three real positive mass roots)
  - Support for some limited rational exponents (2/x, 3/x, etc.)

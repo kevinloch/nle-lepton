@@ -249,6 +249,7 @@ int main(int argc, char **argv) {
       if ((nle_state.smrfactors_precomputed_count > 0) && (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
         nle_state.term1.smrfactor=smrfactors->smrfactor_multiplier;
         nle_state.term1.smrfactor_mass=1;
+        nle_state.term2.smrfactor_mass=1;
       }
       if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
         // phase 1
