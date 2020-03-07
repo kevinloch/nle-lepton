@@ -25,8 +25,8 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   int c2_gt_c1, c2_gt_c3, c1_gt_c3;
   char smrf_str[80];
   char mass_str[32];
-  char out_str_01[320];
-  char exec_str[352];
+  char out_str_01[512];
+  char exec_str[512];
 
   clock_gettime(CLOCK_REALTIME, &starttime);
 
@@ -666,22 +666,20 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         nle_state->term1.coefficient=(double)sqrtl(c1_center[best_ordering]);
         nle_state->term2.coefficient=(double)sqrtl(c2_center[best_ordering]);
         nle_state->term3.coefficient=(double)two_term_test;
-        if (nle_config->status_enable == 1) {
-          if (nle_config->smrfactor_1minus_enable == 1) {
-            sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, reference_mass: %s, smrf: %s\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), mass_str, smrf_str);
-            printf("%s\n", out_str_01);
-            fflush(stdout);
-          } else {
-            sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
-            printf("%s\n", out_str_01);
-            fflush(stdout);
-          } // end if 1minus
-          if (nle_config->upload_results_enable == 1) {
-            // upload interesting two_term_test as these are rare and significant
-            sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
-            system(exec_str);
-          } // end if upload enable
-        } // end if status
+        if (nle_config->smrfactor_1minus_enable == 1) {
+          sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, reference_mass: %s, smrf: %s", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), mass_str, smrf_str);
+          printf("%s\n", out_str_01);
+          fflush(stdout);
+        } else {
+          sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
+          printf("%s\n", out_str_01);
+          fflush(stdout);
+        } // end if 1minus
+        if (nle_config->upload_results_enable == 1) {
+          // upload interesting two_term_test as these are rare and significant
+          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+          system(exec_str);
+        } // end if upload enable
       } else {
         nle_state->term1.coefficient=(double)c1_center[best_ordering];
         nle_state->term2.coefficient=(double)c2_center[best_ordering];

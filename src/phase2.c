@@ -25,28 +25,28 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
 #endif
   int valid_result;
   double phase2_results_window;
-  char exec_str[352];
+  char exec_str[512];
   char mass_str[32];
-  char out_str_01[320];
-  char out_str_02[320];
-  char out_str_03[320];
-  char out_str_04[320];
-  char out_str_05[320];
-  char out_str_06[320];
-  char out_str_07[320];
-  char out_str_08[320];
-  char out_str_09[320];
-  char out_str_10[320];
-  char out_str_11[320];
-  char out_str_12[320];
-  char out_str_13[320];
-  char out_str_14[320];
-  char out_str_15[320];
-  char out_str_16[320];
-  char out_str_17[320];
-  char out_str_18[320];
-  char out_str_19[320];
-  char out_str_20[320];
+  char out_str_01[512];
+  char out_str_02[512];
+  char out_str_03[512];
+  char out_str_04[512];
+  char out_str_05[512];
+  char out_str_06[512];
+  char out_str_07[512];
+  char out_str_08[512];
+  char out_str_09[512];
+  char out_str_10[512];
+  char out_str_11[512];
+  char out_str_12[512];
+  char out_str_13[512];
+  char out_str_14[512];
+  char out_str_15[512];
+  char out_str_16[512];
+  char out_str_17[512];
+  char out_str_18[512];
+  char out_str_19[512];
+  char out_str_20[512];
   char used_as_input[5];
   char used_as_output[5];
   char user1_out_str[32];
@@ -79,7 +79,6 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   double term1_reference_mass=0;
   double term2_reference_mass=0;
   double term3_reference_mass=0;
-  double smrfactor_mass;
   double term1_mass_sm1, term2_mass_sm1, term3_mass_sm1;
   double term1_mass_sm2, term2_mass_sm2, term3_mass_sm2;
   double term1_mass_sm3, term2_mass_sm3, term3_mass_sm3;
@@ -1011,29 +1010,27 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                           }
 
                           if (nle_state->term1.smrfactor_1minus == 1) {
-                            smrfactor_mass=nle_state->term1.smrfactor_mass;
-
                             // check if (1-smr) is negative for sm1 and invert inside and outside radical
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm1 / smrfactor_mass)) < 0) {
-                              term1_mass_sm1=-pow(-(1.0 - (nle_state->term1.smrfactor * sm1 / smrfactor_mass)), term1_exp);
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm1 / term1_reference_mass)) < 0) {
+                              term1_mass_sm1=-pow(-(1.0 - (nle_state->term1.smrfactor * sm1 / term1_reference_mass)), term1_exp);
                             } else {
-                              term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / smrfactor_mass)), term1_exp);
+                              term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / term1_reference_mass)), term1_exp);
                             }
                             // check if (1-smr) is negative for sm2 and invert inside and outside radical
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / smrfactor_mass)) < 0) {
-                              term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / smrfactor_mass)), term1_exp);
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / term1_reference_mass)) < 0) {
+                              term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / term1_reference_mass)), term1_exp);
                             } else {
-                              term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / smrfactor_mass)), term1_exp);
+                              term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / term1_reference_mass)), term1_exp);
                             }
                             // check if (1-smr) is negative for sm3 and invert inside and outside radical
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / smrfactor_mass)) < 0) {
-                              term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / smrfactor_mass)), term1_exp);
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / term1_reference_mass)) < 0) {
+                              term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / term1_reference_mass)), term1_exp);
                             } else {
-                              term1_mass_sm3=pow((1.0 - (nle_state->term1.smrfactor * sm3 / smrfactor_mass)), term1_exp);
+                              term1_mass_sm3=pow((1.0 - (nle_state->term1.smrfactor * sm3 / term1_reference_mass)), term1_exp);
                             }
-                            term2_mass_sm1=pow((nle_state->term1.smrfactor * sm1 / smrfactor_mass), term2_exp);
-                            term2_mass_sm2=pow((nle_state->term1.smrfactor * sm2 / smrfactor_mass), term2_exp);
-                            term2_mass_sm3=pow((nle_state->term1.smrfactor * sm3 / smrfactor_mass), term2_exp);
+                            term2_mass_sm1=pow((nle_state->term1.smrfactor * sm1 / term2_reference_mass), term2_exp);
+                            term2_mass_sm2=pow((nle_state->term1.smrfactor * sm2 / term2_reference_mass), term2_exp);
+                            term2_mass_sm3=pow((nle_state->term1.smrfactor * sm3 / term2_reference_mass), term2_exp);
                           } else {
                             term1_mass_sm1=pow((sm1 / term1_reference_mass), term1_exp);
                             term1_mass_sm2=pow((sm2 / term1_reference_mass), term1_exp);
