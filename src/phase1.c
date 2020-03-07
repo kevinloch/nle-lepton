@@ -63,7 +63,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   long double dr_high;
   long double dr_low;
   int dr_exception;
-  int unsolveable_exception;
+  int unsolvable_exception;
   int active_ordering_count;
 
   // mc outputs
@@ -113,7 +113,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     stuckprecision=1.0E+30;       // if precision is not past this level by slowcheckpoint, try resetting
     dr_exception_limit=1.0E+7;    // Mamimum allowed dynamic range of any term (for some unknown reason this needs to be set much lower than the floating point operation limit).   This is needed in 1-smr mode only
     dr_grace_period=500000;       // don't check dynamic range until this many samples
-    ratio_checkpoint=50000;       // don't check for unsolveable exception until this many samples
+    ratio_checkpoint=50000;       // don't check for unsolvable exception until this many samples
   } else if (nle_config->nle_mode == 2) {
     // 2-term mode without 1-smr
     precision_target=1.0E-15;     // solve NLE to this level of precision
@@ -204,8 +204,8 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   //  solve formula for coefficients
   best_precision_last=1.0E99;
   dr_exception=0;
-  unsolveable_exception=0;
-  while ((best_precision_last > precision_target) && (dr_exception == 0) && (unsolveable_exception == 0)) {
+  unsolvable_exception=0;
+  while ((best_precision_last > precision_target) && (dr_exception == 0) && (unsolvable_exception == 0)) {
     //  init outputs
     for (ordering=0; ordering<=5; ordering++) {
       c1[ordering]=1.0E0;
@@ -225,19 +225,19 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     best_precision_last=1.0E99;
     best_ordering=-1;
     i=0;
-    for (samples=0; ((best_precision_last > precision_target) && (dr_exception == 0) && (unsolveable_exception == 0)); samples++) {
+    for (samples=0; ((best_precision_last > precision_target) && (dr_exception == 0) && (unsolvable_exception == 0)); samples++) {
       active_ordering_count=0;
-      for (ordering=0; ((ordering <= 5) && (dr_exception == 0) && (unsolveable_exception == 0)); ordering++) {
+      for (ordering=0; ((ordering <= 5) && (dr_exception == 0) && (unsolvable_exception == 0)); ordering++) {
         if ((best_precision_last > 1.0E-7) || (ordering == best_ordering)) { // skip other ordings if one is far enough along
           active_ordering_count++;
           if ((samples > 1) && ((samples % slowcheckpoint) == 0)) { // check on slow processes
             if ((nle_config->smrfactor_1minus_enable == 1) && (samples == ratio_checkpoint)) {
               if (active_ordering_count > 3) {
-                unsolveable_exception=1;
+                unsolvable_exception=1;
 #ifdef DEBUG10
                 clock_gettime(CLOCK_REALTIME, &endtime);
                 elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-                printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, best_ordering: %d, progress: %6d, active_ordering_count: %d, unsolveable exception\n", nle_state->exponents_str, samples, elapsed_time, best_ordering, progress[best_ordering], active_ordering_count);
+                printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, best_ordering: %d, progress: %6d, active_ordering_count: %d, unsolvable exception\n", nle_state->exponents_str, samples, elapsed_time, best_ordering, progress[best_ordering], active_ordering_count);
                 fflush(stdout);
 #endif
               }

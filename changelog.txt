@@ -4,9 +4,8 @@
      - Added support for two additional user-supplied factors for outside radical for total of three
      - Added support for (1-smr) mode on term1 of 2-term formulas.  Enable by setting smrfactor_1minus_enable=yes and nle_mode=2.  Negative exponents
          are disabled in this mode, term1 must have an odd exponent, and both terms will use the same smr including reference mass.
-         The Higgs vacuum expection value 'v' is the only currently supported reference mass in (1-smr) mode.
-     - in (1-smr) mode it is possible to have unsolveable phase 1 formulas depending on the tested smrfactor and if it generates a minus term for at
-         least one but not all solution masses.  Dynamic range and unsolvable tests are done in this mode.
+     - in (1-smr) mode it is possible to have unsolvable phase 1 formulas depending on the selected smrfactor
+         Tests for excessive dynamic range and solvability are done in this mode.
      - Added phase1_random_samples_enable option.  When set to "no" variables are all set to center of experimental range each time phase1 is run
      - Phase 1 core functions are now using long doubles (80-bit extended precision on x86)
      - Phase 1 now solves to <= 1.0E-16 precision
