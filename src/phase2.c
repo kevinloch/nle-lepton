@@ -79,9 +79,12 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   double term1_reference_mass=0;
   double term2_reference_mass=0;
   double term3_reference_mass=0;
-  double term1_mass_sm1, term2_mass_sm1, term3_mass_sm1;
-  double term1_mass_sm2, term2_mass_sm2, term3_mass_sm2;
-  double term1_mass_sm3, term2_mass_sm3, term3_mass_sm3;
+  double term1_mass_sm1, term2_mass_sm1;
+  double term3_mass_sm1=1.0;
+  double term1_mass_sm2, term2_mass_sm2;
+  double term3_mass_sm2=1.0;
+  double term1_mass_sm3, term2_mass_sm3;
+  double term3_mass_sm3=1.0;
   double mp=0;
   double worst_test;
   double rangefactor;

@@ -21,7 +21,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
   int mass_ratio_enabled;
   char mass_str[32];
 
-  double mass_ratio;
+  double mass_ratio=1.0;
   double term1_mass_ratio_factor;
   double term2_mass_ratio_factor;
   double term3_mass_ratio_factor;

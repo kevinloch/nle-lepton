@@ -72,7 +72,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   int progress[6];
   int stalled[6];
   int ordering;
-  int best_ordering;
+  int best_ordering=-1;
   long double best_precision_last;
   long double precision_last[6];
   long double c1[6];
@@ -697,8 +697,10 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         fflush(stdout);
       }
     } else {
-      printf("status, two_term_test was not close enough to an interesting integer, skipping factoring process\n");
-      fflush(stdout);
+      if (nle_config->status_enable == 1) {
+        printf("status, two_term_test was not close enough to an interesting integer, skipping factoring process\n");
+        fflush(stdout);
+      }
     }
   } else { // faled to solve, should only happen in 1-smr mode
 #ifdef DEBUG10

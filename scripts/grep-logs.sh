@@ -48,7 +48,7 @@ echo '<html>' >> ${twotermnoreload}
 echo '<head><title>Latest lepton polyform search data</title>' >> ${twotermnoreload}
 echo '</head>' >> ${twotermnoreload}
 echo '<body><pre>' >> ${twotermnoreload}
-grep "two_term_test," ${logfile} | cut -f 2 -d '"' | cut -f 2 -d " " | cut -f 3-99 -d "/" | sed 's/_/ /g' | gsort -n  >>${twotermnoreload}
+grep "two_term_test," ${logfile} | cut -f 2 -d '"' | cut -f 2 -d " " | cut -f 3-99 -d "/" | sed 's/_/ /g' | cut -f 1,2,4-99 -d "," | gsort -n  >>${twotermnoreload}
 echo '</pre></body>' >> ${twotermnoreload}
 echo '</html>' >> ${twotermnoreload}
 
