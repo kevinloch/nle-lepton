@@ -25,6 +25,8 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   int c2_gt_c1, c2_gt_c3, c1_gt_c3;
   char smrf_str[80];
   char mass_str[32];
+  char out_str_01[320];
+  char exec_str[352];
 
   clock_gettime(CLOCK_REALTIME, &starttime);
 
@@ -165,14 +167,19 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 
   // starting v4.0 denominator is always v for this step, other mass ratio factors are now swapped out in cscanner(), except with (1-smr) where smrfactor_mass is used instead
   if (nle_state->term1.smrfactor_1minus == 1) {
-    term1_mass_sm1=powl((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
-    // check if (1-smr) is negative for sm2
+    // check if (1-smr) is negative for sm1 and invert inside and outside radical
+    if ((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)) < 0) {
+      term1_mass_sm1=-powl(-(1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+    } else {
+      term1_mass_sm1=powl((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+    }
+    // check if (1-smr) is negative for sm2 and invert inside and outside radical
     if ((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass)) < 0) {
       term1_mass_sm2=-powl(-(1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
     } else {
       term1_mass_sm2=powl((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
     }
-    // check if (1-smr) is negative for sm3
+    // check if (1-smr) is negative for sm3 and invert inside and outside radical
     if ((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass)) < 0) {
       term1_mass_sm3=-powl(-(1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
     } else {
@@ -651,7 +658,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     // only run cscanner if mode=3 or two_term_test is an interesting integer match
     // for this interesting() check  we use a fixed filter of 3.  In cscanner two_term_test is evaluated with phase1_filter on c3 which may be more restrictive
     // This will help identify interesting geometries for further inspection
-    if ((nle_config->nle_mode != 2) || ((two_term_test >= 0.98) && interesting(3, nle_config->phase1_int_match_max, nle_config->phase1_int_match_filter, two_term_test))) {
+    if ((nle_config->nle_mode != 2) || ((two_term_test >= 0.98) && interesting(nle_config->phase1_filter, nle_config->phase1_int_match_max, nle_config->phase1_int_match_filter, two_term_test))) {
       matches_count_start=nle_state->phase1_matches_count;
       clock_gettime(CLOCK_REALTIME, &starttime);
       if (nle_config->nle_mode == 2) {
@@ -661,19 +668,27 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         nle_state->term3.coefficient=(double)two_term_test;
         if (nle_config->status_enable == 1) {
           if (nle_config->smrfactor_1minus_enable == 1) {
-            printf("status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, reference_mass: %s, smrf: %s\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), mass_str, smrf_str);
+            sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, reference_mass: %s, smrf: %s\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), mass_str, smrf_str);
+            printf("%s\n", out_str_01);
             fflush(stdout);
           } else {
-            printf("status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
+            sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
+            printf("%s\n", out_str_01);
             fflush(stdout);
-          }
-        }
+          } // end if 1minus
+          if (nle_config->upload_results_enable == 1) {
+            // upload interesting two_term_test as these are rare and significant
+            sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+            system(exec_str);
+          } // end if upload enable
+        } // end if status
       } else {
         nle_state->term1.coefficient=(double)c1_center[best_ordering];
         nle_state->term2.coefficient=(double)c2_center[best_ordering];
         nle_state->term3.coefficient=(double)c3_center[best_ordering];
-      }
+      } // end if mode==2
 
+      // send coefficients (and two_term_test in 2-term mode) to factoring engine
       cscanner(nle_config, nle_state);
 
       clock_gettime(CLOCK_REALTIME, &endtime);
@@ -684,7 +699,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         fflush(stdout);
       }
     } else {
-      printf("status, two_term_test was not close enough to an interesting integer, skipping factoring process.\n");
+      printf("status, two_term_test was not close enough to an interesting integer, skipping factoring process\n");
       fflush(stdout);
     }
   } else { // faled to solve, should only happen in 1-smr mode

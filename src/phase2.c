@@ -1012,14 +1012,20 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
 
                           if (nle_state->term1.smrfactor_1minus == 1) {
                             smrfactor_mass=nle_state->term1.smrfactor_mass;
-                            term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / smrfactor_mass)), term1_exp);
-                            // check if (1-smr) is negative for heaviest mass state
+
+                            // check if (1-smr) is negative for sm1 and invert inside and outside radical
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm1 / smrfactor_mass)) < 0) {
+                              term1_mass_sm1=-pow(-(1.0 - (nle_state->term1.smrfactor * sm1 / smrfactor_mass)), term1_exp);
+                            } else {
+                              term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / smrfactor_mass)), term1_exp);
+                            }
+                            // check if (1-smr) is negative for sm2 and invert inside and outside radical
                             if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / smrfactor_mass)) < 0) {
                               term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / smrfactor_mass)), term1_exp);
                             } else {
                               term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / smrfactor_mass)), term1_exp);
                             }
-                            // check if (1-smr) is negative for heaviest mass state
+                            // check if (1-smr) is negative for sm3 and invert inside and outside radical
                             if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / smrfactor_mass)) < 0) {
                               term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / smrfactor_mass)), term1_exp);
                             } else {
@@ -1651,64 +1657,64 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
     }
     fflush(stdout);
     if (nle_config->upload_results_enable == 1) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_02, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_03, 320));
+      system(exec_str);
+      if (out_str_04[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_04, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_02, 320));
+      }
+      if (out_str_05[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_05, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_03, 320));
+      }
+      if (out_str_06[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_06, 320));
         system(exec_str);
-        if (out_str_04[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_04, 320));
-          system(exec_str);
-        }
-        if (out_str_05[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_05, 320));
-          system(exec_str);
-        }
-        if (out_str_06[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_06, 320));
-          system(exec_str);
-        }
-        if (out_str_07[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_07, 320));
-          system(exec_str);
-        }
-        if (out_str_08[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_08, 320));
-          system(exec_str);
-        }
-        if (out_str_09[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_09, 320));
-          system(exec_str);
-        }
-        if (out_str_10[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_10, 320));
-          system(exec_str);
-        }
-        if (out_str_11[0] != 0) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_11, 320));
-          system(exec_str);
-        }
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_12, 320));
+      }
+      if (out_str_07[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_07, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_13, 320));
+      }
+      if (out_str_08[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_08, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_14, 320));
+      }
+      if (out_str_09[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_09, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_15, 320));
+      }
+      if (out_str_10[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_10, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_16, 320));
+      }
+      if (out_str_11[0] != 0) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_11, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_17, 320));
+      }
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_12, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_13, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_14, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_15, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_16, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_17, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_18, 320));
+      system(exec_str);
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_19, 320));
+      system(exec_str);
+      if (nle_config->smrfactor_1minus_enable == 1) {
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_20, 320));
         system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_18, 320));
-        system(exec_str);
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_19, 320));
-        system(exec_str);
-        if (nle_config->smrfactor_1minus_enable == 1) {
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_20, 320));
-          system(exec_str);
-        }
+      }
     } // end if upload_results_enable
   } // end if score
   return(precision_last);
