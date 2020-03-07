@@ -52,7 +52,7 @@ grep "two_term_test," ${logfile} | cut -f 2 -d '"' | cut -f 2 -d " " | cut -f 3-
 echo '</pre></body>' >> ${twotermnoreload}
 echo '</html>' >> ${twotermnoreload}
 
-:>${out}
+:>${twoterm}
 echo '<!DOCTYPE html>' >> ${twoterm}
 echo '<html>' >> ${twoterm}
 echo '<head><title>Latest lepton polyform search data</title>' >> ${twoterm}
