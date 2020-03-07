@@ -79,6 +79,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   double term1_reference_mass=0;
   double term2_reference_mass=0;
   double term3_reference_mass=0;
+  double smrfactor_mass;
   double term1_mass_sm1, term2_mass_sm1, term3_mass_sm1;
   double term1_mass_sm2, term2_mass_sm2, term3_mass_sm2;
   double term1_mass_sm3, term2_mass_sm3, term3_mass_sm3;
@@ -1010,22 +1011,23 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                           }
 
                           if (nle_state->term1.smrfactor_1minus == 1) {
-                            term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / v)), term1_exp);
+                            smrfactor_mass=nle_state->term1.smrfactor_mass;
+                            term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / smrfactor_mass)), term1_exp);
                             // check if (1-smr) is negative for heaviest mass state
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / v)) < 0) {
-                              term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / v)), term1_exp);
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / smrfactor_mass)) < 0) {
+                              term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / smrfactor_mass)), term1_exp);
                             } else {
-                              term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / v)), term1_exp);
+                              term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / smrfactor_mass)), term1_exp);
                             }
                             // check if (1-smr) is negative for heaviest mass state
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / v)) < 0) {
-                              term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / v)), term1_exp);
+                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / smrfactor_mass)) < 0) {
+                              term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / smrfactor_mass)), term1_exp);
                             } else {
-                              term1_mass_sm3=pow((1.0 - (nle_state->term1.smrfactor * sm3 / v)), term1_exp);
+                              term1_mass_sm3=pow((1.0 - (nle_state->term1.smrfactor * sm3 / smrfactor_mass)), term1_exp);
                             }
-                            term2_mass_sm1=pow((nle_state->term1.smrfactor * sm1 / v), term2_exp);
-                            term2_mass_sm2=pow((nle_state->term1.smrfactor * sm2 / v), term2_exp);
-                            term2_mass_sm3=pow((nle_state->term1.smrfactor * sm3 / v), term2_exp);
+                            term2_mass_sm1=pow((nle_state->term1.smrfactor * sm1 / smrfactor_mass), term2_exp);
+                            term2_mass_sm2=pow((nle_state->term1.smrfactor * sm2 / smrfactor_mass), term2_exp);
+                            term2_mass_sm3=pow((nle_state->term1.smrfactor * sm3 / smrfactor_mass), term2_exp);
                           } else {
                             term1_mass_sm1=pow((sm1 / term1_reference_mass), term1_exp);
                             term1_mass_sm2=pow((sm2 / term1_reference_mass), term1_exp);

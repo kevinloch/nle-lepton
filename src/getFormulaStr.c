@@ -223,20 +223,22 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "       smrf*M/mP     ");
       sprintf(massstrinv,    "                     ");
+    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+      sprintf(massstr,       "                     ");
+      sprintf(massstrinv,    "                     ");
     } else {
       sprintf(massstr,       "         M/mP        ");
       sprintf(massstrinv,    "         mP/M        ");
     }
   } else if (current_match->smrfactor_mass == 1) {
-    if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      // for 2-term mixed mode, we use smrfactor_mass == 1 as placeholder for third term so we don't want it to show in equation str
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
+    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
       sprintf(massstr,       "    (1-(smrf*M/v))   ");
       sprintf(massstrinv,    "                     ");
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "        smrf*M/v     ");
+      sprintf(massstrinv,    "                     ");
+    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+      sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
       sprintf(massstr,       "         M/v         ");
@@ -249,6 +251,9 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "       smrf*M/mZ     ");
       sprintf(massstrinv,    "                     ");
+    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+      sprintf(massstr,       "                     ");
+      sprintf(massstrinv,    "                     ");
     } else {
       sprintf(massstr,       "         M/mZ        ");
       sprintf(massstrinv,    "         mZ/M        ");
@@ -259,6 +264,9 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
       sprintf(massstrinv,    "                     ");
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "       smrf*M/mW     ");
+      sprintf(massstrinv,    "                     ");
+    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+      sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
       sprintf(massstr,       "         M/mW        ");
@@ -271,6 +279,9 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "      smrf*M/mH0     ");
       sprintf(massstrinv,    "                     ");
+    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+      sprintf(massstr,       "                     ");
+      sprintf(massstrinv,    "                     ");
     } else {
       sprintf(massstr,       "        M/mH0        ");
       sprintf(massstrinv,    "        mH0/M        ");
@@ -281,6 +292,9 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
       sprintf(massstrinv,    "                     ");
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "     smrf*M/m_user   ");
+      sprintf(massstrinv,    "                     ");
+    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+      sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
       sprintf(massstr,       "       M/m_user      ");
