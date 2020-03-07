@@ -44,7 +44,6 @@
 #include "generateExponents.h"
 
 int processCmdArgs(nle_config_t *nle_config, int argc, char **argv) {
-
   int i;
   char *option_start;
 
@@ -97,6 +96,10 @@ int main(int argc, char **argv) {
   long seedsec;
   long seedus;
   int failed;
+  int mass_ratio_id;
+  int mass_ratio_id_max;
+  int mass_ratio_enabled;
+
 
   // initialize nle_config to default values
   initConfig(&nle_config);
@@ -243,49 +246,86 @@ int main(int argc, char **argv) {
       nle_state.input_sample_muser=nle_config.smrfactor_mass_user;
     }
 
-    // sequence through smrfactors if smrfactor_1minus is enabled, otherwise run once when smrfactor_seq == 0
-    smrfactors=nle_state.smrfactors_precomputed_start;
-    for (smrfactor_seq=0; smrfactor_seq <= nle_state.smrfactors_precomputed_count; smrfactor_seq++) {
-      // here we would cycle through enabled smrfactor_mass but for now only v is supported
-      if ((nle_state.smrfactors_precomputed_count > 0) && (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
-        nle_state.term1.current_smrfactors=smrfactors;
-        nle_state.term2.current_smrfactors=smrfactors;
-        nle_state.term1.smrfactor=smrfactors->smrfactor_multiplier;
-        nle_state.term2.smrfactor=smrfactors->smrfactor_multiplier;
-        nle_state.term1.smrfactor_mass=1;
-        nle_state.term2.smrfactor_mass=1;
-      }
-      if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
-        // phase 1
-        for (i=0; i<=2; i++) {
-          nle_state.terms_matched[i]=0;
+    // sequence through mass ratio reference masses if (1-smr) enabled, run once otherwise
+    if (nle_config.smrfactor_1minus_enable == 1) {
+      mass_ratio_id_max=5;
+    } else {
+      mass_ratio_id_max=0;
+    }
+    for (mass_ratio_id=0; mass_ratio_id <= mass_ratio_id_max; mass_ratio_id++) {
+      mass_ratio_enabled=1;
+      if (mass_ratio_id == 0) {
+        if (nle_config.smrfactor_mass_mp_enable == 0) {
+          mass_ratio_enabled=0;
         }
-        failed=solveNLEforCoefficients(&nle_config, &nle_state);
-        if (nle_state.phase1_matches_count > 0) {
-          coefficients_matched=0;
-          for (i=0; i <= 2; i++) {
-            if (nle_state.terms_matched[i] != 0) {
-              coefficients_matched++;
+      } else if (mass_ratio_id == 1) {
+        if (nle_config.smrfactor_mass_v_enable == 0) {
+          mass_ratio_enabled=0;
+        }
+      } else if (mass_ratio_id == 2) {
+        if (nle_config.smrfactor_mass_mz_enable == 0) {
+          mass_ratio_enabled=0;
+        } 
+      } else if (mass_ratio_id == 3) {
+        if (nle_config.smrfactor_mass_mw_enable == 0) {
+          mass_ratio_enabled=0;
+        }
+      } else if (mass_ratio_id == 4) {
+        if (nle_config.smrfactor_mass_mh0_enable == 0) {
+          mass_ratio_enabled=0;
+        }
+      } else if (mass_ratio_id == 5) {
+        if (nle_config.smrfactor_mass_user_enable == 0) {
+          mass_ratio_enabled=0;
+        }
+      }                             
+      if ((nle_config.smrfactor_1minus_enable == 0) || (mass_ratio_enabled == 1)) {
+        if (nle_config.smrfactor_1minus_enable == 1) {
+            nle_state.term1.smrfactor_mass=mass_ratio_id;
+            nle_state.term2.smrfactor_mass=mass_ratio_id;
+        }
+        // sequence through smrfactors if smrfactor_1minus is enabled, otherwise run once when smrfactor_seq == 0
+        smrfactors=nle_state.smrfactors_precomputed_start;
+        for (smrfactor_seq=0; smrfactor_seq <= nle_state.smrfactors_precomputed_count; smrfactor_seq++) {
+          if ((nle_state.smrfactors_precomputed_count > 0) && (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
+            nle_state.term1.current_smrfactors=smrfactors;
+            nle_state.term2.current_smrfactors=smrfactors;
+            nle_state.term1.smrfactor=smrfactors->smrfactor_multiplier;
+            nle_state.term2.smrfactor=smrfactors->smrfactor_multiplier;
+          }
+          if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
+            // phase 1
+            for (i=0; i<=2; i++) {
+              nle_state.terms_matched[i]=0;
             }
-          }
-          if (coefficients_matched == 3) {
-            // phase 2
-            verifyMatches(&nle_config, &nle_state);
-          } else {
-            if (nle_config.status_enable ==1) {
-              printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
-              fflush(stdout);
-            }
-          }
-        } else {
-          if ((nle_config.status_enable == 1) && (failed == 0)) {
-            printf("status, No interesting coefficient multipliers found\n");
-            fflush(stdout);
-          }
-        } // end nummatches
-        smrfactors++;
-      } // end smrfactor_seq ||
-    } // end smrfactor_seq && 
+            failed=solveNLEforCoefficients(&nle_config, &nle_state);
+            if (nle_state.phase1_matches_count > 0) {
+              coefficients_matched=0;
+              for (i=0; i <= 2; i++) {
+                if (nle_state.terms_matched[i] != 0) {
+                  coefficients_matched++;
+                }
+              }
+              if (coefficients_matched == 3) {
+                // phase 2
+                verifyMatches(&nle_config, &nle_state);
+              } else {
+                if (nle_config.status_enable ==1) {
+                  printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+                  fflush(stdout);
+                }
+              }
+            } else {
+              if ((nle_config.status_enable == 1) && (failed == 0)) {
+                printf("status, No interesting coefficient multipliers found\n");
+                fflush(stdout);
+              }
+            } // end nummatches
+            smrfactors++;
+          } // end smrfactor_seq ||
+        } // end smrfactor_seq && 
+      } // end if mass_ratio_enabled
+    } // end for mass_ratio_id
   } // end while 1
   exit(0);
 }   

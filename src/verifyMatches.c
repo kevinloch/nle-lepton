@@ -587,34 +587,32 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
                                                      && (term1_match->outfactor_sin2w_exp_down == term2_match->outfactor_sin2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_down == term3_match->outfactor_sin2w_exp_down))\
                                                      && (term1_match->outfactor_cos2w_exp_up == term2_match->outfactor_cos2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_up == term3_match->outfactor_cos2w_exp_up))\
                                                      && (term1_match->outfactor_cos2w_exp_down == term2_match->outfactor_cos2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_down == term3_match->outfactor_cos2w_exp_down)))) {
-              if ((nle_config->smrfactor_1minus_enable == 0) || (nle_state->term1.smrfactor_mass == term2_match->smrfactor_mass)) {
-                initUses(&term3_uses);
-                addUses(&term3_uses, &term3_match->match_uses);
-                initUses(&nle_state->all_uses);
-                addUses(&nle_state->all_uses, &term1_uses);
-                addUses(&nle_state->all_uses, &term2_uses);
-                addUses(&nle_state->all_uses, &term3_uses);
-                nle_state->term1.current_match=term1_match;
-                nle_state->term2.current_match=term2_match;
-                nle_state->term3.current_match=term3_match;
-                nle_state->current_symmetry=symmetry;
-                clock_gettime(CLOCK_REALTIME, &start_time);
+              initUses(&term3_uses);
+              addUses(&term3_uses, &term3_match->match_uses);
+              initUses(&nle_state->all_uses);
+              addUses(&nle_state->all_uses, &term1_uses);
+              addUses(&nle_state->all_uses, &term2_uses);
+              addUses(&nle_state->all_uses, &term3_uses);
+              nle_state->term1.current_match=term1_match;
+              nle_state->term2.current_match=term2_match;
+              nle_state->term3.current_match=term3_match;
+              nle_state->current_symmetry=symmetry;
+              clock_gettime(CLOCK_REALTIME, &start_time);
 
-                // send to phase2 to verify formula
-                precision=solveNLEforMasses(nle_config, nle_state);
+              // send to phase2 to verify formula
+              precision=solveNLEforMasses(nle_config, nle_state);
 
-                if (nle_config->status_enable ==1) {
-                  clock_gettime(CLOCK_REALTIME, &end_time);
-                  elapsed_time=((double)(end_time.tv_sec - 1500000000) + ((double)end_time.tv_nsec / 1.0E9)) - ((double)(start_time.tv_sec - 1500000000) + ((double)start_time.tv_nsec) / 1.0E9);
-                  if (precision < 1.0E30) {
-                    printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
-                    fflush(stdout);
-                  } else {
-                    printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
-                    fflush(stdout);
-                  } // end precision
-                } // end status_enable
-              } // end 1-smr mass ratio check
+              if (nle_config->status_enable ==1) {
+                clock_gettime(CLOCK_REALTIME, &end_time);
+                elapsed_time=((double)(end_time.tv_sec - 1500000000) + ((double)end_time.tv_nsec / 1.0E9)) - ((double)(start_time.tv_sec - 1500000000) + ((double)start_time.tv_nsec) / 1.0E9);
+                if (precision < 1.0E30) {
+                  printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                  fflush(stdout);
+                } else {
+                  printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%ld/%ld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                  fflush(stdout);
+                } // end precision
+              } // end status_enable
             } // end weak consistency check
           } // end nbv/nss consistency check
         } // end if symmetry and complexity check
