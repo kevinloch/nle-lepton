@@ -82,6 +82,66 @@ int processCmdArgs(nle_config_t *nle_config, int argc, char **argv) {
   return(0);
 }
 
+void checkConfig(nle_config_t *nle_config) {
+  // various checks on configuration file that will cause immediate exit if failed
+  int i;
+
+  // check operating mode
+  if ((nle_config->nle_mode != 3) && (nle_config->nle_mode != 2)) {
+    printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  2 and 3 are the only supported modes in this version.\n", nle_config->nle_mode);
+    fflush(stdout);
+    exit(1);
+  }
+
+  // check 2-term and 1-minus are used together
+  if ((nle_config->smrfactor_1minus_enable == 1) && (nle_config->nle_mode != 2)) {
+    printf("init, Error: in nle-lepton.cfg, nle_mode must be set to 2 when smrfactor_1minus_enable=yes\n");
+    fflush(stdout);
+    exit(1);
+  }
+  if ((nle_config->nle_mode == 2) && (nle_config->smrfactor_1minus_enable == 0)) {
+    printf("init, Warning: in nle-lepton.cfg, smrfactor_1minus_enable should be set to yes when nle_mode=2\n");
+    fflush(stdout);
+  }
+
+  // check if forced exponents exceed exp_inv_max
+  if ((abs(nle_config->exp_inv_term1_force) > nle_config->exp_inv_max) || (abs(nle_config->exp_inv_term2_force) > nle_config->exp_inv_max) || (abs(nle_config->exp_inv_term2_force) > nle_config->exp_inv_max)) {
+    printf("init, Error: in nle-lepton.cfg, forced exponents exceed exp_inv_max\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  // check if all forced exponents or none
+  i=0;
+  if (nle_config->exp_inv_term1_force != 0) {
+    i++;
+  }
+  if (nle_config->exp_inv_term2_force != 0) {
+    i++;
+  }
+  if ((i > 0) && (i != 2) && (nle_config->nle_mode == 2)) {
+    printf("init, Error: in nle-lepton.cfg, when nle_mode=2 term1 and term2 exponents must be forced or all set to random (exp_inv_term1_force...)\n");
+    fflush(stdout);
+    exit(1);
+  }
+  if (nle_config->exp_inv_term3_force != 0) {
+    i++;
+  }
+  if ((i > 0) && (i != 3) && (nle_config->nle_mode == 3)) {
+    printf("init, Error: in nle-lepton.cfg, when nle_mode=3 term1, term2, and term3 exponents must be forced or all set to random (exp_inv_term1_force...)\n");
+    fflush(stdout);
+    exit(1);
+  }
+  if (nle_config->exp_inv_term4_force != 0) {
+    i++;
+  }
+  if ((i > 0) && (i != 4) && (nle_config->nle_mode == 4)) {
+    printf("init, Error: in nle-lepton.cfg, when nle_mode=4 all exponents must be forced or all set to random (exp_inv_term1_force...)\n");
+    fflush(stdout);
+    exit(1);
+  }
+}
+
 int main(int argc, char **argv) {
   nle_config_t nle_config;
   nle_state_t nle_state;
@@ -124,52 +184,8 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  // check operating mode
-  if ((nle_config.nle_mode != 3) && (nle_config.nle_mode != 2)) {
-    printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  2 and 3 are the only supported modes in this version.\n", nle_config.nle_mode);
-    exit(1);
-  }
-
-  // check 2-term and 1-minus are used together
-  if ((nle_config.smrfactor_1minus_enable == 1) && (nle_config.nle_mode != 2)) {
-    printf("init, Error: in nle-lepton.cfg, nle_mode must be set to 2 when smrfactor_1minus_enable=yes\n");
-    fflush(stdout);
-    exit(1);
-  }
-  if ((nle_config.nle_mode == 2) && (nle_config.smrfactor_1minus_enable == 0)) {
-    printf("init, Warning: in nle-lepton.cfg, smrfactor_1minus_enable should be set to yes when nle_mode=2\n");
-    fflush(stdout);
-  }
-
-  // check if all forced exponents or none
-  i=0;
-  if (nle_config.exp_inv_term1_force != 0) {
-    i++;
-  }
-  if (nle_config.exp_inv_term2_force != 0) {
-    i++;
-  }
-  if ((i > 0) && (i != 2) && (nle_config.nle_mode == 2)) {
-    printf("init, Error: in nle-lepton.cfg, when nle_mode=2 term1 and term2 exponents must be forced or all set to random (exp_inv_term1_force...)\n");
-    fflush(stdout);
-    exit(1);
-  }
-  if (nle_config.exp_inv_term3_force != 0) {
-    i++;
-  }
-  if ((i > 0) && (i != 3) && (nle_config.nle_mode == 3)) {
-    printf("init, Error: in nle-lepton.cfg, when nle_mode=3 term1, term2, and term3 exponents must be forced or all set to random (exp_inv_term1_force...)\n");
-    fflush(stdout);
-    exit(1);
-  }
-  if (nle_config.exp_inv_term4_force != 0) {
-    i++;
-  }
-  if ((i > 0) && (i != 4) && (nle_config.nle_mode == 4)) {
-    printf("init, Error: in nle-lepton.cfg, when nle_mode=4 all exponents must be forced or all set to random (exp_inv_term1_force...)\n");
-    fflush(stdout);
-    exit(1);
-  }
+  // run sanity checks on config
+  checkConfig(&nle_config);
 
   // allocate memory for  matches arrays
   nle_state.phase1_matches_start = (nle_phase1_match_t *)malloc(5000000 * sizeof(nle_phase1_match_t));

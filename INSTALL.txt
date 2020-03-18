@@ -4,7 +4,7 @@
 
 3. Manually copy the 'nle-lepton' executable to the directory you wish to run it from (thre is no 'make install' support yet)
 
-4. Copy 'nle-lepton.cfg' a destination directory of your choice and edit the options in this file
+4. Copy one of the sample configuration files to a destination directory of your choice and edit the options in this file
 
 5. run 'nle-lepton', or 'nle-lepton -c filename' if 'nle-lepton.cfg' is not in your current directory or has a different name
    See README.txt for additional info about command line optinos and output format

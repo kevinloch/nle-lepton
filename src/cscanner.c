@@ -219,6 +219,9 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                                   + (abs(sin2w_exp_up) + (sin2w_exp_down-1))\
                                   + (abs(cos2w_exp_up) + (cos2w_exp_down-1));
                             initUses(&match->match_uses);
+                            if (nle_config->smrfactor_1minus_enable == 1) {
+                              addUses(&match->match_uses, &nle_state->term1.current_smrfactors->smrfactor_uses);
+                            }
                             addUses(&match->match_uses, &outfactors->outfactor_uses);
                             addUses(&match->match_uses, &infactors->infactor_uses);
                             if (mass_ratio_id == 0) {
@@ -289,6 +292,9 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                                   + (abs(sin2w_exp_up) + (sin2w_exp_down-1))\
                                   + (abs(cos2w_exp_up) + (cos2w_exp_down-1));
                             initUses(&match->match_uses);
+                            if (nle_config->smrfactor_1minus_enable == 1) {
+                              addUses(&match->match_uses, &nle_state->term2.current_smrfactors->smrfactor_uses);
+                            }
                             addUses(&match->match_uses, &outfactors->outfactor_uses);
                             addUses(&match->match_uses, &infactors->infactor_uses);
                             if (mass_ratio_id == 0) {

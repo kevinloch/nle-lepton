@@ -1,16 +1,14 @@
-4.2  - Fixed several logic bugs in interesting() that were causing many factors to not be found
-     - Fixed bug in verifyMatches() that was generating incorrect formula hashes and allowing duplicate formulas
-     - Complexity score now ignores 1's in rationals for better selection of simplest duplicate formula
+4.2  New features: 
+     - Added support for (1-smr) mode. Enable by setting smrfactor_1minus_enable=yes and nle_mode=2.  Negative exponents
+         are disabled in this mode, term1 must have an odd exponent (for when 1-smr is negative), and both terms will use the same smr including reference mass.
      - Added support for two additional user-supplied factors for outside radical for total of three
-     - Added support for (1-smr) mode on term1 of 2-term formulas.  Enable by setting smrfactor_1minus_enable=yes and nle_mode=2.  Negative exponents
-         are disabled in this mode, term1 must have an odd exponent, and both terms will use the same smr including reference mass.
-     - in (1-smr) mode it is possible to have unsolvable phase 1 formulas depending on the selected smrfactor
-         Tests for excessive dynamic range and solvability are done in this mode.
      - Added phase1_random_samples_enable option.  When set to "no" variables are all set to center of experimental range each time phase1 is run
-     - Phase 1 core functions are now using long doubles (80-bit extended precision on x86)
-     - Phase 1 now solves to <= 1.0E-16 precision
-     - Symmetry score is now computed only in verifyMatches(), it is then stored in nle_state->current_symmetry for use in phase 2 output
+     - Phase 1 core functions are now using long doubles (80-bit extended precision on x86) and solve down to <=1.0E-16 precision
      - Symmetry score now has more checks
+     - Complexity score now ignores 1's in rationals for better selection of simplest duplicate formula
+     Bug Fixes:
+     - Fixed several logic bugs in interesting() that were causing many factors to not be found
+     - Fixed bug in verifyMatches() that was generating incorrect formula hashes and allowing duplicate formulas
 
 4.1  - Fixed bug in selectOutputs() that would not allow user-defined mass to be used as output
      - Fixed bug in generateExponents() that affected term3 when exp_neg_enable=no
