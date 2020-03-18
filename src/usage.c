@@ -39,8 +39,8 @@ DESCRIPTON\n\
 \n\
    https://raw.githubusercontent.com/kevinloch/nle-lepton/master/README.txt\n\
 \n\
- Also see nle-lepton-4.2.pdf for a more detailed description of its operation and scientific purpose:\n\
+ See nle-lepton-4.2.pdf for a more detailed description of its operation and scientific purpose:\n\
 \n\
-   https://raw.githubusercontent.com/kevinloch/nle-lepton/master/nle-lepton-4.2.pdf\n\
+   http://kevinloch.com/papers/nle-lepton-4.2.pdf\n\
  \n");
 }
