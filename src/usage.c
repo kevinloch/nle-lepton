@@ -35,12 +35,13 @@ DESCRIPTON\n\
  also has extensive options to configure operating parameters and potential coefficient factors. As an open-source project the code can be modified by the user\n\
  and is intended to be a platform for quickly testing new formula types.\n\
 \n\
- See README.txt in the source tree for a general description of operation and output format:\n\
+ See README.txt in the source tree for the full description of operation and output format:\n\
 \n\
    https://raw.githubusercontent.com/kevinloch/nle-lepton/master/README.txt\n\
 \n\
- See nle-lepton-4.2.pdf for a more detailed description of its operation and scientific purpose:\n\
+ See nle-lepton-4.2.pdf for a scientific description operation and purpose:\n\
 \n\
+   https://raw.githubusercontent.com/kevinloch/nle-lepton/master/nle-lepton-4.2.pdf\n\
    http://kevinloch.com/papers/nle-lepton-4.2.pdf\n\
  \n");
 }
