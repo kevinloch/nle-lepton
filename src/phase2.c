@@ -67,24 +67,42 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
  
   //  mc test vars
   double r;
+  double sm1_test_term1=0;
+  double sm1_test_term2=0;
+  double sm1_test_term3=0;
   double sm1_test=0;
+  double sm2_test_term1=0;
+  double sm2_test_term2=0;
+  double sm2_test_term3=0;
   double sm2_test=0;
+  double sm3_test_term1=0;
+  double sm3_test_term2=0;
+  double sm3_test_term3=0;
   double sm3_test=0;
   double precision=0;
   double precision_last=0;
   double term1_coefficient, term2_coefficient, term3_coefficient;
   double term1_static, term2_static, term3_static;
+  double rmr_mass_up=1.0;
+  double rmr_mass_down=1.0;
+  double term1_rmr, term2_rmr, term3_rmr;
   double term1_sin2w, term2_sin2w, term3_sin2w;
   double term1_cos2w, term2_cos2w, term3_cos2w;
   double term1_reference_mass=0;
   double term2_reference_mass=0;
   double term3_reference_mass=0;
-  double term1_mass_sm1, term2_mass_sm1;
-  double term3_mass_sm1=1.0;
-  double term1_mass_sm2, term2_mass_sm2;
-  double term3_mass_sm2=1.0;
-  double term1_mass_sm3, term2_mass_sm3;
-  double term3_mass_sm3=1.0;
+  double smrf_sm1=0;
+  double term1_mass_sm1=0;
+  double term2_mass_sm1=0;
+  double term3_mass_sm1=0;
+  double smrf_sm2=0;
+  double term1_mass_sm2=0;
+  double term2_mass_sm2=0;
+  double term3_mass_sm2=0;
+  double smrf_sm3=0;
+  double term1_mass_sm3=0;
+  double term2_mass_sm3=0;
+  double term3_mass_sm3=0;
   double mp=0;
   double worst_test;
   double rangefactor;
@@ -1013,27 +1031,30 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                           }
 
                           if (nle_state->term1.smrfactor_1minus == 1) {
+                            smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_reference_mass;
+                            smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_reference_mass;
+                            smrf_sm3=nle_state->term1.smrfactor * sm3 / term1_reference_mass;
                             // check if (1-smr) is negative for sm1 and invert inside and outside radical
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm1 / term1_reference_mass)) < 0) {
-                              term1_mass_sm1=-pow(-(1.0 - (nle_state->term1.smrfactor * sm1 / term1_reference_mass)), term1_exp);
+                            if ((1.0 - smrf_sm1) < 0) {
+                              term1_mass_sm1=-pow(-(1.0 - smrf_sm1), term1_exp);
                             } else {
-                              term1_mass_sm1=pow((1.0 - (nle_state->term1.smrfactor * sm1 / term1_reference_mass)), term1_exp);
+                              term1_mass_sm1=pow((1.0 - smrf_sm1), term1_exp);
                             }
                             // check if (1-smr) is negative for sm2 and invert inside and outside radical
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm2 / term1_reference_mass)) < 0) {
-                              term1_mass_sm2=-pow(-(1.0 - (nle_state->term1.smrfactor * sm2 / term1_reference_mass)), term1_exp);
+                            if ((1.0 - smrf_sm2) < 0) {
+                              term1_mass_sm2=-pow(-(1.0 - smrf_sm2), term1_exp);
                             } else {
-                              term1_mass_sm2=pow((1.0 - (nle_state->term1.smrfactor * sm2 / term1_reference_mass)), term1_exp);
+                              term1_mass_sm2=pow((1.0 - smrf_sm2), term1_exp);
                             }
                             // check if (1-smr) is negative for sm3 and invert inside and outside radical
-                            if ((1.0 - (nle_state->term1.smrfactor * nle_state->input_sample_sm3 / term1_reference_mass)) < 0) {
-                              term1_mass_sm3=-pow(-(1.0 - (nle_state->term1.smrfactor * sm3 / term1_reference_mass)), term1_exp);
+                            if ((1.0 - smrf_sm3) < 0) {
+                              term1_mass_sm3=-pow(-(1.0 - smrf_sm3), term1_exp);
                             } else {
-                              term1_mass_sm3=pow((1.0 - (nle_state->term1.smrfactor * sm3 / term1_reference_mass)), term1_exp);
+                              term1_mass_sm3=pow((1.0 - smrf_sm3), term1_exp);
                             }
-                            term2_mass_sm1=pow((nle_state->term1.smrfactor * sm1 / term2_reference_mass), term2_exp);
-                            term2_mass_sm2=pow((nle_state->term1.smrfactor * sm2 / term2_reference_mass), term2_exp);
-                            term2_mass_sm3=pow((nle_state->term1.smrfactor * sm3 / term2_reference_mass), term2_exp);
+                            term2_mass_sm1=pow(smrf_sm1, term2_exp);
+                            term2_mass_sm2=pow(smrf_sm2, term2_exp);
+                            term2_mass_sm3=pow(smrf_sm3, term2_exp);
                           } else {
                             term1_mass_sm1=pow((sm1 / term1_reference_mass), term1_exp);
                             term1_mass_sm2=pow((sm2 / term1_reference_mass), term1_exp);
@@ -1042,12 +1063,43 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             term2_mass_sm2=pow((sm2 / term2_reference_mass), term2_exp);
                             term2_mass_sm3=pow((sm3 / term2_reference_mass), term2_exp);
                           }
-                          if (nle_config->nle_mode > 2) {
+                          if (nle_config->nle_mode == 3) {
                             term3_mass_sm1=pow((sm1 / term3_reference_mass), term3_exp);
                             term3_mass_sm2=pow((sm2 / term3_reference_mass), term3_exp);
                             term3_mass_sm3=pow((sm3 / term3_reference_mass), term3_exp);
                           }
 
+                          if (nle_state->term1.current_match->outfactor_rmr_exp_up != 0) {
+                            if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 0) {
+                              rmr_mass_up=mp;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 1) {
+                              rmr_mass_up=v;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 2) {
+                              rmr_mass_up=mz;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 3) {
+                              rmr_mass_up=mw;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 4) {
+                              rmr_mass_up=mh0;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 5) {
+                              rmr_mass_up=muser;
+                            }
+                            if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 0) {
+                              rmr_mass_down=mp;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 1) {
+                              rmr_mass_down=v;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 2) {
+                              rmr_mass_down=mz;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 3) {
+                              rmr_mass_down=mw;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 4) {
+                              rmr_mass_down=mh0;
+                            } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 5) {
+                              rmr_mass_down=muser;
+                            }
+                            term1_rmr=pow((rmr_mass_down / rmr_mass_up), ((double)nle_state->term1.current_match->outfactor_rmr_exp_up / (double)nle_state->term1.current_match->outfactor_rmr_exp_down));
+                          } else {
+                            term1_rmr=1.0;
+                          }
                           if (nle_state->term1.current_match->outfactor_sin2w_exp_up != 0) {
                             term1_sin2w=pow(sin2w, ((double)nle_state->term1.current_match->outfactor_sin2w_exp_up / (double)nle_state->term1.current_match->outfactor_sin2w_exp_down));
                           } else {
@@ -1059,6 +1111,37 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             term1_cos2w=1.0;
                           }
 
+                          if (nle_state->term2.current_match->outfactor_rmr_exp_up != 0) {
+                            if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 0) {
+                              rmr_mass_up=mp;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 1) {
+                              rmr_mass_up=v;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 2) {
+                              rmr_mass_up=mz;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 3) {
+                              rmr_mass_up=mw;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 4) {
+                              rmr_mass_up=mh0;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 5) {
+                              rmr_mass_up=muser;
+                            } 
+                            if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 0) { 
+                              rmr_mass_down=mp;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 1) {
+                              rmr_mass_down=v;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 2) {
+                              rmr_mass_down=mz;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 3) {
+                              rmr_mass_down=mw;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 4) {
+                              rmr_mass_down=mh0;
+                            } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 5) {
+                              rmr_mass_down=muser;
+                            } 
+                            term2_rmr=pow((rmr_mass_down / rmr_mass_up), ((double)nle_state->term2.current_match->outfactor_rmr_exp_up / (double)nle_state->term2.current_match->outfactor_rmr_exp_down));
+                          } else {
+                            term2_rmr=1.0;
+                          }
                           if (nle_state->term2.current_match->outfactor_sin2w_exp_up != 0) {
                             term2_sin2w=pow(sin2w, ((double)nle_state->term2.current_match->outfactor_sin2w_exp_up / (double)nle_state->term2.current_match->outfactor_sin2w_exp_down));
                           } else {
@@ -1070,6 +1153,37 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             term2_cos2w=1.0;
                           }
 
+                          if (nle_state->term3.current_match->outfactor_rmr_exp_up != 0) {
+                            if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 0) {
+                              rmr_mass_up=mp;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 1) {
+                              rmr_mass_up=v;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 2) {
+                              rmr_mass_up=mz;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 3) {
+                              rmr_mass_up=mw;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 4) {
+                              rmr_mass_up=mh0;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 5) {
+                              rmr_mass_up=muser;
+                            } 
+                            if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 0) { 
+                              rmr_mass_down=mp;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 1) {
+                              rmr_mass_down=v;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 2) {
+                              rmr_mass_down=mz;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 3) {
+                              rmr_mass_down=mw;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 4) {
+                              rmr_mass_down=mh0;
+                            } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 5) {
+                              rmr_mass_down=muser;
+                            } 
+                            term3_rmr=pow((rmr_mass_down / rmr_mass_up), ((double)nle_state->term3.current_match->outfactor_rmr_exp_up / (double)nle_state->term3.current_match->outfactor_rmr_exp_down));
+                          } else {
+                            term3_rmr=1.0;
+                          }
                           if (nle_state->term3.current_match->outfactor_sin2w_exp_up != 0) {
                             term3_sin2w=pow(sin2w, ((double)nle_state->term3.current_match->outfactor_sin2w_exp_up / (double)nle_state->term3.current_match->outfactor_sin2w_exp_down));
                           } else {
@@ -1080,23 +1194,49 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                           } else {
                             term3_cos2w=1.0;
                           }
+                          term1_coefficient=(term1_static * term1_rmr / term1_sin2w) / term1_cos2w;
+                          term2_coefficient=(term2_static * term2_rmr / term2_sin2w) / term2_cos2w;
+                          term3_coefficient=(term3_static * term3_rmr / term3_sin2w) / term3_cos2w;
 
-                          term1_coefficient=(term1_static / term1_sin2w) / term1_cos2w;
-                          term2_coefficient=(term2_static / term2_sin2w) / term2_cos2w;
-                          term3_coefficient=(term3_static / term3_sin2w) / term3_cos2w;
-
-                          if ((nle_config->nle_mode == 2) && (nle_config->smrfactor_1minus_enable == 1)) {
-                            sm1_test=pow((term1_coefficient * term1_mass_sm1), 2.0) + (term3_coefficient * term1_coefficient * term1_mass_sm1 * term2_coefficient * term2_mass_sm1) + pow((term2_coefficient * term2_mass_sm1), 2.0) - 1.0;
-                            sm2_test=pow((term1_coefficient * term1_mass_sm2), 2.0) + (term3_coefficient * term1_coefficient * term1_mass_sm2 * term2_coefficient * term2_mass_sm2) + pow((term2_coefficient * term2_mass_sm2), 2.0) - 1.0;
-                            sm3_test=pow((term1_coefficient * term1_mass_sm3), 2.0) + (term3_coefficient * term1_coefficient * term1_mass_sm3 * term2_coefficient * term2_mass_sm3) + pow((term2_coefficient * term2_mass_sm3), 2.0) - 1.0;
-                          } else if (nle_config->nle_mode == 2) {
-                            sm1_test=pow((term1_coefficient * term1_mass_sm1), 2.0) - (term3_coefficient * term1_coefficient * term1_mass_sm1 * term2_coefficient * term2_mass_sm1) + pow((term2_coefficient * term2_mass_sm1), 2.0) - 1.0;
-                            sm2_test=pow((term1_coefficient * term1_mass_sm2), 2.0) - (term3_coefficient * term1_coefficient * term1_mass_sm2 * term2_coefficient * term2_mass_sm2) + pow((term2_coefficient * term2_mass_sm2), 2.0) - 1.0;
-                            sm3_test=pow((term1_coefficient * term1_mass_sm3), 2.0) - (term3_coefficient * term1_coefficient * term1_mass_sm3 * term2_coefficient * term2_mass_sm3) + pow((term2_coefficient * term2_mass_sm3), 2.0) - 1.0;
-                          } else {
-                            sm1_test=(term1_coefficient * term1_mass_sm1) - (term2_coefficient * term2_mass_sm1) + (term3_coefficient * term3_mass_sm1) - 1.0;
-                            sm2_test=(term1_coefficient * term1_mass_sm2) - (term2_coefficient * term2_mass_sm2) + (term3_coefficient * term3_mass_sm2) - 1.0;
-                            sm3_test=(term1_coefficient * term1_mass_sm3) - (term2_coefficient * term2_mass_sm3) + (term3_coefficient * term3_mass_sm3) - 1.0;
+                          if (nle_config->nle_mode == 2) {
+                            // for 2-term mixed mode, we will use term3 as a pseudo term for the mixing of terms 1 and 2
+                            sm1_test_term1=term1_coefficient * term1_mass_sm1 * term1_coefficient * term1_mass_sm1;
+                            sm1_test_term2=term2_coefficient * term2_mass_sm1 * term2_coefficient * term2_mass_sm1;
+                            sm1_test_term3=term3_coefficient * term1_coefficient * term1_mass_sm1 * term2_coefficient * term2_mass_sm1;
+                            sm2_test_term1=term1_coefficient * term1_mass_sm2 * term1_coefficient * term1_mass_sm2;
+                            sm2_test_term2=term2_coefficient * term2_mass_sm2 * term2_coefficient * term2_mass_sm2;
+                            sm2_test_term3=term3_coefficient * term1_coefficient * term1_mass_sm2 * term2_coefficient * term2_mass_sm2;
+                            sm3_test_term1=term1_coefficient * term1_mass_sm3 * term1_coefficient * term1_mass_sm3;
+                            sm3_test_term2=term2_coefficient * term2_mass_sm3 * term2_coefficient * term2_mass_sm3;
+                            sm3_test_term3=term3_coefficient * term1_coefficient * term1_mass_sm3 * term2_coefficient * term2_mass_sm3;
+                            if (nle_config->smrfactor_1minus_enable == 1) { // two different mixing polarity options for (1-smr) mode
+                              if (nle_config->nle_mixing_polarity == 0) {
+                                sm1_test=sm1_test_term1 + sm1_test_term2 - sm1_test_term3 - 1.0;
+                                sm2_test=sm2_test_term1 + sm2_test_term2 - sm2_test_term3 - 1.0;
+                                sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
+                              } else if (nle_config->nle_mixing_polarity == 1) {
+                                sm1_test=sm1_test_term1 + sm1_test_term2 + sm1_test_term3 - 1.0;
+                                sm2_test=sm2_test_term1 + sm2_test_term2 + sm2_test_term3 - 1.0;
+                                sm3_test=sm3_test_term1 + sm3_test_term2 + sm3_test_term3 - 1.0;
+                              }
+                            } else { // 2-term without (1-smr)
+                              sm1_test=sm1_test_term1 + sm1_test_term2 - sm1_test_term3 - 1.0;
+                              sm2_test=sm2_test_term1 + sm2_test_term2 - sm2_test_term3 - 1.0;
+                              sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
+                            }
+                          } else if (nle_config->nle_mode == 3) {
+                            sm1_test_term1=term1_coefficient * term1_mass_sm1;
+                            sm1_test_term2=term2_coefficient * term2_mass_sm1;
+                            sm1_test_term3=term3_coefficient * term3_mass_sm1;
+                            sm2_test_term1=term1_coefficient * term1_mass_sm2;
+                            sm2_test_term2=term2_coefficient * term2_mass_sm2;
+                            sm2_test_term3=term3_coefficient * term3_mass_sm2;
+                            sm3_test_term1=term1_coefficient * term1_mass_sm3;
+                            sm3_test_term2=term2_coefficient * term2_mass_sm3;
+                            sm3_test_term3=term3_coefficient * term3_mass_sm3;
+                            sm1_test=sm1_test_term1 - sm1_test_term2 + sm1_test_term3 - 1.0;
+                            sm2_test=sm2_test_term1 - sm2_test_term2 + sm2_test_term3 - 1.0;
+                            sm3_test=sm3_test_term1 - sm3_test_term2 + sm3_test_term3 - 1.0;
                           }
 
 #ifdef DEBUG23
@@ -1640,7 +1780,11 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
     }
 
     if (nle_config->nle_mode == 2) {
-      sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 - (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
+      if (nle_config->nle_mixing_polarity == 0) {
+        sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 - (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
+      } else {
+        sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 + (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
+      }
     } else if (nle_config->nle_mode == 3) {
       sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1 - term2 + term3 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
     }

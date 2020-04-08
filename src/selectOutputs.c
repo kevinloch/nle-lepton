@@ -17,6 +17,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   double u_2;
   double u_3;
   double rel_error;
+  int reference_mass;
 
   /*
     Index of variables
@@ -318,43 +319,112 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     unknowns++;
   }
 
-  if ((nle_config->nle_mode == 2) && (nle_state->all_uses.float_sm3 != 1)) {
-    // if mode == 2 and sm3 is not floated, unset third unknown and set sm3 in it's place
-    // 2-term mixed will not converge unless one of the solution masses is floated
-    if (i_3 == 0) {
-      nle_state->all_uses.float_alpha_em=0;
-      unknowns--;
-    } else if (i_3 == 1) {
-      nle_state->all_uses.float_v=0;
-      unknowns--;
-    } else if (i_3 == 2) {
-      nle_state->all_uses.float_G=0;
-      unknowns--;
-    } else if (i_3 == 3) {
-      nle_state->all_uses.float_mz=0;
-      unknowns--;
-    } else if (i_3 == 4) {
-      nle_state->all_uses.float_mw=0;
-      unknowns--;
-    } else if (i_3 == 5) {
-      nle_state->all_uses.float_mh0=0;
-      unknowns--;
-    } else if (i_3 == 6) {
-      nle_state->all_uses.float_sin2w=0;
-      unknowns--;
-    } else if (i_3 == 7) {
-      nle_state->all_uses.float_muser=0;
-      unknowns--;
-    } else if (i_3 == 8) {
-      nle_state->all_uses.float_sm1=0;
-      unknowns--;
-    } else if (i_3 == 9) {
-      nle_state->all_uses.float_sm2=0;
-      unknowns--;
+  if (nle_config->nle_mode == 2) {
+    // special checks for 2-term mode
+
+    reference_mass=nle_state->term1.smrfactor_mass;
+    if ((i_1 != reference_mass) && (i_2 != reference_mass) && (i_3 != reference_mass)) {
+      // if mode == 2 and reference_mass is not floated, unset third unknown and set reference_mass in it's place
+      // 2-term mixed will not converge unless the reference mass is floated
+      if (i_3 == 0) {
+        nle_state->all_uses.float_alpha_em=0;
+        unknowns--;
+      } else if (i_3 == 1) {
+        nle_state->all_uses.float_v=0;
+        unknowns--;
+      } else if (i_3 == 2) {
+        nle_state->all_uses.float_G=0;
+        unknowns--;
+      } else if (i_3 == 3) {
+        nle_state->all_uses.float_mz=0;
+        unknowns--;
+      } else if (i_3 == 4) {
+        nle_state->all_uses.float_mw=0;
+        unknowns--;
+      } else if (i_3 == 5) {
+        nle_state->all_uses.float_mh0=0;
+        unknowns--;
+      } else if (i_3 == 6) {
+        nle_state->all_uses.float_sin2w=0;
+        unknowns--;
+      } else if (i_3 == 7) {
+        nle_state->all_uses.float_muser=0;
+        unknowns--;
+      } else if (i_3 == 8) {
+        nle_state->all_uses.float_sm1=0;
+        unknowns--;
+      } else if (i_3 == 9) {
+        nle_state->all_uses.float_sm2=0;
+        unknowns--;
+      } else if (i_3 == 10) {
+        nle_state->all_uses.float_sm3=0;
+        unknowns--;
+      }
+      i_3=reference_mass;
+      if (reference_mass == 0) {
+        nle_state->all_uses.float_alpha_em=1;
+      } else if (reference_mass == 1) {
+        nle_state->all_uses.float_v=1;
+      } else if (reference_mass == 2) {
+        nle_state->all_uses.float_G=1;
+      } else if (reference_mass == 3) {
+        nle_state->all_uses.float_mz=1;
+      } else if (reference_mass == 4) {
+        nle_state->all_uses.float_mw=1;
+      } else if (reference_mass == 5) {
+        nle_state->all_uses.float_mh0=1;
+      } else if (reference_mass == 6) {
+        nle_state->all_uses.float_sin2w=1;
+      } else if (reference_mass == 7) {
+        nle_state->all_uses.float_muser=1;
+      } else if (reference_mass == 8) {
+        nle_state->all_uses.float_sm1=1;
+      } else if (reference_mass == 9) {
+        nle_state->all_uses.float_sm2=1;
+      } else if (reference_mass == 10) {
+        nle_state->all_uses.float_sm3=1;
+      }
+      unknowns++;
     }
-    i_3=10;    
-    nle_state->all_uses.float_sm3=1;
-    unknowns++;
+
+    if (nle_state->all_uses.float_sm3 != 1) {
+      // if mode == 2 and sm3 is not floated, unset second unknown and set sm3 in it's place
+      // 2-term mixed will not converge unless one of the solution masses is floated
+      if (i_2 == 0) {
+        nle_state->all_uses.float_alpha_em=0;
+        unknowns--;
+      } else if (i_2 == 1) {
+        nle_state->all_uses.float_v=0;
+        unknowns--;
+      } else if (i_2 == 2) {
+        nle_state->all_uses.float_G=0;
+        unknowns--;
+      } else if (i_2 == 3) {
+        nle_state->all_uses.float_mz=0;
+        unknowns--;
+      } else if (i_2 == 4) {
+        nle_state->all_uses.float_mw=0;
+        unknowns--;
+      } else if (i_2 == 5) {
+        nle_state->all_uses.float_mh0=0;
+        unknowns--;
+      } else if (i_2 == 6) {
+        nle_state->all_uses.float_sin2w=0;
+        unknowns--;
+      } else if (i_2 == 7) {
+        nle_state->all_uses.float_muser=0;
+        unknowns--;
+      } else if (i_2 == 8) {
+        nle_state->all_uses.float_sm1=0;
+        unknowns--;
+      } else if (i_2 == 9) {
+        nle_state->all_uses.float_sm2=0;
+        unknowns--;
+      }
+      i_2=10;    
+      nle_state->all_uses.float_sm3=1;
+      unknowns++;
+    }
   }
 
 #ifdef DEBUG_SELECT_OUTPUTS

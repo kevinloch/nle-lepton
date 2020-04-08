@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.2"
+#define NLE_VERSION "4.3-dev"
 
 typedef struct {
   int alpha_em;
@@ -110,10 +110,10 @@ typedef struct {
   int outfactor_sin2w_exp_down;
   int outfactor_cos2w_exp_up;
   int outfactor_cos2w_exp_down;
-  int outfactor_rmr_reference_mass1;
-  int outfactor_rmr_reference_mass2;
   int outfactor_rmr_exp_up;
   int outfactor_rmr_exp_down;
+  int outfactor_rmr_mass_id_up;
+  int outfactor_rmr_mass_id_down;
   int outfactor_user1_exp_up;
   int outfactor_user1_exp_down;
   int outfactor_user2_exp_up;
@@ -179,7 +179,9 @@ typedef struct {
   char config_file_name[256];
   int upload_results_enable;
   char upload_url[256];
-  int status_enable;
+  int phase1_status_enable;
+  int phase1_solution_detail;
+  int phase2_status_enable;
   double ref_sm1;
   double ref_sm1_error;
   double ref_sm1_relerror;
@@ -190,6 +192,7 @@ typedef struct {
   double ref_sm3_error;
   double ref_sm3_relerror;
   int nle_mode;
+  int nle_mixing_polarity;
   int exp_inv_max;
   int exp_inv_term1_force;
   int exp_inv_term2_force;

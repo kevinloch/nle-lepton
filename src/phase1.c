@@ -47,12 +47,15 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   long double sm3_test=0;
   long double worst_test;
   long double range_factor;
+  long double smrf_sm1=0;
   long double term1_mass_sm1=0;
   long double term2_mass_sm1=0;
   long double term3_mass_sm1=0;
+  long double smrf_sm2=0;
   long double term1_mass_sm2=0;
   long double term2_mass_sm2=0;
   long double term3_mass_sm2=0;
+  long double smrf_sm3=0;
   long double term1_mass_sm3=0;
   long double term2_mass_sm3=0;
   long double term3_mass_sm3=0;
@@ -167,28 +170,30 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 
   // starting v4.0 denominator is always v for this step, other mass ratio factors are now swapped out in cscanner(), except with (1-smr) where smrfactor_mass is used instead
   if (nle_state->term1.smrfactor_1minus == 1) {
+    smrf_sm1=(long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass;
+    smrf_sm2=(long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass;
+    smrf_sm3=(long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass;
     // check if (1-smr) is negative for sm1 and invert inside and outside radical
-    if ((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)) < 0) {
-      term1_mass_sm1=-powl(-(1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+    if ((1.0 - smrf_sm1) < 0) {
+      term1_mass_sm1=-powl(-(1.0 - smrf_sm1), (1.0 / (long double)nle_state->term1.exp_inv));
     } else {
-      term1_mass_sm1=powl((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+      term1_mass_sm1=powl((1.0 - smrf_sm1), (1.0 / (long double)nle_state->term1.exp_inv));
     }
     // check if (1-smr) is negative for sm2 and invert inside and outside radical
-    if ((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass)) < 0) {
-      term1_mass_sm2=-powl(-(1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+    if ((1.0 - smrf_sm2) < 0) {
+      term1_mass_sm2=-powl(-(1.0 - smrf_sm2), (1.0 / (long double)nle_state->term1.exp_inv));
     } else {
-      term1_mass_sm2=powl((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+      term1_mass_sm2=powl((1.0 - smrf_sm2), (1.0 / (long double)nle_state->term1.exp_inv));
     }
     // check if (1-smr) is negative for sm3 and invert inside and outside radical
-    if ((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass)) < 0) {
-      term1_mass_sm3=-powl(-(1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+    if ((1.0 - smrf_sm3) < 0) {
+      term1_mass_sm3=-powl(-(1.0 - smrf_sm3), (1.0 / (long double)nle_state->term1.exp_inv));
     } else {
-      term1_mass_sm3=powl((1.0 - ((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass)), (1.0 / (long double)nle_state->term1.exp_inv));
+      term1_mass_sm3=powl((1.0 - smrf_sm3), (1.0 / (long double)nle_state->term1.exp_inv));
     }
-    // use the same smrfactor for both terms in 1-smr mode
-    term2_mass_sm1=powl(((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm1 / (long double)reference_mass), (1.0 / (long double)nle_state->term2.exp_inv));
-    term2_mass_sm2=powl(((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm2 / (long double)reference_mass), (1.0 / (long double)nle_state->term2.exp_inv));
-    term2_mass_sm3=powl(((long double)nle_state->term1.smrfactor * (long double)nle_state->input_sample_sm3 / (long double)reference_mass), (1.0 / (long double)nle_state->term2.exp_inv));
+    term2_mass_sm1=powl(smrf_sm1, (1.0 / (long double)nle_state->term2.exp_inv));
+    term2_mass_sm2=powl(smrf_sm2, (1.0 / (long double)nle_state->term2.exp_inv));
+    term2_mass_sm3=powl(smrf_sm3, (1.0 / (long double)nle_state->term2.exp_inv));
   } else {
     term1_mass_sm1=powl(((long double)nle_state->input_sample_sm1 / (long double)reference_mass), (1.0 / (long double)nle_state->term1.exp_inv));
     term1_mass_sm2=powl(((long double)nle_state->input_sample_sm2 / (long double)reference_mass), (1.0 / (long double)nle_state->term1.exp_inv));
@@ -197,13 +202,13 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     term2_mass_sm2=powl(((long double)nle_state->input_sample_sm2 / (long double)reference_mass), (1.0 / (long double)nle_state->term2.exp_inv));
     term2_mass_sm3=powl(((long double)nle_state->input_sample_sm3 / (long double)reference_mass), (1.0 / (long double)nle_state->term2.exp_inv));
   }
-  if (nle_config->nle_mode > 2) {
-    term3_mass_sm1= powl(((long double)nle_state->input_sample_sm1 / (long double)reference_mass), (1.0 / (long double)nle_state->term3.exp_inv));
-    term3_mass_sm2= powl(((long double)nle_state->input_sample_sm2 / (long double)reference_mass), (1.0 / (long double)nle_state->term3.exp_inv));
-    term3_mass_sm3= powl(((long double)nle_state->input_sample_sm3 / (long double)reference_mass), (1.0 / (long double)nle_state->term3.exp_inv));
+  if (nle_config->nle_mode == 3) {
+    term3_mass_sm1=powl(((long double)nle_state->input_sample_sm1 / (long double)reference_mass), (1.0 / (long double)nle_state->term3.exp_inv));
+    term3_mass_sm2=powl(((long double)nle_state->input_sample_sm2 / (long double)reference_mass), (1.0 / (long double)nle_state->term3.exp_inv));
+    term3_mass_sm3=powl(((long double)nle_state->input_sample_sm3 / (long double)reference_mass), (1.0 / (long double)nle_state->term3.exp_inv));
   }
 
-  if (nle_config->status_enable == 1) {
+  if (nle_config->phase1_status_enable == 1) {
     printf("status, Solving phase 1 formula for coefficients, exponents: %s\n", nle_state->exponents_str);
     fflush(stdout);
   }
@@ -380,50 +385,47 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
           if (good_coefficients == 1) {
             if (nle_config->nle_mode == 2) {
               // for 2-term mixed mode, we will use term3 as a pseudo term for the mixing of terms 1 and 2
-              // This enables us to always solve the NLE regardless of whether the mass spectrum is allowed by the exponents
-              // Once solved we will test whether c3 has the correct relationship to c1 and c2
               sm1_test_term1=c1[ordering] * term1_mass_sm1 * term1_mass_sm1;
               sm1_test_term2=c2[ordering] * term2_mass_sm1 * term2_mass_sm1;
               sm1_test_term3=c3[ordering] * term1_mass_sm1 * term2_mass_sm1;
- 
               sm2_test_term1=c1[ordering] * term1_mass_sm2 * term1_mass_sm2;
               sm2_test_term2=c2[ordering] * term2_mass_sm2 * term2_mass_sm2;
               sm2_test_term3=c3[ordering] * term1_mass_sm2 * term2_mass_sm2;
-
               sm3_test_term1=c1[ordering] * term1_mass_sm3 * term1_mass_sm3;
               sm3_test_term2=c2[ordering] * term2_mass_sm3 * term2_mass_sm3;
               sm3_test_term3=c3[ordering] * term1_mass_sm3 * term2_mass_sm3;
-              if (nle_config->smrfactor_1minus_enable == 1) {
-                sm1_test=sm1_test_term1 + sm1_test_term2 + sm1_test_term3 - 1.0;
-                sm2_test=sm2_test_term1 + sm2_test_term2 + sm2_test_term3 - 1.0;
-              } else {
+              if (nle_config->smrfactor_1minus_enable == 1) { // two different mixing polarity options for (1-smr) mode
+                if (nle_config->nle_mixing_polarity == 0) {
+                  sm1_test=sm1_test_term1 + sm1_test_term2 - sm1_test_term3 - 1.0;
+                  sm2_test=sm2_test_term1 + sm2_test_term2 - sm2_test_term3 - 1.0;
+                  sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
+                } else if (nle_config->nle_mixing_polarity == 1) {
+                  sm1_test=sm1_test_term1 + sm1_test_term2 + sm1_test_term3 - 1.0;
+                  sm2_test=sm2_test_term1 + sm2_test_term2 + sm2_test_term3 - 1.0;
+                  sm3_test=sm3_test_term1 + sm3_test_term2 + sm3_test_term3 - 1.0;
+                }
+              } else { // 2-term without (1-smr)
                 sm1_test=sm1_test_term1 + sm1_test_term2 - sm1_test_term3 - 1.0;
                 sm2_test=sm2_test_term1 + sm2_test_term2 - sm2_test_term3 - 1.0;
+                sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
               }
             } else if (nle_config->nle_mode == 3) {
+              // three independent terms
               sm1_test_term1=c1[ordering] * term1_mass_sm1;
               sm1_test_term2=c2[ordering] * term2_mass_sm1;
               sm1_test_term3=c3[ordering] * term3_mass_sm1;
-  
               sm2_test_term1=c1[ordering] * term1_mass_sm2;
               sm2_test_term2=c2[ordering] * term2_mass_sm2;
               sm2_test_term3=c3[ordering] * term3_mass_sm2;
-
               sm3_test_term1=c1[ordering] * term1_mass_sm3;
               sm3_test_term2=c2[ordering] * term2_mass_sm3;
               sm3_test_term3=c3[ordering] * term3_mass_sm3;
               sm1_test=sm1_test_term1 - sm1_test_term2 + sm1_test_term3 - 1.0;
               sm2_test=sm2_test_term1 - sm2_test_term2 + sm2_test_term3 - 1.0;
+              sm3_test=sm3_test_term1 - sm3_test_term2 + sm3_test_term3 - 1.0;
             }
 
             if ((progress[ordering] < ratio_grace_period) || (((fabsl(sm1_test) / fabsl(sm2_test)) < test_ratio) && ((fabsl(sm2_test) / fabsl(sm1_test)) < test_ratio))) {
-              if ((nle_config->nle_mode == 2) && (nle_config->smrfactor_1minus_enable == 1)) {
-                sm3_test=sm3_test_term1 + sm3_test_term2 + sm3_test_term3 - 1.0;
-              } else if (nle_config->nle_mode == 2) {
-                sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
-              } else if (nle_config->nle_mode == 3) {
-                sm3_test=sm3_test_term1 - sm3_test_term2 + sm3_test_term3 - 1.0;
-              }
               if ((progress[ordering] < ratio_grace_period) || (((fabsl(sm1_test) / fabsl(sm3_test)) < test_ratio) && ((fabsl(sm3_test) / fabsl(sm1_test)) < test_ratio) &&\
                                                                 ((fabsl(sm2_test) / fabsl(sm3_test)) < test_ratio) && ((fabsl(sm3_test) / fabsl(sm2_test)) < test_ratio))) {
 #ifdef DEBUG12
@@ -617,20 +619,24 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 
   if ((best_precision_last < precision_target) && (isnan(best_precision_last) == 0)) {
     two_term_test=c3_center[best_ordering] / (sqrtl(c1_center[best_ordering] * c2_center[best_ordering]));
-    if (nle_config->status_enable == 1) {
-      clock_gettime(CLOCK_REALTIME, &endtime);
-      elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-      if (nle_config->nle_mode == 2) {
-        if (nle_config->smrfactor_1minus_enable == 1) {
-          printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, samples: %lld, ordering: %d, reference_mass: %s, smrf: %s, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), samples, best_ordering, mass_str, smrf_str, best_precision_last, elapsed_time);
-          // verbose for testing
-          //printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, alpha_w: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, sm1_test_1: %.9Le, sm1_test_2: %.9Le, sm1_test_3: %.9Le, sm2_test_1: %.9Le, sm2_test_2: %.9Le, sm2_test_3: %.9Le, sm3_test_1: %.9Le, sm3_test_2: %.9Le, sm3_test_3: %.9Le, dr_c: %.9Le, dr_e: %.9Le, dr_u: %.9Le, dr_t: %.9Le, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, nle_state->input_sample_alpha_w, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), sm1_test_term1, sm1_test_term2, sm1_test_term3, sm2_test_term1, sm2_test_term2, sm2_test_term3, sm3_test_term1, sm3_test_term2, sm3_test_term3, dynamicrange_c[best_ordering], dynamicrange_sm1[best_ordering], dynamicrange_sm2[best_ordering], dynamicrange_sm3[best_ordering], samples, best_ordering, best_precision_last, elapsed_time);
-        } else {
-          printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.9e, samples: %lld, ordering: %d, two_term_test: %.9Le, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, samples, best_ordering, two_term_test, precision, elapsed_time);
+    clock_gettime(CLOCK_REALTIME, &endtime);
+    elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
+    if (nle_config->nle_mode == 2) {
+      if (nle_config->smrfactor_1minus_enable == 1) {
+        if (nle_config->nle_mixing_polarity == 0) {
+          printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, mixing polarity: -, sm3: %.14e, reference mass: %.14e, two-term test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, smrf: %s, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), smrf_str, samples, best_ordering, best_precision_last, elapsed_time);
+        } else if (nle_config->nle_mixing_polarity == 1) {
+          printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, mixing polarity: +, sm3: %.14e, reference mass: %.14e, two-term test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, smrf: %s, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), smrf_str, samples, best_ordering, best_precision_last, elapsed_time);
         }
-      } else if (nle_config->nle_mode == 3) {
-        printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.9e, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, samples, best_ordering, precision, elapsed_time);
+      } else {
+        printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, two-term test: %.14Le, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, samples, best_ordering, precision, elapsed_time);
       }
+    } else if (nle_config->nle_mode == 3) {
+      printf("status, Solved  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, samples: %lld, ordering: %d, precision: %.3Le (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, samples, best_ordering, precision, elapsed_time);
+    }
+    fflush(stdout); 
+
+    if (nle_config->phase1_solution_detail == 1) {
       printf("status, +------------+------------------+----------+-----------------+-----------------+-----------------+-----------------+\n");
     printf("status, | Exponents  |    Mass ratio    | NLE term |   Coefficient   |  C * term(sm1)  |  C * term(sm2)  |  C * term(sm3)  |\n");
       printf("status, +------------+------------------+----------+-----------------+-----------------+-----------------+-----------------+\n");
@@ -653,7 +659,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 
       // for debugging very long phase 1 solutions
       //exit(0);
-    } // end if status_enable
+    } // end if phase1_solution_detail
 
     // only run cscanner if mode=3 or two_term_test is an interesting integer match
     // for this interesting() check  we use a fixed filter of 3.  In cscanner two_term_test is evaluated with phase1_filter on c3 which may be more restrictive
@@ -667,20 +673,23 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         nle_state->term2.coefficient=(double)sqrtl(c2_center[best_ordering]);
         nle_state->term3.coefficient=(double)two_term_test;
         if (nle_config->smrfactor_1minus_enable == 1) {
-          sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, reference_mass: %s, smrf: %s", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), mass_str, smrf_str);
-          printf("%s\n", out_str_01);
-          fflush(stdout);
-        } else {
-          sprintf(out_str_01, "status, Found interesting two_term_test, input_sample: %i, exponents: %s, sm3: %.14e, two_term_test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
-          printf("%s\n", out_str_01);
-          fflush(stdout);
-        } // end if 1minus
-        if (nle_config->upload_results_enable == 1) {
-          // upload interesting two_term_test as these are rare and significant
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
-          system(exec_str);
-        } // end if upload enable
+          if (nle_config->nle_mixing_polarity == 0) {
+            sprintf(out_str_01, "status, Found interesting two-term test, exponents:  %s, mixing polarity: -, sm3: %.14e, reference_mass: %.14e, two-term test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, smrf: %s", nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), smrf_str);
+            printf("%s\n", out_str_01);
+            fflush(stdout);
+          } else if (nle_config->nle_mixing_polarity == 1) {
+            sprintf(out_str_01, "status, Found interesting two-term test, exponents:  %s, mixing polarity: +, sm3: %.14e, reference_mass: %.14e, two-term test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le, smrf: %s", nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]), smrf_str);
+            printf("%s\n", out_str_01);
+            fflush(stdout);
+          }
+          if (nle_config->upload_results_enable == 1) {
+            // upload interesting two_term_test as these are rare and significant
+            sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+            system(exec_str);
+          } // end if upload enable
+        } // end if 1-minus
       } else {
+        // 3-term mode
         nle_state->term1.coefficient=(double)c1_center[best_ordering];
         nle_state->term2.coefficient=(double)c2_center[best_ordering];
         nle_state->term3.coefficient=(double)c3_center[best_ordering];
@@ -692,12 +701,12 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       clock_gettime(CLOCK_REALTIME, &endtime);
       matches_count_end=nle_state->phase1_matches_count;
       elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-      if (nle_config->status_enable ==1 ) {
+      if (nle_config->phase1_status_enable ==1 ) {
         printf("status, Found %d interesting coefficient multipliers (%6.4fs)\n", (matches_count_end-matches_count_start), elapsed_time);
         fflush(stdout);
       }
     } else {
-      if (nle_config->status_enable == 1) {
+      if (nle_config->phase1_status_enable == 1) {
         printf("status, two_term_test was not close enough to an interesting integer, skipping factoring process\n");
         fflush(stdout);
       }
@@ -709,15 +718,20 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       fflush(stdout);
     }
 #endif
-    if (nle_config->status_enable == 1) {
+    if (nle_config->phase1_status_enable == 1) {
       clock_gettime(CLOCK_REALTIME, &endtime);
       elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
       two_term_test=c3_center[best_ordering] / (sqrtl(c1_center[best_ordering] * c2_center[best_ordering]));
       if (nle_config->smrfactor_1minus_enable == 1) {
-        printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e, reference_mass: %s, smrf: %s (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, mass_str, smrf_str, elapsed_time);
+        if (nle_config->nle_mixing_polarity == 0) {
+          printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, mixing polarity: -, sm3: %.14e, reference mass: %.14e, smrf: %s (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, smrf_str, elapsed_time);
+        } else if (nle_config->nle_mixing_polarity == 1) {
+          printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, mixing polarity: +, sm3: %.14e, reference mass: %.14e, smrf: %s (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, smrf_str, elapsed_time);
+        }
       } else {
         printf("status, Failed to solve  phase 1 formula for coefficients, input sample: %i, exponents:  %s, sm3: %.14e (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->input_sample_sm3, elapsed_time);
       }
+      fflush(stdout);
     }
     // we failed, return 1
     return(1);

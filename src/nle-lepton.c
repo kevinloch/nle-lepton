@@ -159,6 +159,7 @@ int main(int argc, char **argv) {
   int mass_ratio_id;
   int mass_ratio_id_max;
   int mass_ratio_enabled;
+  int run;
 
 
   // initialize nle_config to default values
@@ -212,7 +213,12 @@ int main(int argc, char **argv) {
 
   // main operating loop
   nle_state.phase1_seq=0;
-  while (1) {
+  run=1;
+  while (run) {
+    if (nle_config.phase1_random_samples_enable == 0) {
+      run=0; // only run once if random samples is disabled
+    }
+
     nle_state.phase1_seq++;
 
     // generate valid exponents
@@ -326,13 +332,13 @@ int main(int argc, char **argv) {
                 // phase 2
                 verifyMatches(&nle_config, &nle_state);
               } else {
-                if (nle_config.status_enable ==1) {
+                if (nle_config.phase1_status_enable ==1) {
                   printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
                   fflush(stdout);
                 }
               }
             } else {
-              if ((nle_config.status_enable == 1) && (failed == 0)) {
+              if ((nle_config.phase1_status_enable == 1) && (failed == 0)) {
                 printf("status, No interesting coefficient multipliers found\n");
                 fflush(stdout);
               }
@@ -342,6 +348,6 @@ int main(int argc, char **argv) {
         } // end smrfactor_seq && 
       } // end if mass_ratio_enabled
     } // end for mass_ratio_id
-  } // end while 1
+  } // end while run
   exit(0);
 }   

@@ -72,6 +72,9 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
   char uout3[32];
   char s2wout[32];
   char c2wout[32];
+  char rmr_mass_up[32];
+  char rmr_mass_down[32];
+  char rmrout[32];
   char updownin[32];
   char nbin[32];
   char e2in[32];
@@ -143,6 +146,42 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
       sprintf(uout3, "uout3       ");
     } else {
       sprintf(uout3, "uout3^(%2d/%d)", -(current_match->outfactor_user3_exp_up), current_match->outfactor_user3_exp_down);
+    }
+  }
+
+  if (current_match->outfactor_rmr_exp_up == 0) {
+    sprintf(rmrout, "                     ");
+  } else {
+    if (current_match->outfactor_rmr_mass_id_up == 0) {
+      sprintf(rmr_mass_up, "mP    ");
+    } else if (current_match->outfactor_rmr_mass_id_up == 1) {
+      sprintf(rmr_mass_up, "v     ");
+    } else if (current_match->outfactor_rmr_mass_id_up == 2) {
+      sprintf(rmr_mass_up, "mz    ");
+    } else if (current_match->outfactor_rmr_mass_id_up == 3) {
+      sprintf(rmr_mass_up, "mw    ");
+    } else if (current_match->outfactor_rmr_mass_id_up == 4) {
+      sprintf(rmr_mass_up, "mh0   ");
+    } else if (current_match->outfactor_rmr_mass_id_up == 5) {
+      sprintf(rmr_mass_up, "m_user");
+    }
+    if (current_match->outfactor_rmr_mass_id_down == 0) {
+      sprintf(rmr_mass_down, "    mP");
+    } else if (current_match->outfactor_rmr_mass_id_down == 1) {
+      sprintf(rmr_mass_down, "     v");
+    } else if (current_match->outfactor_rmr_mass_id_down == 2) {
+      sprintf(rmr_mass_down, "    mz");
+    } else if (current_match->outfactor_rmr_mass_id_down == 3) {
+      sprintf(rmr_mass_down, "    mw");
+    } else if (current_match->outfactor_rmr_mass_id_down == 4) {
+      sprintf(rmr_mass_down, "   mh0");
+    } else if (current_match->outfactor_rmr_mass_id_down == 5) {
+      sprintf(rmr_mass_down, "m_user");
+    }
+    if ((current_match->outfactor_rmr_exp_up == 1) && (current_match->outfactor_rmr_exp_down == 1)) {
+      sprintf(rmrout, "(%s/%s)      ", rmr_mass_down, rmr_mass_up); // down/up is reversed since we are translating coefficient factors back into the original formula and we don't allow negative exponents on rmr
+    } else {
+      sprintf(rmrout, "(%s/%s)^(%d/%d)", rmr_mass_down, rmr_mass_up, current_match->outfactor_rmr_exp_up, current_match->outfactor_rmr_exp_down); // down/up is reversed since we are translating coefficient factors back into the original formula and we don't allow negative exponents on rmr
     }
   }
 
@@ -303,12 +342,12 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
   }
 
   if (current_match->exp_inv == 1) {
-    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s  %s %s %s %s %s %s %s        '", updownout, e2out, piout, aout, uout1, uout2, uout3, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstr);
+    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s %s  %s %s %s %s %s %s %s        '", updownout, e2out, piout, aout, uout1, uout2, uout3, rmrout, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstr);
   } else if (current_match->exp_inv == -1) {
-    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s  %s %s %s %s %s %s %s        '", updownout, e2out, piout, aout, uout1, uout2, uout3, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstrinv);
+    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s %s  %s %s %s %s %s %s %s        '", updownout, e2out, piout, aout, uout1, uout2, uout3, rmrout, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstrinv);
   } else if (current_match->exp_inv > 1) {
-    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s (%s %s %s %s %s %s %s)^(1/%2d)'", updownout, e2out, piout, aout, uout1, uout2, uout3, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstr, current_match->exp_inv);
+    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s %s (%s %s %s %s %s %s %s)^(1/%2d)'", updownout, e2out, piout, aout, uout1, uout2, uout3, rmrout, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstr, current_match->exp_inv);
   } else {
-    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s (%s %s %s %s %s %s %s)^(1/%2d)'", updownout, e2out, piout, aout, uout1, uout2, uout3, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstrinv, -current_match->exp_inv);
+    sprintf(formula_str, "'%s %s %s %s %s %s %s %s %s %s (%s %s %s %s %s %s %s)^(1/%2d)'", updownout, e2out, piout, aout, uout1, uout2, uout3, rmrout, s2wout, c2wout, updownin, nbin, e2in, piin, ain, uin, massstrinv, -current_match->exp_inv);
   }
 }

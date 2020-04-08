@@ -11,7 +11,9 @@ void initConfig(nle_config_t *nle_config) {
   strcpy(nle_config->config_file_name, "./nle-lepton.cfg");
   nle_config->upload_results_enable=0;
   strcpy(nle_config->upload_url, "http://localhost/lepton");
-  nle_config->status_enable=1;
+  nle_config->phase1_status_enable=1;
+  nle_config->phase1_solution_detail=1;
+  nle_config->phase2_status_enable=1;
   nle_config->ref_sm1=0.51099895000E6;
   nle_config->ref_sm1_error=0.00000000015E6;
   nle_config->ref_sm2=105.6583755E6;
@@ -19,6 +21,7 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->ref_sm3=1776.86E6;
   nle_config->ref_sm3_error=0.12E6;
   nle_config->nle_mode=3;
+  nle_config->nle_mixing_polarity=0;
   nle_config->exp_inv_max=9;
   nle_config->exp_inv_term1_force=0;
   nle_config->exp_inv_term2_force=0;
@@ -181,7 +184,9 @@ void checkOptionStr(char *config_str,  char *option, char *value, char *matchstr
 void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionBool(&nle_config->upload_results_enable, option, value, "upload_results_enable");
   checkOptionStr(nle_config->upload_url, option, value, "upload_url");
-  checkOptionBool(&nle_config->status_enable, option, value, "status_enable");
+  checkOptionBool(&nle_config->phase1_status_enable, option, value, "phase1_status_enable");
+  checkOptionBool(&nle_config->phase1_solution_detail, option, value, "phase1_solution_detail");
+  checkOptionBool(&nle_config->phase2_status_enable, option, value, "phase2_status_enable");
   checkOptionDouble(&nle_config->ref_sm1, option, value, "ref_sm1");
   checkOptionDouble(&nle_config->ref_sm1_error, option, value, "ref_sm1_error");
   checkOptionDouble(&nle_config->ref_sm2, option, value, "ref_sm2");
@@ -189,6 +194,7 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionDouble(&nle_config->ref_sm3, option, value, "ref_sm3");
   checkOptionDouble(&nle_config->ref_sm3_error, option, value, "ref_sm3_error");
   checkOptionInt(&nle_config->nle_mode, option, value, "nle_mode");
+  checkOptionInt(&nle_config->nle_mixing_polarity, option, value, "nle_mixing_polarity");
   checkOptionInt(&nle_config->exp_inv_max, option, value, "exp_inv_max");
   checkOptionInt(&nle_config->exp_inv_term1_force, option, value, "exp_inv_term1_force");
   checkOptionInt(&nle_config->exp_inv_term2_force, option, value, "exp_inv_term2_force");

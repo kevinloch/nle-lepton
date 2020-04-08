@@ -115,6 +115,10 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             temp_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
             temp_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
             temp_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+            temp_match->outfactor_rmr_exp_up=phase1_match->outfactor_rmr_exp_up;
+            temp_match->outfactor_rmr_exp_down=phase1_match->outfactor_rmr_exp_down;
+            temp_match->outfactor_rmr_mass_id_up=phase1_match->outfactor_rmr_mass_id_up;
+            temp_match->outfactor_rmr_mass_id_down=phase1_match->outfactor_rmr_mass_id_down;
             temp_match->outfactor_user1_exp_up=phase1_match->outfactor_user1_exp_up;
             temp_match->outfactor_user1_exp_down=phase1_match->outfactor_user1_exp_down;
             temp_match->outfactor_user2_exp_up=phase1_match->outfactor_user2_exp_up;
@@ -169,6 +173,10 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         term1_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
         term1_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
         term1_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+        term1_match->outfactor_rmr_exp_up=phase1_match->outfactor_rmr_exp_up;
+        term1_match->outfactor_rmr_exp_down=phase1_match->outfactor_rmr_exp_down;
+        term1_match->outfactor_rmr_mass_id_up=phase1_match->outfactor_rmr_mass_id_up;
+        term1_match->outfactor_rmr_mass_id_down=phase1_match->outfactor_rmr_mass_id_down;
         term1_match->outfactor_user1_exp_up=phase1_match->outfactor_user1_exp_up;
         term1_match->outfactor_user1_exp_down=phase1_match->outfactor_user1_exp_down;
         term1_match->outfactor_user2_exp_up=phase1_match->outfactor_user2_exp_up;
@@ -267,6 +275,10 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             temp_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
             temp_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
             temp_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+            temp_match->outfactor_rmr_exp_up=phase1_match->outfactor_rmr_exp_up;
+            temp_match->outfactor_rmr_exp_down=phase1_match->outfactor_rmr_exp_down;
+            temp_match->outfactor_rmr_mass_id_up=phase1_match->outfactor_rmr_mass_id_up;
+            temp_match->outfactor_rmr_mass_id_down=phase1_match->outfactor_rmr_mass_id_down;
             temp_match->outfactor_user1_exp_up=phase1_match->outfactor_user1_exp_up;
             temp_match->outfactor_user1_exp_down=phase1_match->outfactor_user1_exp_down;
             temp_match->outfactor_user2_exp_up=phase1_match->outfactor_user2_exp_up;
@@ -321,6 +333,10 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         term2_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
         term2_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
         term2_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+        term2_match->outfactor_rmr_exp_up=phase1_match->outfactor_rmr_exp_up;
+        term2_match->outfactor_rmr_exp_down=phase1_match->outfactor_rmr_exp_down;
+        term2_match->outfactor_rmr_mass_id_up=phase1_match->outfactor_rmr_mass_id_up;
+        term2_match->outfactor_rmr_mass_id_down=phase1_match->outfactor_rmr_mass_id_down;
         term2_match->outfactor_user1_exp_up=phase1_match->outfactor_user1_exp_up;
         term2_match->outfactor_user1_exp_down=phase1_match->outfactor_user1_exp_down;
         term2_match->outfactor_user2_exp_up=phase1_match->outfactor_user2_exp_up;
@@ -419,6 +435,10 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             temp_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
             temp_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
             temp_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+            temp_match->outfactor_rmr_exp_up=phase1_match->outfactor_rmr_exp_up;
+            temp_match->outfactor_rmr_exp_down=phase1_match->outfactor_rmr_exp_down;
+            temp_match->outfactor_rmr_mass_id_up=phase1_match->outfactor_rmr_mass_id_up;
+            temp_match->outfactor_rmr_mass_id_down=phase1_match->outfactor_rmr_mass_id_down;
             temp_match->outfactor_user1_exp_up=phase1_match->outfactor_user1_exp_up;
             temp_match->outfactor_user1_exp_down=phase1_match->outfactor_user1_exp_down;
             temp_match->outfactor_user2_exp_up=phase1_match->outfactor_user2_exp_up;
@@ -473,6 +493,10 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         term3_match->outfactor_sin2w_exp_down=phase1_match->outfactor_sin2w_exp_down;
         term3_match->outfactor_cos2w_exp_up=phase1_match->outfactor_cos2w_exp_up;
         term3_match->outfactor_cos2w_exp_down=phase1_match->outfactor_cos2w_exp_down;
+        term3_match->outfactor_rmr_exp_up=phase1_match->outfactor_rmr_exp_up;
+        term3_match->outfactor_rmr_exp_down=phase1_match->outfactor_rmr_exp_down;
+        term3_match->outfactor_rmr_mass_id_up=phase1_match->outfactor_rmr_mass_id_up;
+        term3_match->outfactor_rmr_mass_id_down=phase1_match->outfactor_rmr_mass_id_down;
         term3_match->outfactor_user1_exp_up=phase1_match->outfactor_user1_exp_up;
         term3_match->outfactor_user1_exp_down=phase1_match->outfactor_user1_exp_down;
         term3_match->outfactor_user2_exp_up=phase1_match->outfactor_user2_exp_up;
@@ -503,8 +527,12 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   term1_match=nle_state->term1.matches_start;
   combo=0;
   combo_count=((long long)nle_state->term1.matches_count * (long long)nle_state->term2.matches_count * (long long)nle_state->term3.matches_count);
-  if (nle_config->status_enable == 1) {
-    printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+  if (nle_config->phase2_status_enable == 1) {
+    if (nle_config->nle_mixing_polarity == 0) {
+      printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s, mixing polarity: -,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+    } else if (nle_config->nle_mixing_polarity == 1) {
+      printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s, mixing polarity: +,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+    }
     fflush(stdout);
   }
   for (t1=0; t1 < nle_state->term1.matches_count; t1++) {
@@ -549,6 +577,9 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
           checkSymmetry2(&symmetry, (term1_match->outfactor_alpha_exp_up * term1_match->outfactor_alpha_exp_down), (term2_match->outfactor_alpha_exp_up * term2_match->outfactor_alpha_exp_down));
           checkSymmetry2(&symmetry, (term1_match->outfactor_sin2w_exp_up * term1_match->outfactor_sin2w_exp_down), (term2_match->outfactor_sin2w_exp_up * term2_match->outfactor_sin2w_exp_down));
           checkSymmetry2(&symmetry, (term1_match->outfactor_cos2w_exp_up * term1_match->outfactor_cos2w_exp_down), (term2_match->outfactor_cos2w_exp_up * term2_match->outfactor_cos2w_exp_down));
+          checkSymmetry2(&symmetry, (term1_match->outfactor_rmr_exp_up * term1_match->outfactor_rmr_exp_down), (term2_match->outfactor_rmr_exp_up * term2_match->outfactor_rmr_exp_down));
+          checkSymmetry2(&symmetry, term1_match->outfactor_rmr_mass_id_up, term2_match->outfactor_rmr_mass_id_up);
+          checkSymmetry2(&symmetry, term1_match->outfactor_rmr_mass_id_down, term2_match->outfactor_rmr_mass_id_down);
           checkSymmetry2(&symmetry, (term1_match->outfactor_user1_exp_up * term1_match->outfactor_user1_exp_down), (term2_match->outfactor_user1_exp_up * term2_match->outfactor_user1_exp_down));
           checkSymmetry2(&symmetry, (term1_match->outfactor_user2_exp_up * term1_match->outfactor_user2_exp_down), (term2_match->outfactor_user2_exp_up * term2_match->outfactor_user2_exp_down));
           checkSymmetry2(&symmetry, (term1_match->outfactor_user3_exp_up * term1_match->outfactor_user3_exp_down), (term2_match->outfactor_user3_exp_up * term2_match->outfactor_user3_exp_down));
@@ -568,6 +599,9 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
           checkSymmetry3(&symmetry, (term1_match->outfactor_alpha_exp_up * term1_match->outfactor_alpha_exp_down), (term2_match->outfactor_alpha_exp_up * term2_match->outfactor_alpha_exp_down), (term3_match->outfactor_alpha_exp_up * term3_match->outfactor_alpha_exp_down));
           checkSymmetry3(&symmetry, (term1_match->outfactor_sin2w_exp_up * term1_match->outfactor_sin2w_exp_down), (term2_match->outfactor_sin2w_exp_up * term2_match->outfactor_sin2w_exp_down), (term3_match->outfactor_sin2w_exp_up * term3_match->outfactor_sin2w_exp_down));
           checkSymmetry3(&symmetry, (term1_match->outfactor_cos2w_exp_up * term1_match->outfactor_cos2w_exp_down), (term2_match->outfactor_cos2w_exp_up * term2_match->outfactor_cos2w_exp_down), (term3_match->outfactor_cos2w_exp_up * term3_match->outfactor_cos2w_exp_down));
+          checkSymmetry3(&symmetry, (term1_match->outfactor_rmr_exp_up * term1_match->outfactor_rmr_exp_down), (term2_match->outfactor_rmr_exp_up * term2_match->outfactor_rmr_exp_down), (term3_match->outfactor_rmr_exp_up * term3_match->outfactor_rmr_exp_down));
+          checkSymmetry3(&symmetry, term1_match->outfactor_rmr_mass_id_up, term2_match->outfactor_rmr_mass_id_up, term3_match->outfactor_rmr_mass_id_up);
+          checkSymmetry3(&symmetry, term1_match->outfactor_rmr_mass_id_down, term2_match->outfactor_rmr_mass_id_down, term3_match->outfactor_rmr_mass_id_down);
           checkSymmetry3(&symmetry, (term1_match->outfactor_user1_exp_up * term1_match->outfactor_user1_exp_down), (term2_match->outfactor_user1_exp_up * term2_match->outfactor_user1_exp_down), (term3_match->outfactor_user1_exp_up * term3_match->outfactor_user1_exp_down));
           checkSymmetry3(&symmetry, (term1_match->outfactor_user2_exp_up * term1_match->outfactor_user2_exp_down), (term2_match->outfactor_user2_exp_up * term2_match->outfactor_user2_exp_down), (term3_match->outfactor_user2_exp_up * term3_match->outfactor_user2_exp_down));
           checkSymmetry3(&symmetry, (term1_match->outfactor_user3_exp_up * term1_match->outfactor_user3_exp_down), (term2_match->outfactor_user3_exp_up * term2_match->outfactor_user3_exp_down), (term3_match->outfactor_user3_exp_up * term3_match->outfactor_user3_exp_down));
@@ -581,38 +615,52 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
           checkSymmetry3(&symmetry, (term1_match->infactor_user_exp_up * term1_match->infactor_user_exp_down), (term2_match->infactor_user_exp_up * term2_match->infactor_user_exp_down), (term3_match->infactor_user_exp_up * term3_match->infactor_user_exp_down));
         }
         if ((symmetry >= nle_config->phase2_symmetry_min) && (complexity <= nle_config->phase2_complexity_max)) {
-         if ((nle_config->phase2_check_nbv_nss == 0) || ((term1_match->infactor_nbv == term2_match->infactor_nbv) && ((nle_config->nle_mode == 2) || (term1_match->infactor_nbv == term3_match->infactor_nbv))\
-                                                      && (term1_match->infactor_nss == term2_match->infactor_nss) && ((nle_config->nle_mode == 2) || (term1_match->infactor_nss == term3_match->infactor_nss)))) { // consistency check
-           if ((nle_config->phase2_check_weak == 0) || ((term1_match->outfactor_sin2w_exp_up == term2_match->outfactor_sin2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_up == term3_match->outfactor_sin2w_exp_up))\
-                                                     && (term1_match->outfactor_sin2w_exp_down == term2_match->outfactor_sin2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_down == term3_match->outfactor_sin2w_exp_down))\
-                                                     && (term1_match->outfactor_cos2w_exp_up == term2_match->outfactor_cos2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_up == term3_match->outfactor_cos2w_exp_up))\
-                                                     && (term1_match->outfactor_cos2w_exp_down == term2_match->outfactor_cos2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_down == term3_match->outfactor_cos2w_exp_down)))) {
-              initUses(&term3_uses);
-              addUses(&term3_uses, &term3_match->match_uses);
-              initUses(&nle_state->all_uses);
-              addUses(&nle_state->all_uses, &term1_uses);
-              addUses(&nle_state->all_uses, &term2_uses);
-              addUses(&nle_state->all_uses, &term3_uses);
-              nle_state->term1.current_match=term1_match;
-              nle_state->term2.current_match=term2_match;
-              nle_state->term3.current_match=term3_match;
-              nle_state->current_symmetry=symmetry;
-              clock_gettime(CLOCK_REALTIME, &start_time);
+          if ((nle_config->phase2_check_nbv_nss == 0) || ((term1_match->infactor_nbv == term2_match->infactor_nbv) && ((nle_config->nle_mode == 2) || (term1_match->infactor_nbv == term3_match->infactor_nbv))\
+                                                       && (term1_match->infactor_nss == term2_match->infactor_nss) && ((nle_config->nle_mode == 2) || (term1_match->infactor_nss == term3_match->infactor_nss)))) { // consistency check
+            if ((nle_config->phase2_check_weak == 0) || ((term1_match->outfactor_sin2w_exp_up == term2_match->outfactor_sin2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_up == term3_match->outfactor_sin2w_exp_up))\
+                                                      && (term1_match->outfactor_sin2w_exp_down == term2_match->outfactor_sin2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_sin2w_exp_down == term3_match->outfactor_sin2w_exp_down))\
+                                                      && (term1_match->outfactor_cos2w_exp_up == term2_match->outfactor_cos2w_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_up == term3_match->outfactor_cos2w_exp_up))\
+                                                      && (term1_match->outfactor_cos2w_exp_down == term2_match->outfactor_cos2w_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_cos2w_exp_down == term3_match->outfactor_cos2w_exp_down)))) {
 
-              // send to phase2 to verify formula
-              precision=solveNLEforMasses(nle_config, nle_state);
+              if ((nle_config->phase2_check_rmr == 0) || ((term1_match->outfactor_rmr_exp_up == term2_match->outfactor_rmr_exp_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_rmr_exp_up == term3_match->outfactor_rmr_exp_up))\
+                                                       && (term1_match->outfactor_rmr_exp_down == term2_match->outfactor_rmr_exp_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_rmr_exp_down == term3_match->outfactor_rmr_exp_down))\
+                                                       && (term1_match->outfactor_rmr_mass_id_up == term2_match->outfactor_rmr_mass_id_up) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_rmr_mass_id_up == term3_match->outfactor_rmr_mass_id_up))\
+                                                       && (term1_match->outfactor_rmr_mass_id_down == term2_match->outfactor_rmr_mass_id_down) && ((nle_config->nle_mode == 2) || (term1_match->outfactor_rmr_mass_id_down == term3_match->outfactor_rmr_mass_id_down)))) {
+                initUses(&term3_uses);
+                addUses(&term3_uses, &term3_match->match_uses);
+                initUses(&nle_state->all_uses);
+                addUses(&nle_state->all_uses, &term1_uses);
+                addUses(&nle_state->all_uses, &term2_uses);
+                addUses(&nle_state->all_uses, &term3_uses);
+                nle_state->term1.current_match=term1_match;
+                nle_state->term2.current_match=term2_match;
+                nle_state->term3.current_match=term3_match;
+                nle_state->current_symmetry=symmetry;
+                clock_gettime(CLOCK_REALTIME, &start_time);
+ 
+                // send to phase2 to verify formula
+                precision=solveNLEforMasses(nle_config, nle_state);
 
-              if (nle_config->status_enable ==1) {
-                clock_gettime(CLOCK_REALTIME, &end_time);
-                elapsed_time=((double)(end_time.tv_sec - 1500000000) + ((double)end_time.tv_nsec / 1.0E9)) - ((double)(start_time.tv_sec - 1500000000) + ((double)start_time.tv_nsec) / 1.0E9);
-                if (precision < 1.0E30) {
-                  printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
-                  fflush(stdout);
-                } else {
-                  printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
-                  fflush(stdout);
-                } // end precision
-              } // end status_enable
+                if (nle_config->phase2_status_enable ==1) {
+                  clock_gettime(CLOCK_REALTIME, &end_time);
+                  elapsed_time=((double)(end_time.tv_sec - 1500000000) + ((double)end_time.tv_nsec / 1.0E9)) - ((double)(start_time.tv_sec - 1500000000) + ((double)start_time.tv_nsec) / 1.0E9);
+                  if (precision < 1.0E30) {
+                    if (nle_config->nle_mixing_polarity == 0) {
+                      printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                    } else {
+                      printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                    }
+                    fflush(stdout);
+                  } else {
+                    if (nle_config->nle_mixing_polarity == 0) {
+                      printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                    } else {
+                      printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                    }
+                    fflush(stdout);
+                  } // end precision
+                } // end status_enable
+              } // end rmr consistency check
             } // end weak consistency check
           } // end nbv/nss consistency check
         } // end if symmetry and complexity check

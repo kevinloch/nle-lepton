@@ -35,7 +35,7 @@ echo '</html>' >> ${resultsnoreload}
 echo '<!DOCTYPE html>' >> ${results}
 echo '<html>' >> ${results}
 echo '<head><title>Latest lepton polyform search data</title>' >> ${results}
-echo '<META http-equiv="refresh" CONTENT="30">' >> {results}
+echo '<META http-equiv="refresh" CONTENT="30">' >> ${results}
 echo '</head>' >> ${results}
 echo '<body><pre>' >> ${results}
 grep "result," ${resultsnoreload} | head -10000 >> ${results}
@@ -48,7 +48,7 @@ echo '<html>' >> ${twotermnoreload}
 echo '<head><title>Latest lepton polyform search data</title>' >> ${twotermnoreload}
 echo '</head>' >> ${twotermnoreload}
 echo '<body><pre>' >> ${twotermnoreload}
-grep "two_term_test," ${logfile} | cut -f 2 -d '"' | cut -f 2 -d " " | cut -f 3-99 -d "/" | sed 's/_/ /g' | cut -f 1,2,4-99 -d "," | gsort -n  >>${twotermnoreload}
+grep "two-term_test," ${logfile} | cut -f 2 -d '"' | cut -f 2 -d " " | cut -f 3-99 -d "/" | sed 's/_/ /g' | gsort -n  >> ${twotermnoreload}
 echo '</pre></body>' >> ${twotermnoreload}
 echo '</html>' >> ${twotermnoreload}
 
@@ -59,6 +59,6 @@ echo '<head><title>Latest lepton polyform search data</title>' >> ${twoterm}
 echo '<META http-equiv="refresh" CONTENT="30">' >> ${twoterm}
 echo '</head>' >> ${twoterm}
 echo '<body><pre>' >> ${twoterm}
-grep "two term test," ${twotermnoreload} | head -10000 >> ${twoterm}
+grep "two-term test," ${twotermnoreload} | head -10000 >> ${twoterm}
 echo '</pre></body>' >> ${twoterm}
 echo '</html>' >> ${twoterm}
