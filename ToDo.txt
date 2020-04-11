@@ -1,5 +1,5 @@
 To Do:
+ - Add support for subtracting reference mass ratios inside 1-minus term: (1-rmr-smr)
  - Improve speed of phase 1 and phase 2 for difficult formulas (generally those with sequential high inverse exponents like E+24+25+26)
- - Test for ratios of reference masses in coefficient factors and/or constant term
  - Support for four term formulas without constant term (one zero mass root and three real positive mass roots)
  - Support for some limited rational exponents (2/x, 3/x, etc.)

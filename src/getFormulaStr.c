@@ -262,7 +262,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "       smrf*M/mP     ");
       sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
       sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
@@ -276,7 +276,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "        smrf*M/v     ");
       sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
       sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
@@ -290,7 +290,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "       smrf*M/mZ     ");
       sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
       sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
@@ -304,7 +304,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "       smrf*M/mW     ");
       sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
       sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
@@ -318,7 +318,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "      smrf*M/mH0     ");
       sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
       sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {
@@ -332,7 +332,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
       sprintf(massstr,       "     smrf*M/m_user   ");
       sprintf(massstrinv,    "                     ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 3)) {
+    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
       sprintf(massstr,       "                     ");
       sprintf(massstrinv,    "                     ");
     } else {

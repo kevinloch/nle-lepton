@@ -50,6 +50,22 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
     fflush(stdout);
   }
 
+  /*
+    Index of mass id's and potential output variables
+    0:  G
+    1:  v
+    2:  mz
+    3:  mw
+    4:  mH0
+    5:  m_user
+    6:  sm1
+    7:  sm2
+    8:  sm3
+    9:  sin2w
+    10: alpha_em
+    11: alpha_w
+  */
+
   // determine which rmr masses are enabled
   if (nle_config->outfactor_rmr_mp_enable == 1) {
     rmr_mass_enabled[0]=1;
@@ -250,7 +266,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                                   // test multiplier against term1 coefficient
                                   if ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term1.exp_inv) || (sin2w_exp_down == (nle_state->term1.exp_inv * 2))) {
                                     if ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term1.exp_inv) || (cos2w_exp_down == (nle_state->term1.exp_inv * 2))) {
-                                    multiplier=nle_state->term1.coefficient * term1_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactor_rmr * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term1.exp_inv)];
+                                      multiplier=nle_state->term1.coefficient * term1_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactor_rmr * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term1.exp_inv)];
                                       if (interesting(phase1_filter, max_int, filter_int, multiplier)) {
                                         nle_state->terms_matched[0]=nle_state->term1.exp_inv;
                                         match->term_id=1;
@@ -352,7 +368,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                                   // test multiplier against term2 coefficient
                                   if ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term2.exp_inv) || (sin2w_exp_down == (nle_state->term2.exp_inv * 2))) {
                                     if ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term2.exp_inv) || (cos2w_exp_down == (nle_state->term2.exp_inv * 2))) {
-                                    multiplier=nle_state->term2.coefficient * term2_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactor_rmr * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term2.exp_inv)];
+                                      multiplier=nle_state->term2.coefficient * term2_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactor_rmr * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term2.exp_inv)];
                                       if (interesting(phase1_filter, max_int, filter_int, multiplier)) {
                                         nle_state->terms_matched[1]=nle_state->term2.exp_inv;
                                         match->term_id=2;
@@ -451,10 +467,11 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                                   if ((nle_config->nle_mode == 3) || ((nle_config->nle_mode == 2) && (infactors->infactor_nss == 0) && (infactors->infactor_nbv == 0)\
                                      && (infactors->infactor_2_exp_up == 0) && (infactors->infactor_alpha_exp_up == 0) && (infactors->infactor_pi_exp_up == 0) && (infactors->infactor_user_exp_up == 0)\
                                      && (outfactors->outfactor_2_exp_up == 0) && (outfactors->outfactor_alpha_exp_up == 0) && (outfactors->outfactor_pi_exp_up == 0) && (sin2w_exp_up == 0) && (cos2w_exp_up == 0)\
-                                     && (outfactors->outfactor_user1_exp_up == 0) && (outfactors->outfactor_user2_exp_up == 0) && (outfactors->outfactor_user3_exp_up == 0))) { // if nle-mode == 2 only test if mass_id=1 and no nbv/nss
-                                    if ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term3.exp_inv) || (sin2w_exp_down == (nle_state->term3.exp_inv * 2))) {
-                                      if ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term3.exp_inv) || (cos2w_exp_down == (nle_state->term3.exp_inv * 2))) {
-                                      multiplier=nle_state->term3.coefficient * term3_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactor_rmr * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term3.exp_inv)];
+                                     && (outfactors->outfactor_user1_exp_up == 0) && (outfactors->outfactor_user2_exp_up == 0) && (outfactors->outfactor_user3_exp_up == 0)\
+                                     && (rmr_exp_up == 0))) { // if nle-mode == 2 only test rationals, no other factors
+                                    if ((nle_config->nle_mode == 2) || ((sin2w_exp_down == 1) || (sin2w_exp_down == 2) || (sin2w_exp_down == nle_state->term3.exp_inv) || (sin2w_exp_down == (nle_state->term3.exp_inv * 2)))) {
+                                      if ((nle_config->nle_mode == 2) || ((cos2w_exp_down == 1) || (cos2w_exp_down == 2) || (cos2w_exp_down == nle_state->term3.exp_inv) || (cos2w_exp_down == (nle_state->term3.exp_inv * 2)))) {
+                                        multiplier=nle_state->term3.coefficient * term3_mass_ratio_factor * outfactor_sin2w * outfactor_cos2w * outfactor_rmr * outfactors->outfactor_multiplier * infactors->infactor_multiplier[abs(nle_state->term3.exp_inv)];
                                         if (interesting(phase1_filter, max_int, filter_int, multiplier)) {
                                           nle_state->terms_matched[2]=nle_state->term3.exp_inv;
                                           match->term_id=3;

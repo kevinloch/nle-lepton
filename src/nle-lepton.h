@@ -4,28 +4,28 @@
 #define NLE_VERSION "4.3-dev"
 
 typedef struct {
-  int alpha_em;
-  int float_alpha_em;
-  int alpha_w;
-  int float_alpha_w;
-  int v;
-  int float_v;
   int G;
   int float_G;
+  int v;
+  int float_v;
   int mz;
   int float_mz;
   int mw;
   int float_mw;
   int mh0;
   int float_mh0;
-  int sin2w;
-  int float_sin2w;
   int m_user;
   int float_muser;
-  int mw_mz_mode;
   int float_sm1;
   int float_sm2;
   int float_sm3;
+  int sin2w;
+  int float_sin2w;
+  int alpha_em;
+  int float_alpha_em;
+  int alpha_w;
+  int float_alpha_w;
+  int mw_mz_mode;
 } nle_input_use_t;
 
 typedef struct {
@@ -275,8 +275,6 @@ typedef struct {
   int outfactor_rmr_mw_enable;
   int outfactor_rmr_mh0_enable;
   int outfactor_rmr_user_enable;
-  double outfactor_rmr_user;
-  double outfactor_rmr_user_error;
   double ref_c;
   double ref_h;
   double ref_hbar;
@@ -307,6 +305,7 @@ typedef struct {
   double ref_G;
   double ref_G_error;
   double ref_G_relerror;
+  double relerror[12];
 } nle_config_t;
 
 #endif // NLE_LEPTON_H

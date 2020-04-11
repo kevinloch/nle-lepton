@@ -3,50 +3,54 @@
 #include "nle-lepton.h"
 
 void initUses(nle_input_use_t *uses) {
-  uses->alpha_em=0;
-  uses->float_alpha_em=0;
-  uses->v=0;
-  uses->float_v=0;
   uses->G=0;
   uses->float_G=0;
+  uses->v=0;
+  uses->float_v=0;
   uses->mz=0;
   uses->float_mz=0;
   uses->mw=0;
   uses->float_mw=0;
   uses->mh0=0;
   uses->float_mh0=0;
-  uses->sin2w=0;
-  uses->float_sin2w=0;
   uses->m_user=0;
   uses->float_muser=0;
-  uses->mw_mz_mode=0;
+  uses->sin2w=0;
+  uses->float_sin2w=0;
   uses->float_sm1=0;
   uses->float_sm2=0;
   uses->float_sm3=0;
+  uses->alpha_em=0;
+  uses->float_alpha_em=0;
+  uses->alpha_w=0;
+  uses->float_alpha_w=0;
+  uses->mw_mz_mode=0;
 }
 
 void addUses(nle_input_use_t *dest, nle_input_use_t *src) {
-    dest->alpha_em= dest->alpha_em || src->alpha_em;
-    dest->v=               dest->v || src->v;
     dest->G=               dest->G || src->G;
+    dest->v=               dest->v || src->v;
     dest->mz=             dest->mz || src->mz;
     dest->mw=             dest->mw || src->mw;
     dest->mh0=           dest->mh0 || src->mh0;
-    dest->sin2w=       dest->sin2w || src->sin2w;
     dest->m_user=     dest->m_user || src->m_user;
+    dest->sin2w=       dest->sin2w || src->sin2w;
+    dest->alpha_em= dest->alpha_em || src->alpha_em;
+    dest->alpha_w=   dest->alpha_w || src->alpha_w;
 }
 
 void printUses(nle_input_use_t *uses) {
   printf("debug, uses:\n");
   printf("debug, ------------------------------\n");
-  printf("debug, alpha_em: %d\n", uses->alpha_em);
-  printf("debug, v:        %d\n", uses->v);
   printf("debug, G:        %d\n", uses->G);
+  printf("debug, v:        %d\n", uses->v);
   printf("debug, mz:       %d\n", uses->mz);
   printf("debug, mw:       %d\n", uses->mw);
   printf("debug, mh0:      %d\n", uses->mh0);
-  printf("debug, sin2w:    %d\n", uses->sin2w);
   printf("debug, m_user:   %d\n", uses->m_user);
+  printf("debug, sin2w:    %d\n", uses->sin2w);
+  printf("debug, alpha_em: %d\n", uses->alpha_em);
+  printf("debug, alpha_w:  %d\n", uses->alpha_w);
   printf("debug, ------------------------------\n");
 }
 

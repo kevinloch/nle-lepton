@@ -82,6 +82,8 @@ DESCRIPTON
  nature of 1-smr specific reference masses and other smr factors need to be explicitly tested each time phase 1 is run instead of being scanned for during
  coefficient factoring.  Configuration file options smrfactor_* control these tests.
 
+ Starting with version 4.3 reference mass ratio (rmr) factors are supported outside the radical, for example: mh0/v.  As these would most likely belong on the constant term the option phase2_check_rmr can be set to yes to require all terms to have the same rmr.
+
 CAUTION
  Ultimately the results from nle-lepton need to be reviewed by a physicist to determine any significance or usefulness (if any) of any result.  It is possible
  that these type of formulas are the wrong approach to this problem or that the right ingredients (formula structure, factors) are not included yet. The author

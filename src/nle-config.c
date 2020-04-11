@@ -103,8 +103,6 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->outfactor_rmr_mw_enable=0;
   nle_config->outfactor_rmr_mh0_enable=0;
   nle_config->outfactor_rmr_user_enable=0;
-  nle_config->outfactor_rmr_user=1.0;
-  nle_config->outfactor_rmr_user_error=0.0;
   nle_config->ref_c=2.997924580000E+08;
   nle_config->ref_h=6.62607015E-34;
   nle_config->ref_hbar=1.05457181764616E-34;
@@ -276,7 +274,6 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionBool(&nle_config->outfactor_rmr_mw_enable, option, value, "outfactor_rmr_mw_enable");
   checkOptionBool(&nle_config->outfactor_rmr_mh0_enable, option, value, "outfactor_rmr_mh0_enable");
   checkOptionBool(&nle_config->outfactor_rmr_user_enable, option, value, "outfactor_rmr_user_enable");
-  checkOptionDouble(&nle_config->outfactor_rmr_user, option, value, "outfactor_rmr_user");
   checkOptionDouble(&nle_config->ref_c, option, value, "ref_c");
   checkOptionDouble(&nle_config->ref_h, option, value, "ref_h");
   checkOptionDouble(&nle_config->ref_hbar, option, value, "ref_hbar");
@@ -359,18 +356,45 @@ int loadConfig(nle_config_t *nle_config) {
   } // end while input_line_raw
 
   // set relative uncertainties
-  nle_config->ref_alpha_em_relerror=nle_config->ref_alpha_em_error / nle_config->ref_alpha_em;
-  nle_config->ref_alpha_w_relerror=nle_config->ref_alpha_w_error / nle_config->ref_alpha_w;
-  nle_config->ref_sm1_relerror=nle_config->ref_sm1_error / nle_config->ref_sm1;
-  nle_config->ref_sm2_relerror=nle_config->ref_sm2_error / nle_config->ref_sm2;
-  nle_config->ref_sm3_relerror=nle_config->ref_sm3_error / nle_config->ref_sm3;
-  nle_config->ref_v_relerror=nle_config->ref_v_error / nle_config->ref_v;
+  /*
+    Index of mass id's and potential output variables
+    0:  G
+    1:  v
+    2:  mz
+    3:  mw
+    4:  mH0
+    5:  m_user
+    6:  sm1
+    7:  sm2
+    8:  sm3
+    9:  sin2w
+    10: alpha_em
+    11: alpha_w
+  */
   nle_config->ref_G_relerror=nle_config->ref_G_error / nle_config->ref_G;
+  nle_config->relerror[0]=nle_config->ref_G_relerror;
+  nle_config->ref_v_relerror=nle_config->ref_v_error / nle_config->ref_v;
+  nle_config->relerror[1]=nle_config->ref_v_relerror;
   nle_config->ref_mz_relerror=nle_config->ref_mz_error / nle_config->ref_mz;
+  nle_config->relerror[2]=nle_config->ref_mz_relerror;
   nle_config->ref_mw_relerror=nle_config->ref_mw_error / nle_config->ref_mw;
+  nle_config->relerror[3]=nle_config->ref_mw_relerror;
   nle_config->ref_mh0_relerror=nle_config->ref_mh0_error / nle_config->ref_mh0;
-  nle_config->ref_sin2w_relerror=nle_config->ref_sin2w_error / nle_config->ref_sin2w;
+  nle_config->relerror[4]=nle_config->ref_mh0_relerror;
   nle_config->smrfactor_mass_user_relerror=nle_config->smrfactor_mass_user_error / nle_config->smrfactor_mass_user;
+  nle_config->relerror[5]=nle_config->smrfactor_mass_user_relerror;
+  nle_config->ref_sm1_relerror=nle_config->ref_sm1_error / nle_config->ref_sm1;
+  nle_config->relerror[6]=nle_config->ref_sm1_relerror;
+  nle_config->ref_sm2_relerror=nle_config->ref_sm2_error / nle_config->ref_sm2;
+  nle_config->relerror[7]=nle_config->ref_sm2_relerror;
+  nle_config->ref_sm3_relerror=nle_config->ref_sm3_error / nle_config->ref_sm3;
+  nle_config->relerror[8]=nle_config->ref_sm3_relerror;
+  nle_config->ref_sin2w_relerror=nle_config->ref_sin2w_error / nle_config->ref_sin2w;
+  nle_config->relerror[9]=nle_config->ref_sin2w_relerror;
+  nle_config->ref_alpha_em_relerror=nle_config->ref_alpha_em_error / nle_config->ref_alpha_em;
+  nle_config->relerror[10]=nle_config->ref_alpha_em_relerror;
+  nle_config->ref_alpha_w_relerror=nle_config->ref_alpha_w_error / nle_config->ref_alpha_w;
+  nle_config->relerror[11]=nle_config->ref_alpha_w_relerror;
 
   return(0);
 }
