@@ -24,7 +24,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   int unknowns=0;
 #endif
   int valid_result;
-  double phase2_results_window;
+  double results_window;
   char exec_str[512];
   char mass_str[32];
   char out_str_01[512];
@@ -1560,39 +1560,39 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   } // end alpha_seq
 
   // verify outputs against experimental uncertainties * phase2_results_window
-  phase2_results_window=nle_config->phase2_results_window;
+  results_window=nle_config->phase2_results_window;
   valid_result=1;
-  if ((nle_state->all_uses.float_alpha_em == 1) && ((fabs(alpha_out_reldiff) / (phase2_results_window * nle_config->ref_alpha_em_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_G == 1) && ((fabs(fabs(G_out_reldiff) - G_out_relerror) / (results_window * nle_config->ref_G_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sm1 == 1) && ((fabs(sm1_out_reldiff) / (phase2_results_window * nle_config->ref_sm1_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_v == 1) && ((fabs(fabs(v_out_reldiff) - v_out_relerror) / (results_window * nle_config->ref_v_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sm2 == 1) && ((fabs(sm2_out_reldiff) / (phase2_results_window * nle_config->ref_sm2_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_mz == 1) && ((fabs(fabs(mz_out_reldiff) - mz_out_relerror) / (results_window * nle_config->ref_mz_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_v == 1) && ((fabs(v_out_reldiff) / (phase2_results_window * nle_config->ref_v_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_mw == 1) && ((fabs(fabs(mw_out_reldiff) - mw_out_relerror) / (results_window * nle_config->ref_mw_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_mz == 1) && ((fabs(mz_out_reldiff) / (phase2_results_window * nle_config->ref_mz_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_mh0 == 1) && ((fabs(fabs(mh0_out_reldiff) - mh0_out_relerror) / (results_window * nle_config->ref_mh0_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_G == 1) && ((fabs(G_out_reldiff) / (phase2_results_window * nle_config->ref_G_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_muser == 1) && ((fabs(fabs(muser_out_reldiff) - muser_out_relerror) / (results_window * nle_config->smrfactor_mass_user_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sm3 == 1) && ((fabs(sm3_out_reldiff) / (phase2_results_window * nle_config->ref_sm3_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_sm1 == 1) && ((fabs(fabs(sm1_out_reldiff) - sm1_out_relerror) / (results_window * nle_config->ref_sm1_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_mw == 1) && ((fabs(mw_out_reldiff) / (phase2_results_window * nle_config->ref_mw_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_sm2 == 1) && ((fabs(fabs(sm2_out_reldiff) - sm2_out_relerror) / (results_window * nle_config->ref_sm2_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sin2w == 1) && ((fabs(sin2w_out_reldiff) / (phase2_results_window * nle_config->ref_sin2w_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_sm3 == 1) && ((fabs(fabs(sm3_out_reldiff) - sm3_out_relerror) / (results_window * nle_config->ref_sm3_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_mh0 == 1) && ((fabs(mh0_out_reldiff) / (phase2_results_window * nle_config->ref_mh0_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_sin2w == 1) && ((fabs(fabs(sin2w_out_reldiff) - sin2w_out_relerror) / (results_window * nle_config->ref_sin2w_relerror)) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_muser == 1) && ((fabs(muser_out_reldiff) / (phase2_results_window * nle_config->smrfactor_mass_user_relerror)) > 1.0)) {
+  if ((nle_state->all_uses.float_alpha_em == 1) && ((fabs(fabs(alpha_out_reldiff) - alpha_out_relerror) / (results_window * nle_config->ref_alpha_em_relerror)) > 1.0)) {
     valid_result=0;
   }
 

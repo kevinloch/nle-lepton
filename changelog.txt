@@ -5,8 +5,10 @@
      - Setting phase1_random_samples_enable to 'no' now also causes phase1 to be run just once instead of continuously
 
      Bug fixes:
+     - Phase 2 valid result test now accounts for the relative uncertainty of the outputs when comparing their distance to the relative uncertainty of the experimental values
      - Fixed bug in srcipts/grep-logs.sh that was writing meta refresh line to wrong file
-     - selectOutputs() now checks that both the primary reference mass and sm3 are floated (solved for) in 2-term (1-smr) mode to ensure convergance
+     - selectOutputs() rewritten and now checks that both the primary reference mass is floated in 2-term modes and highest uncertainty
+       solution mass is also floated in (1-smr) mode
 
 4.2  New features: 
      - Added support for (1-smr) mode. Enable by setting smrfactor_1minus_enable=yes and nle_mode=2.  Negative exponents
