@@ -83,6 +83,20 @@ typedef struct {
 } nle_outfactor_precomputed_t;
 
 typedef struct {
+  int outfactor_sin2w_exp_up;
+  int outfactor_sin2w_exp_down;
+  int outfactor_cos2w_exp_up;
+  int outfactor_cos2w_exp_down;
+  int outfactor_rmr_exp_up;
+  int outfactor_rmr_exp_down;
+  int outfactor_rmr_mass_id_up;
+  int outfactor_rmr_mass_id_down;
+  int dynamicfactor_complexity;
+  nle_input_use_t dynamicfactor_uses;
+  double dynamicfactor_multiplier;
+} nle_dynamicfactor_precomputed_t;
+
+typedef struct {
   int term_id;
   int exp_inv;
   int smrfactor_mass;
@@ -157,6 +171,7 @@ typedef struct {
   double input_sample_mh0;
   double input_sample_muser;
   char exponents_str[20];
+  int nle_mixing_polarity;
   nle_term_state_t term1;
   nle_term_state_t term2;
   nle_term_state_t term3;

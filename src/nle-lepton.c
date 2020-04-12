@@ -160,7 +160,8 @@ int main(int argc, char **argv) {
   int mass_ratio_id_max;
   int mass_ratio_enabled;
   int run;
-
+  int polarity_seq;
+  int valid_polarity;
 
   // initialize nle_config to default values
   initConfig(&nle_config);
@@ -316,36 +317,55 @@ int main(int argc, char **argv) {
             nle_state.term2.smrfactor=smrfactors->smrfactor_multiplier;
           }
           if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
-            // phase 1
-            for (i=0; i<=2; i++) {
-              nle_state.terms_matched[i]=0;
-            }
-            failed=solveNLEforCoefficients(&nle_config, &nle_state);
-            if (nle_state.phase1_matches_count > 0) {
-              coefficients_matched=0;
-              for (i=0; i <= 2; i++) {
-                if (nle_state.terms_matched[i] != 0) {
-                  coefficients_matched++;
+            for (polarity_seq=0; polarity_seq <= 1; polarity_seq++) {
+              // check polarity 
+              valid_polarity=0;
+              if ((nle_config.smrfactor_1minus_enable == 0) && (polarity_seq == 0)) { // run once f not (1-smr) mode
+                nle_state.nle_mixing_polarity=0; // not used if not (1-smr) but set anyway
+                valid_polarity=1;
+              } else if (nle_config.smrfactor_1minus_enable == 1) {
+                if ((polarity_seq == 0) && ((nle_config.nle_mixing_polarity == -1) || (nle_config.nle_mixing_polarity == 0))) { 
+                  nle_state.nle_mixing_polarity=0;
+                  valid_polarity=1;
+                } else if ((polarity_seq == 1) && ((nle_config.nle_mixing_polarity == -1) || (nle_config.nle_mixing_polarity == 1))) {
+                  nle_state.nle_mixing_polarity=1;
+                  valid_polarity=1;
                 }
-              }
-              if (coefficients_matched == 3) {
-                // phase 2
-                verifyMatches(&nle_config, &nle_state);
-              } else {
-                if (nle_config.phase1_status_enable ==1) {
-                  printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
-                  fflush(stdout);
+              } // end if 1-minus
+
+              if (valid_polarity == 1) {
+                // phase 1
+                for (i=0; i<=2; i++) {
+                  nle_state.terms_matched[i]=0;
                 }
-              }
-            } else {
-              if ((nle_config.phase1_status_enable == 1) && (failed == 0)) {
-                printf("status, No interesting coefficient multipliers found\n");
-                fflush(stdout);
-              }
-            } // end nummatches
+                failed=solveNLEforCoefficients(&nle_config, &nle_state);
+                if (nle_state.phase1_matches_count > 0) {
+                  coefficients_matched=0;
+                  for (i=0; i <= 2; i++) {
+                    if (nle_state.terms_matched[i] != 0) {
+                      coefficients_matched++;
+                    }
+                  }
+                  if (coefficients_matched == 3) {
+                    // phase 2
+                    verifyMatches(&nle_config, &nle_state);
+                  } else {
+                    if (nle_config.phase1_status_enable ==1) {
+                      printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+                      fflush(stdout);
+                    }
+                  }
+                } else {
+                  if ((nle_config.phase1_status_enable == 1) && (failed == 0)) {
+                    printf("status, No interesting coefficient multipliers found\n");
+                    fflush(stdout);
+                  }
+                } // end nummatches
+              } // end if valid polarity
+            } // end for polarity_seq
             smrfactors++;
-          } // end smrfactor_seq ||
-        } // end smrfactor_seq && 
+          } // end if smrfactor_seq
+        } // end for smrfactor_seq
       } // end if mass_ratio_enabled
     } // end for mass_ratio_id
   } // end while run

@@ -108,7 +108,7 @@ void initSmrfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                       multiplier->smrfactor_uses.alpha_em=1;
                                     }
                                     nle_state->smrfactors_precomputed_count++;
-#ifdef DEBUG_OUTFACTOR
+#ifdef DEBUG_SMRFACTOR
                                     printf("debug, count: %d\n", nle_state->smrfactors_precomputed_count);
                                     fflush(stdout);
 #endif

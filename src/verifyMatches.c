@@ -529,9 +529,9 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   combo_count=((long long)nle_state->term1.matches_count * (long long)nle_state->term2.matches_count * (long long)nle_state->term3.matches_count);
   if (nle_config->phase2_status_enable == 1) {
     if (nle_config->nle_mode == 2) {
-      if (nle_config->nle_mixing_polarity == 0) {
+      if (nle_state->nle_mixing_polarity == 0) {
         printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s, mixing polarity: -,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
-      } else if (nle_config->nle_mixing_polarity == 1) {
+      } else if (nle_state->nle_mixing_polarity == 1) {
         printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s, mixing polarity: +,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
       }
     } else {
@@ -650,7 +650,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
                   elapsed_time=((double)(end_time.tv_sec - 1500000000) + ((double)end_time.tv_nsec / 1.0E9)) - ((double)(start_time.tv_sec - 1500000000) + ((double)start_time.tv_nsec) / 1.0E9);
                   if (precision < 1.0E30) {
                     if (nle_config->nle_mode == 2) {
-                      if (nle_config->nle_mixing_polarity == 0) {
+                      if (nle_state->nle_mixing_polarity == 0) {
                         printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       } else {
                         printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
@@ -661,7 +661,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
                     fflush(stdout);
                   } else {
                     if (nle_config->nle_mode == 2) {
-                      if (nle_config->nle_mixing_polarity == 0) {
+                      if (nle_state->nle_mixing_polarity == 0) {
                         printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       } else {
                         printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);

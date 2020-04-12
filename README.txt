@@ -80,7 +80,8 @@ DESCRIPTON
  Starting with version 4.2 2-term mixed mode with (1-smr) is supported.  In 2-term mixed mode with smrfactor_1minus_enable=yes, processing is similar to 2-term
  except the first term uses 1-smr inside the radical, where smr=solution mass ratio and smr factors, while the second term uses just smr.  Due to the non-linear
  nature of 1-smr specific reference masses and other smr factors need to be explicitly tested each time phase 1 is run instead of being scanned for during
- coefficient factoring.  Configuration file options smrfactor_* control these tests.
+ coefficient factoring.  Configuration file options smrfactor_* control these tests. Note: it is common for phase 1 to fail to sove for certain smr factors in
+ (1-smr) mode. This is because the particular NLE is unsolvable or exceeds the floating point dynamic range and not due to errors in the program.
 
  Starting with version 4.3 reference mass ratio (rmr) factors are supported outside the radical, for example: mh0/v.  As these would most likely belong on the constant term the option phase2_check_rmr can be set to yes to require all terms to have the same rmr.
 

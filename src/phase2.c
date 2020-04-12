@@ -1210,11 +1210,11 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             sm3_test_term2=term2_coefficient * term2_mass_sm3 * term2_coefficient * term2_mass_sm3;
                             sm3_test_term3=term3_coefficient * term1_coefficient * term1_mass_sm3 * term2_coefficient * term2_mass_sm3;
                             if (nle_config->smrfactor_1minus_enable == 1) { // two different mixing polarity options for (1-smr) mode
-                              if (nle_config->nle_mixing_polarity == 0) {
+                              if (nle_state->nle_mixing_polarity == 0) {
                                 sm1_test=sm1_test_term1 + sm1_test_term2 - sm1_test_term3 - 1.0;
                                 sm2_test=sm2_test_term1 + sm2_test_term2 - sm2_test_term3 - 1.0;
                                 sm3_test=sm3_test_term1 + sm3_test_term2 - sm3_test_term3 - 1.0;
-                              } else if (nle_config->nle_mixing_polarity == 1) {
+                              } else if (nle_state->nle_mixing_polarity == 1) {
                                 sm1_test=sm1_test_term1 + sm1_test_term2 + sm1_test_term3 - 1.0;
                                 sm2_test=sm2_test_term1 + sm2_test_term2 + sm2_test_term3 - 1.0;
                                 sm3_test=sm3_test_term1 + sm3_test_term2 + sm3_test_term3 - 1.0;
@@ -1780,7 +1780,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
     }
 
     if (nle_config->nle_mode == 2) {
-      if (nle_config->nle_mixing_polarity == 0) {
+      if (nle_state->nle_mixing_polarity == 0) {
         sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 - (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);
       } else {
         sprintf(out_str_16, "result, %.4f, %3d, %3d, %s, %s, %12lld, 16, formula: term1^2 + (term3 * term1 * term2) + term2^2 - 1 = 0, %s %s %s %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, user1_out_str, user2_out_str, user3_out_str, user_in_str);

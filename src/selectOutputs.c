@@ -142,6 +142,9 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
 
   // initialize list of unchosen outputs
   for (i=0; i < 12; i++) {
+    unchosen_outputs[i]=0; // to avoid -Wmaybe-uninitialized warnings
+  }
+  for (i=0; i < 12; i++) {
     if (i == 0) {
       if (nle_state->all_uses.G == 1) {
         unchosen_outputs[i]=1;
