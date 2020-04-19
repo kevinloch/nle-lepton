@@ -3,18 +3,20 @@
      - More options for controlling verbosity of status output
      - New configuration option nle_mixing_polarity for 2-term with (1-smr) mode.   Status updates now indicate polarity
      - Setting phase1_random_samples_enable to 'no' now also causes phase1 to be run just once instead of continuously
+     - phase1 now uses 64-bit random number generator
 
      Bug fixes:
      - Phase 2 valid result test now accounts for the relative uncertainty of the outputs when comparing their distance to the relative uncertainty of the experimental values
      - Fixed bug in srcipts/grep-logs.sh that was writing meta refresh line to wrong file
      - selectOutputs() rewritten and now checks that both the primary reference mass is floated in 2-term modes and highest uncertainty
        solution mass is also floated in (1-smr) mode
+     - phase 1 has better unsolvable formula detection algorithms.  Config option 'phase1_mc_samples_limit' can now be used to control one of these
 
 4.2  New features: 
      - Added support for (1-smr) mode. Enable by setting smrfactor_1minus_enable=yes and nle_mode=2.  Negative exponents
          are disabled in this mode, term1 must have an odd exponent (for when 1-smr is negative), and both terms will use the same smr including reference mass.
      - Added support for two additional user-supplied factors for outside radical for total of three
-     - Added phase1_random_samples_enable option.  When set to "no" variables are all set to center of experimental range each time phase1 is run
+     - Added phase1_random_samples_enable option.  When set to "no" variables are all set to center of experimental range each time phase 1 is run
      - Phase 1 core functions are now using long doubles (80-bit extended precision on x86) and solve down to <=1.0E-16 precision
      - Symmetry score now has more checks
      - Complexity score now ignores 1's in rationals for better selection of simplest duplicate formula
@@ -50,7 +52,7 @@
 3.39 - Expanded supported dimensions from 12 to 26
      - Removed a^9 factor from M/mp mass ratio (this arbitrary scaling factor is not needed with higher dimensions)
      - Removed sqrt(2) factor from M/v mass ratio, as sqrt(2) inside radical is already included in initMultiplierArray()
-     - Significant changes to phase 1  and phase 2 algorythims to be faster and more reliable
+     - Significant changes to phase 1  and phase 2 algorithms to be faster and more reliable
      - Phase 1 now uses electron mass as a temporary reference mass, actual reference masses are now introduced in cscanner()
      - Phase 1 and 2 now always solves all polyforms. Low dimension and mixed dimension polyforms are solved quickly.  Polyforms
        with sequential dimensions and especially higher sequential dimensions can take a long time to solve (over an hour in some cases).

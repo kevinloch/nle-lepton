@@ -156,6 +156,7 @@ typedef struct {
 } nle_term_state_t;
 
 typedef struct {
+  __uint128_t pcg_state;
   int phase1_seq;
   double input_sample_sm1;
   double input_sample_sm2;
@@ -221,6 +222,7 @@ typedef struct {
   int phase1_filter;
   int phase1_int_match_max;
   int phase1_int_match_filter;
+  int phase1_mc_samples_limit;
   int phase2_symmetry_min;
   int phase2_complexity_max;
   int phase2_check_nbv_nss;

@@ -72,9 +72,9 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
   char uout3[32];
   char s2wout[32];
   char c2wout[32];
-  char rmr_mass_up[32];
-  char rmr_mass_down[32];
-  char rmrout[32];
+  char rmr_mass_up[16];
+  char rmr_mass_down[16];
+  char rmrout[64];
   char updownin[32];
   char nbin[32];
   char e2in[32];

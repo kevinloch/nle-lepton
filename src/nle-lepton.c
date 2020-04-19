@@ -175,6 +175,7 @@ int main(int argc, char **argv) {
   seedus=(t.tv_nsec / 1000);
   seed=nle_config.external_seed ^ (seedsec + seedus);
   srand48(seed);
+  nle_state.pcg_state=(__uint128_t)seed;
   testrand=drand48();
 
   // print version, config file nameand random seed data
