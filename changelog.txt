@@ -3,7 +3,7 @@
      - More options for controlling verbosity of status output
      - New configuration option nle_mixing_polarity for 2-term with (1-smr) mode.   Status updates now indicate polarity
      - Setting phase1_random_samples_enable to 'no' now also causes phase1 to be run just once instead of continuously
-     - phase1 now uses 64-bit random number generator
+     - phase1 now uses 64-bit random number generator from https://www.pcg-random.org
 
      Bug fixes:
      - Phase 2 valid result test now accounts for the relative uncertainty of the outputs when comparing their distance to the relative uncertainty of the experimental values
