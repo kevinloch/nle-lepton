@@ -1,3 +1,9 @@
+4.3.1 New feature:
+      - srcipts/grep-logs.sh now detects duplicate results and ignores them
+
+      Bug fixes:
+      - Removed duplicate upload of interesting two-term test finds
+
 4.3  New features:
      - Support for reference mass ratios (rmr) outside radical
      - More options for controlling verbosity of status output

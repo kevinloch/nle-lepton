@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3"
+#define NLE_VERSION "4.3.1-dev-01"
 
 typedef struct {
   int G;

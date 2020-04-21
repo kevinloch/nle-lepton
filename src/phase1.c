@@ -784,11 +784,6 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
           printf("%s\n", out_str_01);
           fflush(stdout);
         } // end if 1-minus
-        if (nle_config->upload_results_enable == 1) {
-          // upload interesting two_term_test as these are rare and significant
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
-          system(exec_str);
-        } // end if upload enable
       } else {
         // 3-term mode
         nle_state->term1.coefficient=(double)c1_center[best_ordering];
