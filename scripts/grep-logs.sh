@@ -25,7 +25,7 @@ mv ${twotermnoreload} ${twotermbak}
 # print header
 echo '<!DOCTYPE html>' > ${resultsnoreload}
 echo '<html>' >> ${resultsnoreload}
-echo '<head><title>Latest lepton polyform search data</title>' >> ${resultsnoreload}
+echo '<head><title>Latest lepton NLE search results</title>' >> ${resultsnoreload}
 echo '</head>' >> ${resultsnoreload}
 echo '<body><pre>' >> ${resultsnoreload}
 # get results from http log file
@@ -49,7 +49,7 @@ echo '</html>' >> ${resultsnoreload}
 :>${results}
 echo '<!DOCTYPE html>' > ${results}
 echo '<html>' >> ${results}
-echo '<head><title>Latest lepton polyform search data</title>' >> ${results}
+echo '<head><title>Latest lepton NLE search results</title>' >> ${results}
 echo '<META http-equiv="refresh" CONTENT="30">' >> ${results}
 echo '</head>' >> ${results}
 echo '<body><pre>' >> ${results}
@@ -60,7 +60,7 @@ echo '</html>' >> ${results}
 # extreact interesting two_term_test
 echo '<!DOCTYPE html>' > ${twotermnoreload}
 echo '<html>' >> ${twotermnoreload}
-echo '<head><title>Latest lepton polyform search data</title>' >> ${twotermnoreload}
+echo '<head><title>Latest lepton NLE search interesting two-term tests</title>' >> ${twotermnoreload}
 echo '</head>' >> ${twotermnoreload}
 echo '<body><pre>' >> ${twotermnoreload}
 grep "two-term_test," ${logfile} | cut -f 2 -d '"' | cut -f 2 -d " " | cut -f 3-99 -d "/" | sed 's/_/ /g' | gsort -n  >> ${twotermnoreload}
@@ -71,7 +71,7 @@ echo '</html>' >> ${twotermnoreload}
 :>${twoterm}
 echo '<!DOCTYPE html>' > ${twoterm}
 echo '<html>' >> ${twoterm}
-echo '<head><title>Latest lepton polyform search data</title>' >> ${twoterm}
+echo '<head><title>Latest lepton NLE search interesting two-term tests</title>' >> ${twoterm}
 echo '<META http-equiv="refresh" CONTENT="30">' >> ${twoterm}
 echo '</head>' >> ${twoterm}
 echo '<body><pre>' >> ${twoterm}
