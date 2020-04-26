@@ -1,8 +1,11 @@
 4.3.1 New feature:
-      - srcipts/grep-logs.sh now detects duplicate results and ignores them
+      - srcipts/grep-logs.sh now detects and ignores duplicate results
 
       Bug fixes:
+      - Fixed critical bug where phase2 would fail to solve because nle_state->phase1_matches_count was not being reset between runs
+        and phase2 was trying to solve stale formula terms from a previous run (often with the wrong exponent)
       - Removed duplicate upload of interesting two-term test finds
+      - Updated titles in scripts/grep-logs.sh to reflect current program name
 
 4.3  New features:
      - Support for reference mass ratios (rmr) outside radical

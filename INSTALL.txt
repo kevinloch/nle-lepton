@@ -1,6 +1,6 @@
 1. cd src
 
-2. Compile with 'make'
+2. Compile with 'make' ('gmake" on FreeBSD)
 
 3. Manually copy the 'nle-lepton' executable to the directory you wish to run it from (thre is no 'make install' support yet)
 

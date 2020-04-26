@@ -43,8 +43,9 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
     fflush(stdout);
   }
 
-  // initialize match pointer to beginning
+  // initialize match pointer to beginning and reset count
   match=nle_state->phase1_matches_start;
+  nle_state->phase1_matches_count=0;
 
   // sequence through mass ratio reference masses, or run once if (1-smr) enabled
   if (nle_config->smrfactor_1minus_enable == 1) {

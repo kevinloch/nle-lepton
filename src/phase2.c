@@ -315,16 +315,6 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
     smrf_str[0]=0;
   }
 
-#ifdef DEBUG20
-  printf("debug, term1=%s\n", term1_formula_str);
-  printf("debug, term2=%s\n", term2_formula_str);
-  printf("debug, term3=%s\n", term3_formula_str);
-  if (nle_config->smrfactor_1minus_enable == 1) {
-    printf("debug, smrf= %s\n", smrf_str);
-  }
-  fflush(stdout);
-#endif
-
   term1_static=((double)nle_state->term1.current_match->match_up / (double)nle_state->term1.current_match->match_down) / nle_state->term1.current_match->static_multiplier;
   term2_static=((double)nle_state->term2.current_match->match_up / (double)nle_state->term2.current_match->match_down) / nle_state->term2.current_match->static_multiplier;
   term3_static=((double)nle_state->term3.current_match->match_up / (double)nle_state->term3.current_match->match_down) / nle_state->term3.current_match->static_multiplier;
@@ -389,6 +379,12 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
   // systematically try all non-floated input extremes
 #ifdef DEBUG20
   printf("debug, Begin phase 2 input loops, exponents: %s, unknowns: %d, float_G: %d, float_v: %d, float_mz: %d, float_mw: %d, float_mh0: %d, float_muser: %d, float_sm1: %d, float_sm2: %d, float_sm3: %d, float_sin2w: %d, float_alpha_em: %d,  float_alpha_w: %d, mw_mz_mode: %d\n", nle_state->exponents_str, unknowns, nle_state->all_uses.float_G, nle_state->all_uses.float_v, nle_state->all_uses.float_mz, nle_state->all_uses.float_mw, nle_state->all_uses.float_mh0, nle_state->all_uses.float_muser, nle_state->all_uses.float_sm1, nle_state->all_uses.float_sm2, nle_state->all_uses.float_sm3, nle_state->all_uses.float_sin2w, nle_state->all_uses.float_alpha_em, nle_state->all_uses.float_alpha_em, nle_state->all_uses.mw_mz_mode);
+  printf("debug, term1=%s\n", term1_formula_str);
+  printf("debug, term2=%s\n", term2_formula_str);
+  printf("debug, term3=%s\n", term3_formula_str);
+  if (nle_config->smrfactor_1minus_enable == 1) {
+    printf("debug, smrf= %s\n", smrf_str);
+  }
   printUses(&nle_state->all_uses);
   fflush(stdout);
 #endif
