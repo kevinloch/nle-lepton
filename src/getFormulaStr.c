@@ -56,7 +56,7 @@ void getSmrfStr(nle_config_t *nle_config, char *smrf_str, nle_smrfactor_precompu
     }
   }
 
-  sprintf(smrf_str, "'%s %s %s %s %s'=%.9e", updownsmr, e2smr, pismr, asmr, usmr, smrfactor);
+  sprintf(smrf_str, "'%s %s %s %s %s'", updownsmr, e2smr, pismr, asmr, usmr);
 }
 
 void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match_t *current_match) {

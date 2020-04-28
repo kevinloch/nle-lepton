@@ -340,28 +340,30 @@ int main(int argc, char **argv) {
                   nle_state.terms_matched[i]=0;
                 }
                 failed=solveNLEforCoefficients(&nle_config, &nle_state);
-                if (nle_state.phase1_matches_count > 0) {
-                  coefficients_matched=0;
-                  for (i=0; i <= 2; i++) {
-                    if (nle_state.terms_matched[i] != 0) {
-                      coefficients_matched++;
+                if (failed == 0) {
+                  if (nle_state.phase1_matches_count > 0) {
+                    coefficients_matched=0;
+                    for (i=0; i <= 2; i++) {
+                      if (nle_state.terms_matched[i] != 0) {
+                        coefficients_matched++;
+                      }
                     }
-                  }
-                  if (coefficients_matched == 3) {
-                    // phase 2
-                    verifyMatches(&nle_config, &nle_state);
+                    if (coefficients_matched == 3) {
+                      // phase 2
+                      verifyMatches(&nle_config, &nle_state);
+                    } else {
+                      if (nle_config.phase1_status_enable == 1) {
+                        printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+                        fflush(stdout);
+                      }
+                    }
                   } else {
-                    if (nle_config.phase1_status_enable ==1) {
-                      printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+                    if (nle_config.phase1_status_enable == 1) {
+                      printf("status, No interesting coefficient multipliers found\n");
                       fflush(stdout);
                     }
-                  }
-                } else {
-                  if ((nle_config.phase1_status_enable == 1) && (failed == 0)) {
-                    printf("status, No interesting coefficient multipliers found\n");
-                    fflush(stdout);
-                  }
-                } // end nummatches
+                  } // end nummatches
+                } // end if failed
               } // end if valid polarity
             } // end for polarity_seq
             smrfactors++;

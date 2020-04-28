@@ -1,3 +1,11 @@
+4.3.3 New features:
+      - Improved formatting of phase 1 status updates and removed/suppressed some unnecessary ones for (1-smr) mode
+      - Tightened two-term test "reasonable" range for faster exclusion of uninteresting formulas in (1-smr) mode
+
+      Bug fixes:
+      - Widened allowed range of variables in phase 2 from 10% to 20% to prevent phase 2 from getting stuck when using large (inverse) expnents
+        or low phase1_match_filter
+
 4.3.2 New feature:
       - New unsolvable test in (1-smr) mode that checks if any progress has been made on best ordering since last unsolvable_checkpoint. This
         allows config file option 'phase1_mc_samples_limit' to revert to a safety check with a much higher value
