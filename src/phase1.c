@@ -73,6 +73,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 
   // mc outputs
   int progress[6];
+  int last_progress[6];
   int stalled[6];
   int ordering;
   int best_ordering=-1;
@@ -123,7 +124,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     dr_exception_limit=1.0E+18;      // Mamimum allowed dynamic range of any term.  This is used in 1-smr mode only
     dr_grace_period=25;              // don't check dynamic range until this much progress
     unsolvable_checkpoint=100000;    // don't check for best ordering or unsolvable exceptions until this many samples.  This should be higher than slowcheckpoint
-    two_term_precision=1.0E-5;       // check two_term_test after reaching this precision.  Disabling current ordering if not close enough to an integer
+    two_term_precision=1.0E-3;       // check two_term_test after reaching this precision.  Disabling current ordering if not close enough to an integer
   } else if (nle_config->nle_mode == 2) {
     // 2-term mode without 1-smr
     precision_target=1.0E-15;        // solve NLE to this level of precision
@@ -261,6 +262,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       c3_range[ordering]=0.5E0;
       precision_last[ordering]=1.0E99;
       progress[ordering]=0;
+      last_progress[ordering]=0;
       stalled[ordering]=0;
       range_multiplier[ordering]=defaultrange_multiplier;
       ordering_enabled[ordering]=1;
@@ -276,7 +278,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 #ifdef DEBUG10  
       clock_gettime(CLOCK_REALTIME, &endtime);
       elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-      printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, ordering: %d, progress: %6d, %s\n", nle_state->exponents_str, samples, elapsed_time, ordering, progress[ordering], unsolvable_exception_str);
+      printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, %s\n", nle_state->exponents_str, samples, elapsed_time, unsolvable_exception_str);
       fflush(stdout);
 #endif
     }
@@ -320,6 +322,27 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
                 }
               }
 
+              // check progress
+              if (ordering == best_ordering) {
+                // best ordering, check if any progress has been made on best_ordering since last unsolvable_checkpoint
+                if ((progress[ordering] - last_progress[ordering]) > 0) {
+                  last_progress[ordering]=progress[ordering];
+                } else {
+                  // no progress, abort processing
+                  unsolvable_exception=1;
+                  sprintf(unsolvable_exception_str, "best ordering did not make any progress since last unsolvable_checkpoint");
+#ifdef DEBUG10
+                  clock_gettime(CLOCK_REALTIME, &endtime);
+                  elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
+                  printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, ordering: %d, progress: %6d, %s\n", nle_state->exponents_str, samples, elapsed_time, ordering, progress[ordering], unsolvable_exception_str);
+                  fflush(stdout);
+#endif
+                }
+              } else {
+                // not best ordering, just copy progress to last_progress
+                last_progress[ordering]=progress[ordering];
+              }
+
               // safety check if no orderings remain, abort processing
               if ((ordering_enabled[0] == 0) && (ordering_enabled[1] == 0) && (ordering_enabled[2] == 0) && (ordering_enabled[3] == 0) && (ordering_enabled[4] == 0) && (ordering_enabled[5] == 0)) {
                 unsolvable_exception=1;
@@ -340,7 +363,8 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
             if ((samples % 10000000) == 0) { // rate limit periodic debug prints
               clock_gettime(CLOCK_REALTIME, &endtime);
               elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-              printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, ordering: %d, progress: %6d, best_precision_last: %.9Le, best_ordering: %d, precision_last: %.9Le, range_factor: %.9Le, sm1_test: %.9Le, sm2_test: %.9Le, sm3_test: %.9Le, c1: %.9Le, c2: %.9Le, c3: %.9Le, c1range: %.9Le, c2range: %.9Le, c3range: %.9Le\n", nle_state->exponents_str, samples, elapsed_time, ordering, progress[ordering], best_precision_last, best_ordering, precision_last[ordering], range_factor, sm1_test, sm2_test, sm3_test, c1_center[ordering], c2_center[ordering], c3_center[ordering], c1_range[ordering], c2_range[ordering], c3_range[ordering]);
+              two_term_test=c3_center[ordering] / (sqrtl(c1_center[ordering] * c2_center[ordering]));
+              printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, ordering: %d, progress: %6d, best_precision_last: %.9Le, best_ordering: %d, precision_last: %.9Le, range_factor: %.9Le, two-term test: %.9Le, sm1_test: %.9Le, sm2_test: %.9Le, sm3_test: %.9Le, c1: %.9Le, c2: %.9Le, c3: %.9Le, c1range: %.9Le, c2range: %.9Le, c3range: %.9Le\n", nle_state->exponents_str, samples, elapsed_time, ordering, progress[ordering], best_precision_last, best_ordering, precision_last[ordering], range_factor, two_term_test, sm1_test, sm2_test, sm3_test, c1_center[ordering], c2_center[ordering], c3_center[ordering], c1_range[ordering], c2_range[ordering], c3_range[ordering]);
               fflush(stdout);
             }
 #endif
@@ -697,7 +721,8 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 #ifdef DEBUG11
                   clock_gettime(CLOCK_REALTIME, &endtime);
                   elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-                  printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, ordering: %d, progress: %6d, best_precision_last: %.9Le, best_ordering: %d, precision_last: %.9Le, range_factor: %.9Le, i: %d, sm1_test: %.9Le, sm2_test: %.9Le, sm3_test: %.9Le, c1: %.9Le, c2: %.9Le, c3: %.9Le, c1range: %.9Le, c2range: %.9Le, c3range: %.9Le\n", nle_state->exponents_str, samples, elapsed_time, ordering, progress[ordering], best_precision_last, best_ordering, precision_last[ordering], range_factor, i, sm1_test, sm2_test, sm3_test, c1[ordering], c2[ordering], c3[ordering], c1_range[ordering], c2_range[ordering], c3_range[ordering]);
+                  two_term_test=c3_center[ordering] / (sqrtl(c1_center[ordering] * c2_center[ordering]));
+                  printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, ordering: %d, progress: %6d, best_precision_last: %.9Le, best_ordering: %d, precision_last: %.9Le, range_factor: %.9Le, two-term test: %.9Le, sm1_test: %.9Le, sm2_test: %.9Le, sm3_test: %.9Le, c1: %.9Le, c2: %.9Le, c3: %.9Le, c1range: %.9Le, c2range: %.9Le, c3range: %.9Le\n", nle_state->exponents_str, samples, elapsed_time, ordering, progress[ordering], best_precision_last, best_ordering, precision_last[ordering], range_factor, two_term_test, sm1_test, sm2_test, sm3_test, c1_center[ordering], c2_center[ordering], c3_center[ordering], c1_range[ordering], c2_range[ordering], c3_range[ordering]);
                   fflush(stdout);
 #endif
                 } // end if precision

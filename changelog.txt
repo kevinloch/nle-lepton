@@ -1,3 +1,7 @@
+4.3.2 New feature:
+      - New unsolvable test in (1-smr) mode that checks if any progress has been made on best ordering since last unsolvable_checkpoint. This
+        allows config file option 'phase1_mc_samples_limit' to revert to a safety check with a much higher value
+
 4.3.1 New feature:
       - srcipts/grep-logs.sh now detects and ignores duplicate results
 
