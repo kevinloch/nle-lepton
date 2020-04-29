@@ -727,7 +727,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             alpha=((alpha_center - alpha_range) + (r * 2.0 * alpha_range));
                             i=0;
-                            while ((alpha < nle_config->ref_alpha_em * 0.8) || (alpha > (nle_config->ref_alpha_em * 1.2))) { // sanity check to help convergence
+                            while ((alpha < nle_config->ref_alpha_em * 0.5) || (alpha > (nle_config->ref_alpha_em * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -750,7 +750,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             sm1=((sm1_center - sm1_range) + (r * 2.0 * sm1_range));
                             i=0;
-                            while ((sm1 < nle_config->ref_sm1 * 0.8) || (sm1 > (nle_config->ref_sm1 * 1.2))) { // sanity check to help convergence
+                            while ((sm1 < nle_config->ref_sm1 * 0.5) || (sm1 > (nle_config->ref_sm1 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -773,7 +773,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             sm2=((sm2_center - sm2_range) + (r * 2.0 * sm2_range));
                             i=0;
-                            while ((sm2 < nle_config->ref_sm2 * 0.8) || (sm2 > (nle_config->ref_sm2 * 1.2))) { // sanity check to help convergence
+                            while ((sm2 < nle_config->ref_sm2 * 0.5) || (sm2 > (nle_config->ref_sm2 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -796,7 +796,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             v=((v_center - v_range) + (r * 2.0 * v_range));
                             i=0;
-                            while ((v < (nle_config->ref_v * 0.8)) || (v > (nle_config->ref_v * 1.2))) { // sanity check to help convergence
+                            while ((v < (nle_config->ref_v * 0.5)) || (v > (nle_config->ref_v * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -819,7 +819,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             mz=((mz_center - mz_range) + (r * 2.0 * mz_range));
                             i=0;
-                            while ((mz < nle_config->ref_mz * 0.8) || (mz > (nle_config->ref_mz * 1.2))) { // sanity check to help convergence
+                            while ((mz < nle_config->ref_mz * 0.5) || (mz > (nle_config->ref_mz * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -842,7 +842,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             G=((G_center - G_range) + (r * 2.0 * G_range));
                             i=0;
-                            while ((G < (nle_config->ref_G * 0.8)) || (G > (nle_config->ref_G * 1.2))) { // sanity check to help convergence 
+                            while ((G < (nle_config->ref_G * 0.5)) || (G > (nle_config->ref_G * 1.5))) { // sanity check to help convergence 
                               if (i > 50) {  // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -866,7 +866,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             sm3=((sm3_center - sm3_range) + (r * 2.0 * sm3_range));
                             i=0;
-                            while ((sm3 < nle_config->ref_sm3 * 0.8) || (sm3 > (nle_config->ref_sm3 * 1.2))) { // sanity check to help convergence
+                            while ((sm3 < nle_config->ref_sm3 * 0.5) || (sm3 > (nle_config->ref_sm3 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -889,7 +889,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             mw=((mw_center - mw_range) + (r * 2.0 * mw_range));
                             i=0;
-                            while ((mw < nle_config->ref_mw * 0.8) || (mw > (nle_config->ref_mw * 1.2)) || (mw >= mz)) { // sanity check to help convergence and prevent mw >= mz
+                            while ((mw < nle_config->ref_mw * 0.5) || (mw > (nle_config->ref_mw * 1.5)) || (mw >= mz)) { // sanity check to help convergence and prevent mw >= mz
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -912,7 +912,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             sin2w=((sin2w_center - sin2w_range) + (r * 2.0 * sin2w_range));
                             i=0;
-                            while ((sin2w < nle_config->ref_sin2w * 0.8) || (sin2w > (nle_config->ref_sin2w * 1.2))) { // sanity check to help convergence
+                            while ((sin2w < nle_config->ref_sin2w * 0.5) || (sin2w > (nle_config->ref_sin2w * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -935,7 +935,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             mh0=((mh0_center - mh0_range) + (r * 2.0 * mh0_range));
                             i=0;
-                            while ((mh0 < nle_config->ref_mh0 * 0.8) || (mh0 > (nle_config->ref_mh0 * 1.2))) { // sanity check to help convergence
+                            while ((mh0 < nle_config->ref_mh0 * 0.5) || (mh0 > (nle_config->ref_mh0 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -958,7 +958,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             muser=((muser_center - muser_range) + (r * 2.0 * muser_range));
                             i=0;
-                            while ((muser < nle_config->smrfactor_mass_user * 0.8) || (muser > (nle_config->smrfactor_mass_user * 1.2))) { // sanity check to help convergence
+                            while ((muser < nle_config->smrfactor_mass_user * 0.5) || (muser > (nle_config->smrfactor_mass_user * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);

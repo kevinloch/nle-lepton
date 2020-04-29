@@ -24,7 +24,7 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
       r=drand48();
       exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-      while ((exp_inv_2 == 0) || (exp_inv_2 == exp_inv_1)) {
+      while ((exp_inv_2 == 0) || ((nle_config->smrfactor_1minus_enable == 0) && (exp_inv_2 == exp_inv_1))) { // same exponents are ok in (1-smr) mode
         r=drand48();
         exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
       }
@@ -119,8 +119,12 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
     } else if (nle_config->smrfactor_1minus_enable == 1) {
       // special exponent checks for 1-smr mode
-      if ((nle_state->term1.exp_inv % 2) == 0) {
-        // term 1 inv_exp is even, this is not supported for 1-smr mode
+      
+      // suppress trivial geometries
+      if ((nle_state->term1.exp_inv == 1) && (nle_state->term2.exp_inv == 1)) {
+        valid=0;
+      }
+      if ((nle_state->term1.exp_inv == 2) && (nle_state->term2.exp_inv == 2)) {
         valid=0;
       }
       if ((nle_state->term1.exp_inv < 0) || (nle_state->term2.exp_inv < 0)) {

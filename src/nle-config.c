@@ -35,7 +35,10 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->phase1_filter=5;
   nle_config->phase1_int_match_max=16;
   nle_config->phase1_int_match_filter=1;
+  nle_config->phase1_two_term_test_min=0.75;
+  nle_config->phase1_two_term_test_max=8.25;
   nle_config->phase1_mc_samples_limit=100000;
+  nle_config->phase2_enable=1;
   nle_config->phase2_symmetry_min=65;
   nle_config->phase2_complexity_max=75;
   nle_config->phase2_check_nbv_nss=1;
@@ -207,7 +210,10 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionInt(&nle_config->phase1_filter, option, value, "phase1_filter");
   checkOptionInt(&nle_config->phase1_int_match_max, option, value, "phase1_int_match_max");
   checkOptionBool(&nle_config->phase1_int_match_filter, option, value, "phase1_int_match_filter");
+  checkOptionDouble(&nle_config->phase1_two_term_test_min, option, value, "phase1_two_term_test_min");
+  checkOptionDouble(&nle_config->phase1_two_term_test_max, option, value, "phase1_two_term_test_max");
   checkOptionInt(&nle_config->phase1_mc_samples_limit, option, value, "phase1_mc_samples_limit");
+  checkOptionBool(&nle_config->phase2_enable, option, value, "phase2_enable");
   checkOptionInt(&nle_config->phase2_symmetry_min, option, value, "phase2_symmetry_min");
   checkOptionInt(&nle_config->phase2_complexity_max, option, value, "phase2_complexity_max");
   checkOptionBool(&nle_config->phase2_check_nbv_nss, option, value, "phase2_check_nbv_nss");

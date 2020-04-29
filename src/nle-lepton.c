@@ -140,6 +140,11 @@ void checkConfig(nle_config_t *nle_config) {
     fflush(stdout);
     exit(1);
   }
+
+  // warn if phase 2 is disabled
+  if (nle_config->phase2_enable == 0) {
+    printf("init, Warning, phase 2 processing is disabled!  Set phase2_enabled=yes in nle-lepton.cfg if you want to re-enable\n");
+  }
 }
 
 int main(int argc, char **argv) {

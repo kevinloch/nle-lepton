@@ -211,6 +211,17 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     term2_mass_sm1=powl(smrf_sm1, (1.0 / (long double)nle_state->term2.exp_inv));
     term2_mass_sm2=powl(smrf_sm2, (1.0 / (long double)nle_state->term2.exp_inv));
     term2_mass_sm3=powl(smrf_sm3, (1.0 / (long double)nle_state->term2.exp_inv));
+    // check if term 1 is even exponent and any (1-smr) is negative
+    if (((nle_state->term1.exp_inv % 2) == 0) && (((1.0 - smrf_sm1) <= 0) || ((1.0 - smrf_sm2) <= 0) || ((1.0 - smrf_sm3) <= 0))) {
+      unsolvable_exception=1;
+      sprintf(unsolvable_exception_str, "term 1 has negative (1-smr) with even exponent                                  ");
+#ifdef DEBUG10
+      clock_gettime(CLOCK_REALTIME, &endtime);
+      elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
+      printf("debug, exponents: %s, samples: %10lld, time: %6.4fs, %s\n", nle_state->exponents_str, samples, elapsed_time, unsolvable_exception_str);
+      fflush(stdout);
+#endif
+    }
     // check if polarity makes formula unsolvable
     if ((nle_state->nle_mixing_polarity == 0) && ((1.0 - smrf_sm1) <= 0) && ((1.0 - smrf_sm2) <= 0) && ((1.0 - smrf_sm3) <= 0)) {
       unsolvable_exception=1;
@@ -310,7 +321,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
               // if precision is high enough, abort processing if two_term_test is out of bounds (not even close to interesting)
               if ((precision_last[ordering] < two_term_precision) && (ordering == best_ordering)) {
                 two_term_test=c3_center[ordering] / (sqrtl(c1_center[ordering] * c2_center[ordering]));
-                if ((two_term_test < 0.75) || (two_term_test > 8.25)) {
+                if ((two_term_test < nle_config->phase1_two_term_test_min) || (two_term_test > nle_config->phase1_two_term_test_max)) {
                   unsolvable_exception=1;
                   sprintf(unsolvable_exception_str, "two-term test is not within a reasonable range: %.14Le            ", two_term_test);
 #ifdef DEBUG10
@@ -781,7 +792,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     // only run cscanner if mode=3 or two_term_test is an interesting integer match
     // for this interesting() check  we use a fixed filter of 3.  In cscanner two_term_test is evaluated with phase1_filter on c3 which may be more restrictive
     // This will help identify interesting geometries for further inspection
-    if ((nle_config->nle_mode != 2) || ((two_term_test >= 0.98) && interesting(nle_config->phase1_filter, nle_config->phase1_int_match_max, nle_config->phase1_int_match_filter, two_term_test))) {
+    if ((nle_config->nle_mode != 2) || ((two_term_test >= nle_config->phase1_two_term_test_min) && (two_term_test <= nle_config->phase1_two_term_test_max) && interesting(nle_config->phase1_filter, nle_config->phase1_int_match_max, nle_config->phase1_int_match_filter, two_term_test))) {
       matches_count_start=nle_state->phase1_matches_count;
       clock_gettime(CLOCK_REALTIME, &starttime);
       if (nle_config->nle_mode == 2) {
@@ -799,16 +810,16 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
             printf("%s\n", out_str_01);
             fflush(stdout);
           }
-          if (nle_config->upload_results_enable == 1) {
-            // upload interesting two_term_test as these are rare and significant
-            sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
-            system(exec_str);
-          } // end if upload enable
         } else {
           sprintf(out_str_01, "status, Found interesting two-term test, exponents:  %s, mixing polarity: -, sm3: %.14e, reference_mass: %.14e, two-term test: %.14Le, sqrt(c1): %.14Le, sqrt(c2): %.14Le", nle_state->exponents_str, nle_state->input_sample_sm3, reference_mass, two_term_test, sqrtl(c1_center[best_ordering]), sqrtl(c2_center[best_ordering]));
           printf("%s\n", out_str_01);
           fflush(stdout);
         } // end if 1-minus
+        if (nle_config->upload_results_enable == 1) {
+          // upload interesting two_term_test as these are rare and significant
+          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+          system(exec_str);
+        } // end if upload enable
       } else {
         // 3-term mode
         nle_state->term1.coefficient=(double)c1_center[best_ordering];
@@ -816,22 +827,27 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         nle_state->term3.coefficient=(double)c3_center[best_ordering];
       } // end if mode==2
 
-      // send coefficients (and two_term_test in 2-term mode) to factoring engine
-      cscanner(nle_config, nle_state);
+      if (nle_config->phase2_enable == 1) {
+        // send coefficients (and two_term_test in 2-term mode) to factoring engine
+        cscanner(nle_config, nle_state);
 
-      clock_gettime(CLOCK_REALTIME, &endtime);
-      matches_count_end=nle_state->phase1_matches_count;
-      elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
-      if (nle_config->phase1_status_enable ==1 ) {
-        printf("status, Found %d interesting coefficient multipliers (%6.4fs)\n", (matches_count_end-matches_count_start), elapsed_time);
-        fflush(stdout);
+        clock_gettime(CLOCK_REALTIME, &endtime);
+        matches_count_end=nle_state->phase1_matches_count;
+        elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
+        if (nle_config->phase1_status_enable ==1 ) {
+          printf("status, Found %d interesting coefficient multipliers (%6.4fs)\n", (matches_count_end-matches_count_start), elapsed_time);
+          fflush(stdout);
+        }
+      } else {
+        // we solved p1 but phase 2 is disabled so we return failed code because cscanner was not run
+        return(1);
       }
     } else {
-      if (nle_config->phase1_status_enable == 1) {
-        printf("status, two-term test was not close enough to an interesting integer, skipping factoring process\n");
+      if ((nle_config->phase1_status_enable == 1) && (nle_config->phase2_enable == 1)) {
+        printf("status, two-term test was out of range or not close enough to an interesting integer, skipping factoring process\n");
         fflush(stdout);
       }
-      // we solved p1 but two_term_test was not interesting so return failed code
+      // we solved p1 but two_term_test was not interesting so return failed code because cscanner was not run
       return(1);
     }
   } else { // faled to solve, should only happen in 1-smr mode
