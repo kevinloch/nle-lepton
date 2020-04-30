@@ -43,6 +43,8 @@
 #include "verifyMatches.h"
 #include "generateExponents.h"
 
+//#define DEBUG_SMRFACTOR // prints smrfactor_seq and optionally select specific smrfactor_seq
+
 int processCmdArgs(nle_config_t *nle_config, int argc, char **argv) {
   int i;
   char *option_start;
@@ -323,6 +325,11 @@ int main(int argc, char **argv) {
             nle_state.term2.smrfactor=smrfactors->smrfactor_multiplier;
           }
           if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
+#ifdef DEBUG_SMRFACTOR
+            //if (smrfactor_seq == 956) { // use to select specific smrfactors for debugging
+              printf("debug, smrfactor_seq: %d\n", smrfactor_seq);
+              fflush(stdout);
+#endif
             for (polarity_seq=0; polarity_seq <= 1; polarity_seq++) {
               // check polarity 
               valid_polarity=0;
@@ -371,6 +378,9 @@ int main(int argc, char **argv) {
                 } // end if failed
               } // end if valid polarity
             } // end for polarity_seq
+#ifdef DEBUG_SMRFACTOR
+            //} // end if smrfactor_seq
+#endif
             smrfactors++;
           } // end if smrfactor_seq
         } // end for smrfactor_seq

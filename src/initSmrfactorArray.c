@@ -50,20 +50,20 @@ void initSmrfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                 if (!((u == 1) && (v == 1)) && (gcd(u, v) == 1)) {  // extra checks to prevent 2 or 1/2
                   e2smr=pow(2.0, ((float)e2upsmr / (float)e2downsmr));
 
-                  for (aupsmr=-nle_config->smrfactor_alpha_exp_up_max; aupsmr <= nle_config->smrfactor_alpha_exp_up_max; aupsmr++) {
-                    for (adownsmr=1; adownsmr <= nle_config->smrfactor_alpha_exp_down_max; adownsmr++) {
-                      u=abs(aupsmr);
-                      v=adownsmr;
+                  for (piupsmr=-nle_config->smrfactor_pi_exp_up_max; piupsmr <= nle_config->smrfactor_pi_exp_up_max; piupsmr++) {
+                    for (pidownsmr=1; pidownsmr <= nle_config->smrfactor_pi_exp_down_max; pidownsmr++) {
+                      u=abs(piupsmr);
+                      v=pidownsmr;
                       if (gcd(u, v) == 1) {
-                        asmr=pow(nle_config->ref_alpha_em, ((float)aupsmr / (float)adownsmr));
+                        pismr=pow(M_PI, ((float)piupsmr / (float)pidownsmr));
 
-                        for (piupsmr=-nle_config->smrfactor_pi_exp_up_max; piupsmr <= nle_config->smrfactor_pi_exp_up_max; piupsmr++) {
-                          for (pidownsmr=1; pidownsmr <= nle_config->smrfactor_pi_exp_down_max; pidownsmr++) {
-                            u=abs(piupsmr);
-                            v=pidownsmr;
+                        for (aupsmr=-nle_config->smrfactor_alpha_exp_up_max; aupsmr <= nle_config->smrfactor_alpha_exp_up_max; aupsmr++) {
+                          for (adownsmr=1; adownsmr <= nle_config->smrfactor_alpha_exp_down_max; adownsmr++) {
+                            u=abs(aupsmr);
+                            v=adownsmr;
                             if (gcd(u, v) == 1) {
-                              pismr=pow(M_PI, ((float)piupsmr / (float)pidownsmr));
- 
+                              asmr=pow(nle_config->ref_alpha_em, ((float)aupsmr / (float)adownsmr));
+
                               for (userupsmr=-nle_config->smrfactor_user_exp_up_max; userupsmr <= nle_config->smrfactor_user_exp_up_max; userupsmr++) {
                                 for (userdownsmr=1; userdownsmr <= nle_config->smrfactor_user_exp_down_max; userdownsmr++) {
                                   u=abs(userupsmr);
@@ -116,12 +116,12 @@ void initSmrfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                   } // gcd user
                                 } // down user
                               } // up user
-                            } // gcd pi
-                          } // pidown
-                        } // piup
-                      } // gcd a
-                    } // adown
-                  } // aup
+                            } // gcd a
+                          } // adown
+                        } // aup
+                      } // gcd pi
+                    } // pidown
+                  } // piup
                 } // gcd e2
               } // e2down
             } // e2up

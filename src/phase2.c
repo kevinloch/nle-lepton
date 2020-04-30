@@ -819,7 +819,7 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                             r=(double)drand48();
                             mz=((mz_center - mz_range) + (r * 2.0 * mz_range));
                             i=0;
-                            while ((mz < nle_config->ref_mz * 0.5) || (mz > (nle_config->ref_mz * 1.5))) { // sanity check to help convergence
+                            while ((mz < nle_config->ref_mz * 0.5) || (mz > (nle_config->ref_mz * 1.5)) || (mw >= mz)) { // sanity check to help convergence and prevent mw >= mz
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -831,6 +831,13 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                                 mz_last=(double)nle_config->ref_mz;
                                 mz_center=(double)nle_config->ref_mz;
                                 mz_range=(double)nle_config->ref_mz * 0.1;
+                                // if mw >= mz and mw is floated then we must reset mw also to clear error
+                                if ((mw >= mz) && (nle_state->all_uses.float_mw == 1)) {
+                                  mw_last=(double)nle_config->ref_mw;
+                                  mw_center=(double)nle_config->ref_mw; 
+                                  mw=mw_center;
+                                  mw_range=(double)nle_config->ref_mw * 0.1;
+                                }
                               }
                               r=(double)drand48();
                               mz=((mz_center - mz_range) + (r * 2.0 * mz_range));
@@ -901,6 +908,13 @@ double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) {
                                 mw_last=(double)nle_config->ref_mw;
                                 mw_center=(double)nle_config->ref_mw;
                                 mw_range=(double)nle_config->ref_mw * 0.1;
+                                // if mw >= mz and mz is floated then we must reset mz also to clear error
+                                if ((mw >= mz) && (nle_state->all_uses.float_mz == 1)) {
+                                  mz_last=(double)nle_config->ref_mz;
+                                  mz_center=(double)nle_config->ref_mz;
+                                  mz=mz_center;
+                                  mz_range=(double)nle_config->ref_mz * 0.1;
+                                }
                               }
                               r=(double)drand48();
                               mw=((mw_center - mw_range) + (r * 2.0 * mw_range));
