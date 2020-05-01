@@ -12,7 +12,7 @@
         uncertainty
       - Widened allowed range of variables in phase2 from 20% to 50% to prevent phase 2 from getting stuck in certain cases
       - Fixed checks in phase 2 for (mw >= mz), (mz >= mh0), (mw >= mh0) conditions
-      - Added checks in selectOutputs() for outfactor_rmr masses to prevent conditions where phase 2 will not converge
+      - Added checks in selectOutputs() for outfactor_rmr masses to prevent conditions where phase 2 will not converge in 3-term mode
 
 4.3.3 New features:
       - Improved formatting of phase 1 status updates and removed/suppressed some unnecessary ones for (1-smr) mode
