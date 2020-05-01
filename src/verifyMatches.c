@@ -24,7 +24,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   struct timespec start_time;
   struct timespec end_time;
   double elapsed_time;
-  double precision=1.0E99;
+  long double precision=1.0E99;
   int tmpmatchup;
   int tmpmatchdown;
   int tmpmatchcomplexity;
@@ -651,23 +651,23 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
                   if (precision < 1.0E30) {
                     if (nle_config->nle_mode == 2) {
                       if (nle_state->nle_mixing_polarity == 0) {
-                        printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       } else {
-                        printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       }
                     } else {
-                      printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                      printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                     }
                     fflush(stdout);
                   } else {
                     if (nle_config->nle_mode == 2) {
                       if (nle_state->nle_mixing_polarity == 0) {
-                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       } else {
-                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       }
                     } else {
-                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3e, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass, term2_match->smrfactor_mass, term3_match->smrfactor_mass, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                     }
                     fflush(stdout);
                   } // end precision

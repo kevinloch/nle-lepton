@@ -63,6 +63,25 @@ void printUses(nle_input_use_t *uses) {
   printf("debug, ------------------------------\n");
 }
 
+void printInputSamples(nle_state_t *nle_state) {
+  printf("debug, input samples (labeled as ref_* to copy/paste into config for debugging)\n");
+  printf("debug, ------------------------------\n");
+  printf("debug, ref_sm1=%.14e\n", nle_state->input_sample_sm1);
+  printf("debug, ref_sm2=%.14e\n", nle_state->input_sample_sm2);
+  printf("debug, ref_sm3=%.14e\n", nle_state->input_sample_sm3);
+  printf("debug, ref_v=%.14e\n", nle_state->input_sample_v);
+  printf("debug, ref_alpha_em=%.14e\n", nle_state->input_sample_alpha_em);
+  printf("debug, ref_alpha_w=%.14e\n", nle_state->input_sample_alpha_w);
+  printf("debug, ref_G=%.14e\n", nle_state->input_sample_G);
+  printf("debug, ref_mp=%.14e\n", nle_state->input_sample_mp);
+  printf("debug, ref_mz=%.14e\n", nle_state->input_sample_mz);
+  printf("debug, ref_mw=%.14e\n", nle_state->input_sample_mw);
+  printf("debug, ref_sin2w=%.14e\n", nle_state->input_sample_sin2w);
+  printf("debug, ref_mh0=%.14e\n", nle_state->input_sample_mh0);
+  printf("debug, ref_mass_user=%.14e\n", nle_state->input_sample_muser);
+  printf("debug, ------------------------------\n");
+}
+
 char *underscore(char *str, int len) {
   int i;
 

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "nle-lepton.h"
+#include "util.h"
 
 void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
   int valid;
@@ -16,46 +17,46 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
     if (nle_config->exp_neg_enable == 1) {
       // allow negative
       // select random exponents
-      r=drand48();
+      r=pcg_ldrand64(nle_state);
       exp_inv_1=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
       while (exp_inv_1 == 0) {
-        r=drand48();
+        r=pcg_ldrand64(nle_state);
         exp_inv_1=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
       }
-      r=drand48();
+      r=pcg_ldrand64(nle_state);
       exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
       while ((exp_inv_2 == 0) || ((nle_config->smrfactor_1minus_enable == 0) && (exp_inv_2 == exp_inv_1))) { // same exponents are ok in (1-smr) mode
-        r=drand48();
+        r=pcg_ldrand64(nle_state);
         exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
       }
       if (nle_config->nle_mode > 2) {
-        r=drand48();
+        r=pcg_ldrand64(nle_state);
         exp_inv_3=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
         while ((exp_inv_3 == 0) || (exp_inv_3 == exp_inv_1) || (exp_inv_3 == exp_inv_2)) {
-          r=drand48();
+          r=pcg_ldrand64(nle_state);
           exp_inv_3=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
         }
       }
     } else {
       // only non-negative
       // select random exponents
-      r=drand48();
+      r=pcg_ldrand64(nle_state);
       exp_inv_1=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
       while (exp_inv_1 == 0) {
-        r=drand48();
+        r=pcg_ldrand64(nle_state);
         exp_inv_1=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
       }
-      r=drand48();
+      r=pcg_ldrand64(nle_state);
       exp_inv_2=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
       while ((exp_inv_2 == 0) || (exp_inv_2 == exp_inv_1)) {
-        r=drand48();
+        r=pcg_ldrand64(nle_state);
         exp_inv_2=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
       }
       if (nle_config->nle_mode > 2) {
-        r=drand48();
+        r=pcg_ldrand64(nle_state);
         exp_inv_3=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
         while ((exp_inv_3 == 0) || (exp_inv_3 == exp_inv_1) || (exp_inv_3 == exp_inv_2)) {
-          r=drand48();
+          r=pcg_ldrand64(nle_state);
           exp_inv_3=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
         }
       }

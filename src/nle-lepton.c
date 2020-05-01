@@ -34,6 +34,7 @@
 #include <math.h>
 #include <time.h>
 #include "nle-lepton.h"
+#include "util.h"
 #include "nle-config.h"
 #include "usage.h"
 #include "initInfactorArray.h"
@@ -181,9 +182,8 @@ int main(int argc, char **argv) {
   seedsec=(t.tv_sec % 1000000000);
   seedus=(t.tv_nsec / 1000);
   seed=nle_config.external_seed ^ (seedsec + seedus);
-  srand48(seed);
   nle_state.pcg_state=((__uint128_t)seed) << 64;
-  testrand=drand48();
+  testrand=pcg_ldrand64(&nle_state);
 
   // print version, config file nameand random seed data
   printf("init, version: %s, external seed: %ld, seconds seed: %ld, microseconds seed: %ld, composite seed: %ld, first random number: %.9e\n", NLE_VERSION, nle_config.external_seed, seedsec, seedus, seed, testrand);
@@ -235,30 +235,30 @@ int main(int argc, char **argv) {
 
     if (nle_config.phase1_random_samples_enable == 1) {
       // generate random samples of experimental values each time phase 1 is run
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_sm1=((nle_config.ref_sm1 - nle_config.ref_sm1_error) + (r * 2.0 * nle_config.ref_sm1_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_sm2=((nle_config.ref_sm2 - nle_config.ref_sm2_error) + (r * 2.0 * nle_config.ref_sm2_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_sm3=((nle_config.ref_sm3 - nle_config.ref_sm3_error) + (r * 2.0 * nle_config.ref_sm3_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_v=((nle_config.ref_v - nle_config.ref_v_error) + (r * 2.0 * nle_config.ref_v_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_alpha_em=((nle_config.ref_alpha_em - nle_config.ref_alpha_em_error) + (r * 2.0 * nle_config.ref_alpha_em_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_alpha_w=((nle_config.ref_alpha_w - nle_config.ref_alpha_w_error) + (r * 2.0 * nle_config.ref_alpha_w_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_G=((nle_config.ref_G - nle_config.ref_G_error) + (r * 2.0 * nle_config.ref_G_error));
       nle_state.input_sample_mp=nle_config.ref_kg_to_ev * sqrt(nle_config.ref_hbar * nle_config.ref_c / nle_state.input_sample_G);
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_mz=((nle_config.ref_mz - nle_config.ref_mz_error) + (r * 2.0 * nle_config.ref_mz_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_mw=((nle_config.ref_mw - nle_config.ref_mw_error) + (r * 2.0 * nle_config.ref_mw_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_sin2w=((nle_config.ref_sin2w - nle_config.ref_sin2w_error) + (r * 2.0 * nle_config.ref_sin2w_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_mh0=((nle_config.ref_mh0 - nle_config.ref_mh0_error) + (r * 2.0 * nle_config.ref_mh0_error));
-      r=drand48();
+      r=pcg_ldrand64(&nle_state);
       nle_state.input_sample_muser=((nle_config.smrfactor_mass_user - nle_config.smrfactor_mass_user_error) + (r * 2.0 * nle_config.smrfactor_mass_user_error));
     } else {
       // set input_sample to center reference values

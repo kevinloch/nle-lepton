@@ -120,6 +120,10 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   int unchosen_outputs[12];
   int i;
   int reference_mass;
+  int rmr_mass_id_up;
+  int rmr_mass_id_down;
+  int smr_count_up;
+  int smr_count_down;
 
   /*
     Index of mass id's and potential output variables
@@ -295,6 +299,126 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     // sin2w is not used at all
     nle_state->all_uses.mw_mz_mode=0;
   }   
+
+  if (nle_state->term1.current_match->outfactor_rmr_exp_up != 0) {
+    // check for rmr mass conditions that can make phase 2 unsolvable
+    rmr_mass_id_up=nle_state->term1.current_match->outfactor_rmr_mass_id_up;
+    rmr_mass_id_down=nle_state->term1.current_match->outfactor_rmr_mass_id_down;
+    smr_count_up=0;
+    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    smr_count_down=0;
+    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (((smr_count_up == 0) && (smr_count_down == 0))\
+      || ((smr_count_up == 1) && (smr_count_down == 2))\
+      || ((smr_count_up == 2) && (smr_count_down == 1))) {
+      // pick rmr mass with lowest uncertainty and remove it from unchosen_outputs
+      if (nle_config->relerror[rmr_mass_id_up] <= nle_config->relerror[rmr_mass_id_down]) {
+        unchosen_outputs[rmr_mass_id_up]=0;
+      } else {
+        unchosen_outputs[rmr_mass_id_down]=0;
+      }
+    } else if ((smr_count_up == 1) && (smr_count_down == 1)) {
+      // remove both rmr masses from unchosen outputs
+      unchosen_outputs[rmr_mass_id_up]=0;
+      unchosen_outputs[rmr_mass_id_down]=0;
+    }
+  }
+  
+  if (nle_state->term2.current_match->outfactor_rmr_exp_up != 0) {
+    // check for rmr mass conditions that can make phase 2 unsolvable
+    rmr_mass_id_up=nle_state->term2.current_match->outfactor_rmr_mass_id_up;
+    rmr_mass_id_down=nle_state->term2.current_match->outfactor_rmr_mass_id_down;
+    smr_count_up=0;
+    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    smr_count_down=0;
+    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (((smr_count_up == 0) && (smr_count_down == 0))\
+      || ((smr_count_up == 1) && (smr_count_down == 2))\
+      || ((smr_count_up == 2) && (smr_count_down == 1))) {
+      // pick rmr mass with lowest uncertainty and remove it from unchosen_outputs
+      if (nle_config->relerror[rmr_mass_id_up] <= nle_config->relerror[rmr_mass_id_down]) {
+        unchosen_outputs[rmr_mass_id_up]=0;
+      } else {
+        unchosen_outputs[rmr_mass_id_down]=0;
+      }
+    } else if ((smr_count_up == 1) && (smr_count_down == 1)) {
+      // remove both rmr masses from unchosen outputs
+      unchosen_outputs[rmr_mass_id_up]=0;
+      unchosen_outputs[rmr_mass_id_down]=0;
+    } 
+  }
+  
+  if (nle_state->term3.current_match->outfactor_rmr_exp_up != 0) {
+    // check for rmr mass conditions that can make phase 2 unsolvable
+    rmr_mass_id_up=nle_state->term3.current_match->outfactor_rmr_mass_id_up;
+    rmr_mass_id_down=nle_state->term3.current_match->outfactor_rmr_mass_id_down;
+    smr_count_up=0;
+    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_up) {
+      smr_count_up++;
+    }
+    smr_count_down=0;
+    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_down) {
+      smr_count_down++;
+    }
+    if (((smr_count_up == 0) && (smr_count_down == 0))\
+      || ((smr_count_up == 1) && (smr_count_down == 2))\
+      || ((smr_count_up == 2) && (smr_count_down == 1))) {
+      // pick rmr mass with lowest uncertainty and remove it from unchosen_outputs
+      if (nle_config->relerror[rmr_mass_id_up] <= nle_config->relerror[rmr_mass_id_down]) {
+        unchosen_outputs[rmr_mass_id_up]=0;
+      } else {
+        unchosen_outputs[rmr_mass_id_down]=0;
+      }
+    } else if ((smr_count_up == 1) && (smr_count_down == 1)) {
+      // remove both rmr masses from unchosen outputs
+      unchosen_outputs[rmr_mass_id_up]=0;
+      unchosen_outputs[rmr_mass_id_down]=0;
+    }
+  }
 
   // select unknowns until we have three total
   while (unknowns < 3) {

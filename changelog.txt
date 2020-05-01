@@ -3,10 +3,16 @@
       - Two new config file options allow user control of the two-term test "reasonable range"
       - New config file option to disable coefficient factoring and phase 2 processing.  This can be used to speed up finding interesting two-term tests for
         later phase 2 targeted searches
+      - drand48() has been completely replaced with 64-bit random number generator derived from
+        https://www.pcg-random.org/posts/does-it-beat-the-minimal-standard.html.
+      - Phase 2 core functions are now using long doubles (80-bit extended precision on x86) and solve down to <= 1.0E-16 precision
 
       Bug fixes:
+      - Fixed phase 2 result range checks. The relative difference of an output is now compared to the greater of it's uncertainty or the reference value's
+        uncertainty
       - Widened allowed range of variables in phase2 from 20% to 50% to prevent phase 2 from getting stuck in certain cases
-      - Added missing (mw >= mz) check to mz in phase2
+      - Fixed checks in phase 2 for (mw >= mz), (mz >= mh0), (mw >= mh0) conditions
+      - Added checks in selectOutputs() for outfactor_rmr masses to prevent conditions where phase 2 will not converge
 
 4.3.3 New features:
       - Improved formatting of phase 1 status updates and removed/suppressed some unnecessary ones for (1-smr) mode
@@ -50,7 +56,7 @@
        are disabled in this mode, term1 must have an odd exponent (for when 1-smr is negative), and both terms will use the same smr including reference mass
      - Added support for two additional user-supplied factors for outside radical for total of three
      - Added phase1_random_samples_enable option.  When set to "no" variables are all set to center of experimental range each time phase 1 is run
-     - Phase 1 core functions are now using long doubles (80-bit extended precision on x86) and solve down to <=1.0E-16 precision
+     - Phase 1 core functions are now using long doubles (80-bit extended precision on x86) and solve down to <= 1.0E-16 precision
      - Symmetry score now has more checks
      - Complexity score now ignores 1's in rationals for better selection of simplest duplicate formula
      Bug Fixes:
