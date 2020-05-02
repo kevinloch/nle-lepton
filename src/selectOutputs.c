@@ -300,8 +300,8 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     nle_state->all_uses.mw_mz_mode=0;
   }   
 
+  // check for rmr mass conditions that can make phase 2 unsolvable
   if ((nle_config->nle_mode == 3) && (nle_state->term1.current_match->outfactor_rmr_exp_up != 0)) {
-    // check for rmr mass conditions that can make phase 2 unsolvable
     rmr_mass_id_up=nle_state->term1.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term1.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
@@ -337,8 +337,8 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     }
   }
   
+  // check for rmr mass conditions that can make phase 2 unsolvable
   if ((nle_config->nle_mode == 3) && (nle_state->term2.current_match->outfactor_rmr_exp_up != 0)) {
-    // check for rmr mass conditions that can make phase 2 unsolvable
     rmr_mass_id_up=nle_state->term2.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term2.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
@@ -374,8 +374,8 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     } 
   }
   
+  // check for rmr mass conditions that can make phase 2 unsolvable
   if ((nle_config->nle_mode == 3) && (nle_state->term3.current_match->outfactor_rmr_exp_up != 0)) {
-    // check for rmr mass conditions that can make phase 2 unsolvable
     rmr_mass_id_up=nle_state->term3.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term3.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;

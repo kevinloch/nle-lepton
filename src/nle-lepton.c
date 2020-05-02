@@ -102,10 +102,6 @@ void checkConfig(nle_config_t *nle_config) {
     fflush(stdout);
     exit(1);
   }
-  if ((nle_config->nle_mode == 2) && (nle_config->smrfactor_1minus_enable == 0)) {
-    printf("init, Warning: in nle-lepton.cfg, smrfactor_1minus_enable should be set to yes when nle_mode=2\n");
-    fflush(stdout);
-  }
 
   // check if forced exponents exceed exp_inv_max
   if ((abs(nle_config->exp_inv_term1_force) > nle_config->exp_inv_max) || (abs(nle_config->exp_inv_term2_force) > nle_config->exp_inv_max) || (abs(nle_config->exp_inv_term2_force) > nle_config->exp_inv_max)) {

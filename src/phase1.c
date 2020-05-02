@@ -304,7 +304,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
             if (best_precision_last < best_ordering_threshold) {
               // best_ordering has sufficient precision, disable all other orderings
               for (i=0; i <= 5; i++) {
-                if (i != best_ordering) {
+                if ((i != best_ordering) && (ordering_enabled[i] == 1)) {
                   ordering_enabled[i]=0;
 #ifdef DEBUG10 
                   printf("debug, best_ordering: %d, best_precision_last: %.9Le, disabling ordering: %d\n", best_ordering, best_precision_last, i);

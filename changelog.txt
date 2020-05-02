@@ -1,5 +1,5 @@
 4.3.4 New features:
-      - (1-smr) mode now allows even exponents on term 1 and both terms having the same exponent
+      - (1-smr) mode now allows even exponents on term 1, both terms having the same exponent, and negative exponents
       - Two new config file options allow user control of the two-term test "reasonable range"
       - New config file option to disable coefficient factoring and phase 2 processing.  This can be used to speed up finding interesting two-term tests for
         later phase 2 targeted searches

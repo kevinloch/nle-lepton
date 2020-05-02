@@ -108,29 +108,29 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
     }
 
-    if ((nle_config->nle_mode == 2) && (nle_config->smrfactor_1minus_enable == 0)) {
-      // special exponent checks for 2-term mode without 1-smr
-      if ((nle_state->term1.exp_inv * nle_state->term2.exp_inv) < 0) {
-        // if terms have opposite sign, this is not supported for 2-term without 1-smr mode
-        valid=0;
-      }
-      if (((nle_state->term1.exp_inv * nle_state->term1.exp_inv) == 1) || ((nle_state->term2.exp_inv * nle_state->term2.exp_inv) == 1)) {
-        // if either term is +/- 1, this is not supported in 2-term mode without 1-smr mode
-        valid=0;
-      }
-    } else if (nle_config->smrfactor_1minus_enable == 1) {
-      // special exponent checks for 1-smr mode
+    // special exponent checks for 2-term mode
+    if (nle_config->nle_mode == 2) {
+      // special exponent checks for 2-term mode
+      if (nle_config->smrfactor_1minus_enable == 0) {
+        // special exponents checks for 2-term without 1-smr mode
+        if ((nle_state->term1.exp_inv * nle_state->term2.exp_inv) < 0) {
+          // if terms have opposite sign, this is not supported in 2-term mode
+          valid=0;
+        }
+        if (((nle_state->term1.exp_inv * nle_state->term1.exp_inv) == 1) || ((nle_state->term2.exp_inv * nle_state->term2.exp_inv) == 1)) {
+          // if either term is +/- 1, this is not supported in 2-term mode without 1-smr mode
+          valid=0;
+        }
+      } else if (nle_config->smrfactor_1minus_enable == 1) {
+        // special exponent checks for 1-smr mode
       
-      // suppress trivial geometries
-      if ((nle_state->term1.exp_inv == 1) && (nle_state->term2.exp_inv == 1)) {
-        valid=0;
-      }
-      if ((nle_state->term1.exp_inv == 2) && (nle_state->term2.exp_inv == 2)) {
-        valid=0;
-      }
-      if ((nle_state->term1.exp_inv < 0) || (nle_state->term2.exp_inv < 0)) {
-        // any term is negative, this is not supported for 1-smr mode
-        valid=0;
+        // suppress trivial geometries
+        if ((nle_state->term1.exp_inv == 1) && (nle_state->term2.exp_inv == 1)) {
+          valid=0;
+        }
+        if ((nle_state->term1.exp_inv == 2) && (nle_state->term2.exp_inv == 2)) {
+          valid=0;
+        }
       }
     }
 
