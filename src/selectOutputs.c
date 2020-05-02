@@ -325,6 +325,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
       smr_count_down++;
     }
     if (((smr_count_up == 0) && (smr_count_down == 0))\
+     || ((smr_count_up == 1) && (smr_count_down == 1))\
      || ((smr_count_up == 1) && (smr_count_down == 2))\
      || ((smr_count_up == 2) && (smr_count_down == 1))) {
       // pick rmr mass with lowest uncertainty and remove it from unchosen_outputs
@@ -333,16 +334,6 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
       } else {
         unchosen_outputs[rmr_mass_id_down]=0;
       }
-    } else if ((smr_count_up == 1) && (smr_count_down == 1)) {
-      // remove both rmr masses from unchosen outputs
-      unchosen_outputs[rmr_mass_id_up]=0;
-      unchosen_outputs[rmr_mass_id_down]=0;
-    } else if ((smr_count_up == 1) && (smr_count_down == 0)) {
-      // remove rmr mass id with 1 smrfactor instance
-      unchosen_outputs[rmr_mass_id_up]=0;
-    } else if ((smr_count_up == 0) && (smr_count_down == 1)) {
-      // remove rmr mass id with 1 smrfactor instance
-      unchosen_outputs[rmr_mass_id_down]=0;
     }
   }
   
@@ -371,6 +362,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
       smr_count_down++;
     }
     if (((smr_count_up == 0) && (smr_count_down == 0))\
+     || ((smr_count_up == 1) && (smr_count_down == 1))\
      || ((smr_count_up == 1) && (smr_count_down == 2))\
      || ((smr_count_up == 2) && (smr_count_down == 1))) {
       // pick rmr mass with lowest uncertainty and remove it from unchosen_outputs
@@ -379,16 +371,6 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
       } else {
         unchosen_outputs[rmr_mass_id_down]=0;
       }
-    } else if ((smr_count_up == 1) && (smr_count_down == 1)) {
-      // remove both rmr masses from unchosen outputs
-      unchosen_outputs[rmr_mass_id_up]=0;
-      unchosen_outputs[rmr_mass_id_down]=0;
-    } else if ((smr_count_up == 1) && (smr_count_down == 0)) {
-      // remove rmr mass id with 1 smrfactor instance
-      unchosen_outputs[rmr_mass_id_up]=0;
-    } else if ((smr_count_up == 0) && (smr_count_down == 1)) {
-      // remove rmr mass id with 1 smrfactor instance
-      unchosen_outputs[rmr_mass_id_down]=0;
     } 
   }
   
@@ -417,6 +399,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
       smr_count_down++;
     }
     if (((smr_count_up == 0) && (smr_count_down == 0))\
+     || ((smr_count_up == 1) && (smr_count_down == 1))\
      || ((smr_count_up == 1) && (smr_count_down == 2))\
      || ((smr_count_up == 2) && (smr_count_down == 1))) {
       // pick rmr mass with lowest uncertainty and remove it from unchosen_outputs
@@ -425,16 +408,6 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
       } else {
         unchosen_outputs[rmr_mass_id_down]=0;
       }
-    } else if ((smr_count_up == 1) && (smr_count_down == 1)) {
-      // remove both rmr masses from unchosen outputs
-      unchosen_outputs[rmr_mass_id_up]=0;
-      unchosen_outputs[rmr_mass_id_down]=0;
-    } else if ((smr_count_up == 1) && (smr_count_down == 0)) {
-      // remove rmr mass id with 1 smrfactor instance
-      unchosen_outputs[rmr_mass_id_up]=0;
-    } else if ((smr_count_up == 0) && (smr_count_down == 1)) {
-      // remove rmr mass id with 1 smrfactor instance
-      unchosen_outputs[rmr_mass_id_down]=0;
     } 
   }
 
