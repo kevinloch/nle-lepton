@@ -1,8 +1,10 @@
 4.3.4 New features:
       - (1-smr) mode now allows even exponents on term 1, both terms having the same exponent, and negative exponents
       - Two new config file options allow user control of the two-term test "reasonable range"
-      - New config file option to disable coefficient factoring and phase 2 processing.  This can be used to speed up finding interesting two-term tests for
-        later phase 2 targeted searches
+      - New config file option for (1-smr) mode, 'phase1_unsolvable_checkpoint' sets the maximum samples to get phase 1 progress to increment before it is
+        declared unsolvable. Lower values will find unsolvable formulas faster but risk missing slow to solve formulas
+      - New config file option 'phase2_enable' to disable coefficient factoring and phase 2 processing.  This can be used to speed up finding interesting
+        two-term tests for later phase 2 targeted searches
       - drand48() has been completely replaced with 64-bit random number generator derived from
         https://www.pcg-random.org/posts/does-it-beat-the-minimal-standard.html.
       - Phase 2 core functions are now using long doubles (80-bit extended precision on x86) and solve down to <= 1.0E-16 precision
@@ -12,7 +14,7 @@
         uncertainty
       - Widened allowed range of variables in phase2 from 20% to 50% to prevent phase 2 from getting stuck in certain cases
       - Fixed checks in phase 2 for (mw >= mz), (mz >= mh0), (mw >= mh0) conditions
-      - Added checks in selectOutputs() for outfactor_rmr masses to prevent conditions where phase 2 will not converge in 3-term mode
+      - Added checks in selectOutputs() for outfactor_rmr masses to prevent conditions where phase 2 will not converge
 
 4.3.3 New features:
       - Improved formatting of phase 1 status updates and removed/suppressed some unnecessary ones for (1-smr) mode

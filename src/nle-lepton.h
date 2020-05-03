@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3.4-dev-19"
+#define NLE_VERSION "4.3.4-dev-22"
 
 typedef struct {
   int G;
@@ -224,6 +224,7 @@ typedef struct {
   int phase1_int_match_filter;
   double phase1_two_term_test_min;
   double phase1_two_term_test_max;
+  int phase1_unsolvable_checkpoint;
   int phase1_mc_samples_limit;
   int phase2_enable;
   int phase2_symmetry_min;

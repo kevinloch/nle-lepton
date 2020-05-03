@@ -212,8 +212,8 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     } // end if i
   } // end for i
 
-  // 2-term mixed will not converge unless at least one reference mass is floated
-  if (nle_config->nle_mode == 2) {
+  // 2-term mixed will not converge unless at least one reference mass is floated or rmr is used
+  if ((nle_config->nle_mode == 2) && (nle_state->term1.current_match->outfactor_rmr_exp_up == 0)) {
     if (nle_config->smrfactor_1minus_enable == 1) {
       reference_mass=nle_state->term1.smrfactor_mass;
     } else {
@@ -301,7 +301,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   }   
 
   // check for rmr mass conditions that can make phase 2 unsolvable
-  if ((nle_config->nle_mode == 3) && (nle_state->term1.current_match->outfactor_rmr_exp_up != 0)) {
+  if (nle_state->term1.current_match->outfactor_rmr_exp_up != 0) {
     rmr_mass_id_up=nle_state->term1.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term1.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
@@ -338,7 +338,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   }
   
   // check for rmr mass conditions that can make phase 2 unsolvable
-  if ((nle_config->nle_mode == 3) && (nle_state->term2.current_match->outfactor_rmr_exp_up != 0)) {
+  if (nle_state->term2.current_match->outfactor_rmr_exp_up != 0) {
     rmr_mass_id_up=nle_state->term2.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term2.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
@@ -375,7 +375,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   }
   
   // check for rmr mass conditions that can make phase 2 unsolvable
-  if ((nle_config->nle_mode == 3) && (nle_state->term3.current_match->outfactor_rmr_exp_up != 0)) {
+  if (nle_state->term3.current_match->outfactor_rmr_exp_up != 0) {
     rmr_mass_id_up=nle_state->term3.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term3.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
