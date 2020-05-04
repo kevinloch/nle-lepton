@@ -750,7 +750,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             alpha=((alpha_center - alpha_range) + (r * 2.0 * alpha_range));
                             i=0;
-                            while ((alpha < nle_config->ref_alpha_em * 0.5) || (alpha > (nle_config->ref_alpha_em * 1.5))) { // sanity check to help convergence
+                            while ((alpha < ((long double)nle_config->ref_alpha_em * 0.5)) || (alpha > ((long double)nle_config->ref_alpha_em * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -773,7 +773,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             sm1=((sm1_center - sm1_range) + (r * 2.0 * sm1_range));
                             i=0;
-                            while ((sm1 < nle_config->ref_sm1 * 0.5) || (sm1 > (nle_config->ref_sm1 * 1.5))) { // sanity check to help convergence
+                            while ((sm1 < ((long double)nle_config->ref_sm1 * 0.5)) || (sm1 > ((long double)nle_config->ref_sm1 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -796,7 +796,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             sm2=((sm2_center - sm2_range) + (r * 2.0 * sm2_range));
                             i=0;
-                            while ((sm2 < nle_config->ref_sm2 * 0.5) || (sm2 > (nle_config->ref_sm2 * 1.5))) { // sanity check to help convergence
+                            while ((sm2 < ((long double)nle_config->ref_sm2 * 0.5)) || (sm2 > ((long double)nle_config->ref_sm2 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -819,7 +819,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             v=((v_center - v_range) + (r * 2.0 * v_range));
                             i=0;
-                            while ((v < (nle_config->ref_v * 0.5)) || (v > (nle_config->ref_v * 1.5))) { // sanity check to help convergence
+                            while ((v < ((long double)nle_config->ref_v * 0.5)) || (v > (nle_config->ref_v * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -842,7 +842,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             mz=((mz_center - mz_range) + (r * 2.0 * mz_range));
                             i=0;
-                            while ((mz < nle_config->ref_mz * 0.5) || (mz > (nle_config->ref_mz * 1.5)) || (mw >= mz) || (mz >= mh0)) { // sanity check to help convergence and prevent mw >= mz or mz >= mh0
+                            while ((mz < ((long double)nle_config->ref_mz * 0.5)) || (mz > ((long double)nle_config->ref_mz * 1.5)) || (mw >= mz) || (mz >= mh0)) { // sanity check to help convergence and prevent mw >= mz or mz >= mh0
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -878,7 +878,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             G=((G_center - G_range) + (r * 2.0 * G_range));
                             i=0;
-                            while ((G < (nle_config->ref_G * 0.5)) || (G > (nle_config->ref_G * 1.5))) { // sanity check to help convergence 
+                            while ((G < ((long double)nle_config->ref_G * 0.5)) || (G > ((long double)nle_config->ref_G * 1.5))) { // sanity check to help convergence 
                               if (i > 50) {  // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -902,7 +902,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             sm3=((sm3_center - sm3_range) + (r * 2.0 * sm3_range));
                             i=0;
-                            while ((sm3 < nle_config->ref_sm3 * 0.5) || (sm3 > (nle_config->ref_sm3 * 1.5))) { // sanity check to help convergence
+                            while ((sm3 < ((long double)nle_config->ref_sm3 * 0.5)) || (sm3 > ((long double)nle_config->ref_sm3 * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -925,7 +925,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             mw=((mw_center - mw_range) + (r * 2.0 * mw_range));
                             i=0;
-                            while ((mw < nle_config->ref_mw * 0.5) || (mw > (nle_config->ref_mw * 1.5)) || (mw >= mz) || (mw >= mh0)) { // sanity check to help convergence and prevent mw >= mz or mw >= mh0
+                            while ((mw < ((long double)nle_config->ref_mw * 0.5)) || (mw > ((long double)nle_config->ref_mw * 1.5)) || (mw >= mz) || (mw >= mh0)) { // sanity check to help convergence and prevent mw >= mz or mw >= mh0
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -961,7 +961,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             sin2w=((sin2w_center - sin2w_range) + (r * 2.0 * sin2w_range));
                             i=0;
-                            while ((sin2w < nle_config->ref_sin2w * 0.5) || (sin2w > (nle_config->ref_sin2w * 1.5))) { // sanity check to help convergence
+                            while ((sin2w < ((long double)nle_config->ref_sin2w * 0.5)) || (sin2w > ((long double)nle_config->ref_sin2w * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -984,7 +984,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             mh0=((mh0_center - mh0_range) + (r * 2.0 * mh0_range));
                             i=0;
-                            while ((mh0 < nle_config->ref_mh0 * 0.5) || (mh0 > (nle_config->ref_mh0 * 1.5)) || (mz >= mh0) || (mw >= mh0)) { // sanity check to help convergence and prevent mz >= mh0 or mw >= mh0
+                            while ((mh0 < ((long double)nle_config->ref_mh0 * 0.5)) || (mh0 > ((long double)nle_config->ref_mh0 * 1.5)) || (mz >= mh0) || (mw >= mh0)) { // sanity check to help convergence and prevent mz >= mh0 or mw >= mh0
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -1019,7 +1019,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             r=(long double)pcg_ldrand64(nle_state);
                             muser=((muser_center - muser_range) + (r * 2.0 * muser_range));
                             i=0;
-                            while ((muser < nle_config->smrfactor_mass_user * 0.5) || (muser > (nle_config->smrfactor_mass_user * 1.5))) { // sanity check to help convergence
+                            while ((muser < ((long double)nle_config->smrfactor_mass_user * 0.5)) || (muser > ((long double)nle_config->smrfactor_mass_user * 1.5))) { // sanity check to help convergence
                               if (i > 50) { // safety valve in case search gets out of bounds
 #ifdef DEBUG20
                                 clock_gettime(CLOCK_REALTIME, &end_time);
@@ -1473,8 +1473,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         alpha_out_c=((alpha_out_high + alpha_out_low) / 2.0);
                         alpha_out_error=(alpha_out_high - alpha_out_c);
                         alpha_out_relerror=alpha_out_error / alpha_out_c;
-                        alpha_out_diff=alpha_out_c - nle_config->ref_alpha_em;
-                        alpha_out_reldiff=alpha_out_diff / nle_config->ref_alpha_em;
+                        alpha_out_diff=alpha_out_c - (long double)nle_config->ref_alpha_em;
+                        alpha_out_reldiff=alpha_out_diff / (long double)nle_config->ref_alpha_em;
 
                         sm1_out=sm1_last;
                         if (sm1_out < sm1_out_low) {
@@ -1486,8 +1486,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         sm1_out_c=((sm1_out_high + sm1_out_low) / 2.0);
                         sm1_out_error=(sm1_out_high - sm1_out_c);
                         sm1_out_relerror=sm1_out_error / sm1_out_c;
-                        sm1_out_diff=sm1_out_c - nle_config->ref_sm1;
-                        sm1_out_reldiff=sm1_out_diff / nle_config->ref_sm1;
+                        sm1_out_diff=sm1_out_c - (long double)nle_config->ref_sm1;
+                        sm1_out_reldiff=sm1_out_diff / (long double)nle_config->ref_sm1;
 
                         sm2_out=sm2_last;
                         if (sm2_out < sm2_out_low) {
@@ -1499,8 +1499,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         sm2_out_c=((sm2_out_high + sm2_out_low) / 2.0);
                         sm2_out_error=(sm2_out_high - sm2_out_c);
                         sm2_out_relerror=sm2_out_error / sm2_out_c;
-                        sm2_out_diff=sm2_out_c - nle_config->ref_sm2;
-                        sm2_out_reldiff=sm2_out_diff / nle_config->ref_sm2;
+                        sm2_out_diff=sm2_out_c - (long double)nle_config->ref_sm2;
+                        sm2_out_reldiff=sm2_out_diff / (long double)nle_config->ref_sm2;
 
                         sm3_out=sm3_last;
                         if (sm3_out < sm3_out_low) {
@@ -1512,8 +1512,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         sm3_out_c=((sm3_out_high + sm3_out_low) / 2.0);
                         sm3_out_error=(sm3_out_high - sm3_out_c);
                         sm3_out_relerror=sm3_out_error / sm3_out_c;
-                        sm3_out_diff=sm3_out_c - nle_config->ref_sm3;
-                        sm3_out_reldiff=sm3_out_diff / nle_config->ref_sm3;
+                        sm3_out_diff=sm3_out_c - (long double)nle_config->ref_sm3;
+                        sm3_out_reldiff=sm3_out_diff / (long double)nle_config->ref_sm3;
 
                         v_out=v_last;
                         if (v_out < v_out_low) {
@@ -1525,8 +1525,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         v_out_c=((v_out_high + v_out_low) / 2.0);
                         v_out_error=(v_out_high - v_out_c);
                         v_out_relerror=v_out_error / v_out_c;
-                        v_out_diff=v_out_c - nle_config->ref_v;
-                        v_out_reldiff=v_out_diff / nle_config->ref_v;
+                        v_out_diff=v_out_c - (long double)nle_config->ref_v;
+                        v_out_reldiff=v_out_diff / (long double)nle_config->ref_v;
 
                         G_out=G_last;
                         if (G_out < G_out_low) {
@@ -1538,8 +1538,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         G_out_c=((G_out_high + G_out_low) / 2.0);
                         G_out_error=(G_out_high - G_out_c);
                         G_out_relerror=G_out_error / G_out_c;
-                        G_out_diff=G_out_c - nle_config->ref_G;
-                        G_out_reldiff=G_out_diff / nle_config->ref_G;
+                        G_out_diff=G_out_c - (long double)nle_config->ref_G;
+                        G_out_reldiff=G_out_diff / (long double)nle_config->ref_G;
 
                         mz_out=mz_last;
                         if (mz_out < mz_out_low) {
@@ -1551,8 +1551,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         mz_out_c=((mz_out_high + mz_out_low) / 2.0);
                         mz_out_error=(mz_out_high - mz_out_c);
                         mz_out_relerror=mz_out_error / mz_out_c;
-                        mz_out_diff=mz_out_c - nle_config->ref_mz;
-                        mz_out_reldiff=mz_out_diff / nle_config->ref_mz;
+                        mz_out_diff=mz_out_c - (long double)nle_config->ref_mz;
+                        mz_out_reldiff=mz_out_diff / (long double)nle_config->ref_mz;
 
                         mw_out=mw_last;
                         if (mw_out < mw_out_low) {
@@ -1564,8 +1564,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         mw_out_c=((mw_out_high + mw_out_low) / 2.0);
                         mw_out_error=(mw_out_high - mw_out_c);
                         mw_out_relerror=mw_out_error / mw_out_c;
-                        mw_out_diff=mw_out_c - nle_config->ref_mw;
-                        mw_out_reldiff=mw_out_diff / nle_config->ref_mw;
+                        mw_out_diff=mw_out_c - (long double)nle_config->ref_mw;
+                        mw_out_reldiff=mw_out_diff / (long double)nle_config->ref_mw;
 
                         sin2w_out=sin2w_last;
                         if (sin2w_out < sin2w_out_low) {
@@ -1577,8 +1577,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         sin2w_out_c=((sin2w_out_high + sin2w_out_low) / 2.0);
                         sin2w_out_error=(sin2w_out_high - sin2w_out_c);
                         sin2w_out_relerror=sin2w_out_error / sin2w_out_c;
-                        sin2w_out_diff=sin2w_out_c - nle_config->ref_sin2w;
-                        sin2w_out_reldiff=sin2w_out_diff / nle_config->ref_sin2w;
+                        sin2w_out_diff=sin2w_out_c - (long double)nle_config->ref_sin2w;
+                        sin2w_out_reldiff=sin2w_out_diff / (long double)nle_config->ref_sin2w;
 
                         mh0_out=mh0_last;
                         if (mh0_out < mh0_out_low) {
@@ -1590,8 +1590,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         mh0_out_c=((mh0_out_high + mh0_out_low) / 2.0);
                         mh0_out_error=(mh0_out_high - mh0_out_c);
                         mh0_out_relerror=mh0_out_error / mh0_out_c;
-                        mh0_out_diff=mh0_out_c - nle_config->ref_mh0;
-                        mh0_out_reldiff=mh0_out_diff / nle_config->ref_mh0;
+                        mh0_out_diff=mh0_out_c - (long double)nle_config->ref_mh0;
+                        mh0_out_reldiff=mh0_out_diff / (long double)nle_config->ref_mh0;
 
                         muser_out=muser_last;
                         if (muser_out < muser_out_low) {
@@ -1603,8 +1603,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                         muser_out_c=((muser_out_high + muser_out_low) / 2.0);
                         muser_out_error=(muser_out_high - muser_out_c);
                         muser_out_relerror=muser_out_error / muser_out_c;
-                        muser_out_diff=muser_out_c - nle_config->smrfactor_mass_user;
-                        muser_out_reldiff=muser_out_diff / nle_config->smrfactor_mass_user;
+                        muser_out_diff=muser_out_c - (long double)nle_config->smrfactor_mass_user;
+                        muser_out_reldiff=muser_out_diff / (long double)nle_config->smrfactor_mass_user;
                       } // end muser_seq
                     } // end mh0_seq
                   } // end sin2w_seq
@@ -1618,39 +1618,39 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   } // end alpha_seq
 
   // verify outputs against experimental uncertainties * phase2_results_window
-  results_window=nle_config->phase2_results_window;
+  results_window=(long double)nle_config->phase2_results_window;
   valid_result=1;
-  if ((nle_state->all_uses.float_G == 1) && ((fabsl(G_out_reldiff) / fmaxl(G_out_relerror, (results_window * nle_config->ref_G_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_G == 1) && ((fabsl(G_out_reldiff) / fmaxl(G_out_relerror, (results_window * (long double)nle_config->ref_G_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_v == 1) && ((fabsl(v_out_reldiff) / fmaxl(v_out_relerror, (results_window * nle_config->ref_v_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_v == 1) && ((fabsl(v_out_reldiff) / fmaxl(v_out_relerror, (results_window * (long double)nle_config->ref_v_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_mz == 1) && ((fabsl(mz_out_reldiff) / fmaxl(mz_out_relerror, (results_window * nle_config->ref_mz_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_mz == 1) && ((fabsl(mz_out_reldiff) / fmaxl(mz_out_relerror, (results_window * (long double)nle_config->ref_mz_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_mw == 1) && ((fabsl(mw_out_reldiff) / fmaxl(mw_out_relerror, (results_window * nle_config->ref_mw_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_mw == 1) && ((fabsl(mw_out_reldiff) / fmaxl(mw_out_relerror, (results_window * (long double)nle_config->ref_mw_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_mh0 == 1) && ((fabsl(mh0_out_reldiff) / fmaxl(mh0_out_relerror, (results_window * nle_config->ref_mh0_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_mh0 == 1) && ((fabsl(mh0_out_reldiff) / fmaxl(mh0_out_relerror, (results_window * (long double)nle_config->ref_mh0_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_muser == 1) && ((fabsl(muser_out_reldiff) / fmaxl(muser_out_relerror, (results_window * nle_config->smrfactor_mass_user_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_muser == 1) && ((fabsl(muser_out_reldiff) / fmaxl(muser_out_relerror, (results_window * (long double)nle_config->smrfactor_mass_user_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sm1 == 1) && ((fabsl(sm1_out_reldiff) / fmaxl(sm1_out_relerror, (results_window * nle_config->ref_sm1_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_sm1 == 1) && ((fabsl(sm1_out_reldiff) / fmaxl(sm1_out_relerror, (results_window * (long double)nle_config->ref_sm1_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sm2 == 1) && ((fabsl(sm2_out_reldiff) / fmaxl(sm2_out_relerror, (results_window * nle_config->ref_sm2_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_sm2 == 1) && ((fabsl(sm2_out_reldiff) / fmaxl(sm2_out_relerror, (results_window * (long double)nle_config->ref_sm2_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sm3 == 1) && ((fabsl(sm3_out_reldiff) / fmaxl(sm3_out_relerror, (results_window * nle_config->ref_sm3_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_sm3 == 1) && ((fabsl(sm3_out_reldiff) / fmaxl(sm3_out_relerror, (results_window * (long double)nle_config->ref_sm3_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_sin2w == 1) && ((fabsl(sin2w_out_reldiff) / fmaxl(sin2w_out_relerror, (results_window * nle_config->ref_sin2w_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_sin2w == 1) && ((fabsl(sin2w_out_reldiff) / fmaxl(sin2w_out_relerror, (results_window * (long double)nle_config->ref_sin2w_relerror))) > 1.0)) {
     valid_result=0;
   }
-  if ((nle_state->all_uses.float_alpha_em == 1) && ((fabsl(alpha_out_reldiff) / fmaxl(alpha_out_relerror, (results_window * nle_config->ref_alpha_em_relerror))) > 1.0)) {
+  if ((nle_state->all_uses.float_alpha_em == 1) && ((fabsl(alpha_out_reldiff) / fmaxl(alpha_out_relerror, (results_window * (long double)nle_config->ref_alpha_em_relerror))) > 1.0)) {
     valid_result=0;
   }
 
