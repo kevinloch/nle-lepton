@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3.4"
+#define NLE_VERSION "4.4-dev-12"
 
 typedef struct {
   int G;
@@ -43,6 +43,22 @@ typedef struct {
   nle_input_use_t smrfactor_uses;
   double smrfactor_multiplier;
 } nle_smrfactor_precomputed_t;
+
+typedef struct {
+  int rmrfactor_rational_up;
+  int rmrfactor_rational_down;
+  int rmrfactor_2_exp_up;
+  int rmrfactor_2_exp_down;
+  int rmrfactor_alpha_exp_up;
+  int rmrfactor_alpha_exp_down;
+  int rmrfactor_pi_exp_up;
+  int rmrfactor_pi_exp_down;
+  int rmrfactor_user_exp_up;
+  int rmrfactor_user_exp_down;
+  int rmrfactor_complexity;
+  nle_input_use_t rmrfactor_uses;
+  double rmrfactor_multiplier;
+} nle_rmrfactor_precomputed_t;
 
 typedef struct {
   int infactor_rational_up;
@@ -99,7 +115,7 @@ typedef struct {
 typedef struct {
   int term_id;
   int exp_inv;
-  int smrfactor_mass;
+  int smrfactor_mass_id;
   int infactor_rational_up;
   int infactor_rational_down;
   int infactor_2_exp_up;
@@ -145,19 +161,22 @@ typedef struct {
 
 typedef struct {
   int exp_inv;
-  int smrfactor_mass;
-  int smrfactor_1minus;
+  int smrfactor_mass_id;
   double smrfactor;
+  int rmrfactor_mass_id_up;
+  int rmrfactor_mass_id_down;
+  double rmrfactor;
   double coefficient;
   nle_phase1_match_t *matches_start;
   int matches_count;
   nle_phase1_match_t *current_match;
   nle_smrfactor_precomputed_t *current_smrfactors;
+  nle_rmrfactor_precomputed_t *current_rmrfactors;
 } nle_term_state_t;
 
 typedef struct {
   __uint128_t pcg_state;
-  int phase1_seq;
+  long long phase1_seq;
   double input_sample_sm1;
   double input_sample_sm2;
   double input_sample_sm3;
@@ -179,6 +198,8 @@ typedef struct {
   nle_term_state_t term4;
   nle_smrfactor_precomputed_t *smrfactors_precomputed_start;
   int smrfactors_precomputed_count;
+  nle_rmrfactor_precomputed_t *rmrfactors_precomputed_start;
+  int rmrfactors_precomputed_count;
   nle_infactor_precomputed_t *infactors_precomputed_start;
   int infactors_precomputed_count;
   nle_outfactor_precomputed_t *outfactors_precomputed_start;
@@ -245,6 +266,7 @@ typedef struct {
   double smrfactor_mass_user_error;
   double smrfactor_mass_user_relerror;
   int smrfactor_1minus_enable;
+  int smrfactor_1minus_random;
   int smrfactor_rational_max;
   int smrfactor_rational_filter;
   int smrfactor_2_exp_up_max;
@@ -256,6 +278,29 @@ typedef struct {
   double smrfactor_user;
   int smrfactor_user_exp_up_max;
   int smrfactor_user_exp_down_max;
+  int rmrfactor_1minus_enable;
+  int rmrfactor_1minus_random;
+  int rmrfactor_smrfactor_sync;
+  int rmrfactor_mass_mp_enable;
+  int rmrfactor_mass_v_enable;
+  int rmrfactor_mass_mz_enable;
+  int rmrfactor_mass_mw_enable;
+  int rmrfactor_mass_mh0_enable;
+  int rmrfactor_mass_user_enable;
+  double rmrfactor_mass_user;
+  double rmrfactor_mass_user_error;
+  double rmrfactor_mass_user_relerror;
+  int rmrfactor_rational_max;
+  int rmrfactor_rational_filter;
+  int rmrfactor_2_exp_up_max;
+  int rmrfactor_2_exp_down_max;
+  int rmrfactor_alpha_exp_up_max;
+  int rmrfactor_alpha_exp_down_max;
+  int rmrfactor_pi_exp_up_max;
+  int rmrfactor_pi_exp_down_max;
+  double rmrfactor_user;
+  int rmrfactor_user_exp_up_max;
+  int rmrfactor_user_exp_down_max;
   int infactor_rational_max;
   int infactor_rational_filter;
   int infactor_2_exp_up_max;

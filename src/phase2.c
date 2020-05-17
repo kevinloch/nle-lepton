@@ -27,6 +27,8 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   long double results_window;
   char exec_str[512];
   char mass_str[32];
+  char rmrfactor_mass_str_up[32];
+  char rmrfactor_mass_str_down[32];
   char out_str_01[512];
   char out_str_02[512];
   char out_str_03[512];
@@ -62,6 +64,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   char term2_formula_str[288];
   char term3_formula_str[288];
   char smrf_str[80];
+  char rmrf_str[80];
   int symmetry;
   float combined_score;
  
@@ -83,23 +86,26 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   long double precision_last=0;
   long double term1_coefficient, term2_coefficient, term3_coefficient;
   long double term1_static, term2_static, term3_static;
-  long double rmr_mass_up=1.0;
-  long double rmr_mass_down=1.0;
+  long double outfactor_rmr_mass_up=1.0;
+  long double outfactor_rmr_mass_down=1.0;
   long double term1_rmr, term2_rmr, term3_rmr;
   long double term1_sin2w, term2_sin2w, term3_sin2w;
   long double term1_cos2w, term2_cos2w, term3_cos2w;
-  long double term1_reference_mass=0;
-  long double term2_reference_mass=0;
-  long double term3_reference_mass=0;
+  long double rmrfactor_mass_up=0;
+  long double rmrfactor_mass_down=0;
+  long double rmrf=0;
+  long double term1_smrfactor_mass=0;
+  long double term2_smrfactor_mass=0;
+  long double term3_smrfactor_mass=0;
   long double smrf_sm1=0;
+  long double smrf_sm2=0;
+  long double smrf_sm3=0;
   long double term1_mass_sm1=0;
   long double term2_mass_sm1=0;
   long double term3_mass_sm1=0;
-  long double smrf_sm2=0;
   long double term1_mass_sm2=0;
   long double term2_mass_sm2=0;
   long double term3_mass_sm2=0;
-  long double smrf_sm3=0;
   long double term1_mass_sm3=0;
   long double term2_mass_sm3=0;
   long double term3_mass_sm3=0;
@@ -303,25 +309,75 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
 
   clock_gettime(CLOCK_REALTIME, &start_time);
 
-  smrf_str[0]=0;
+  term1_exp = 1.0 / (long double)nle_state->term1.exp_inv;
+  term2_exp = 1.0 / (long double)nle_state->term2.exp_inv;
+  term3_exp = 1.0 / (long double)nle_state->term3.exp_inv;
 
   // generate formula strings for each term
-  getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
-  getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
-  getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
+  getFormulaStr(nle_config, nle_state, term1_formula_str, nle_state->term1.current_match);
+  getFormulaStr(nle_config, nle_state, term2_formula_str, nle_state->term2.current_match);
+  getFormulaStr(nle_config, nle_state, term3_formula_str, nle_state->term3.current_match);
+
+  // load rmrfactor strings if (1-rmr-smr) is enabled
+  if (nle_config->rmrfactor_1minus_enable == 1) {
+    getRmrfStr(nle_config, rmrf_str, nle_state->term1.current_rmrfactors, nle_state->term1.rmrfactor);
+    if (nle_state->term1.rmrfactor_mass_id_up == 0) {
+      rmrfactor_mass_up=(long double)nle_state->input_sample_mp;
+      sprintf(rmrfactor_mass_str_up, "mP");
+    } else if (nle_state->term1.rmrfactor_mass_id_up == 1) {
+      rmrfactor_mass_up=(long double)nle_state->input_sample_v;
+      sprintf(rmrfactor_mass_str_up, "v");
+    } else if (nle_state->term1.rmrfactor_mass_id_up == 2) {
+      rmrfactor_mass_up=(long double)nle_state->input_sample_mz;
+      sprintf(rmrfactor_mass_str_up, "mz");
+    } else if (nle_state->term1.rmrfactor_mass_id_up == 3) {
+      rmrfactor_mass_up=(long double)nle_state->input_sample_mw;
+      sprintf(rmrfactor_mass_str_up, "mw");
+    } else if (nle_state->term1.rmrfactor_mass_id_up == 4) {
+      rmrfactor_mass_up=(long double)nle_state->input_sample_mh0;
+      sprintf(rmrfactor_mass_str_up, "mh0");
+    } else if (nle_state->term1.rmrfactor_mass_id_up == 5) {
+      rmrfactor_mass_up=(long double)nle_state->input_sample_muser;
+      sprintf(rmrfactor_mass_str_up, "muser");
+    }
+    if (nle_state->term1.rmrfactor_mass_id_down == 0) {
+      rmrfactor_mass_down=(long double)nle_state->input_sample_mp;
+      sprintf(rmrfactor_mass_str_down, "mP");
+    } else if (nle_state->term1.rmrfactor_mass_id_down == 1) {
+      rmrfactor_mass_down=(long double)nle_state->input_sample_v;
+      sprintf(rmrfactor_mass_str_down, "v");
+    } else if (nle_state->term1.rmrfactor_mass_id_down == 2) {
+      rmrfactor_mass_down=(long double)nle_state->input_sample_mz;
+      sprintf(rmrfactor_mass_str_down, "mz");
+    } else if (nle_state->term1.rmrfactor_mass_id_down == 3) {
+      rmrfactor_mass_down=(long double)nle_state->input_sample_mw;
+      sprintf(rmrfactor_mass_str_down, "mw");
+    } else if (nle_state->term1.rmrfactor_mass_id_down == 4) {
+      rmrfactor_mass_down=(long double)nle_state->input_sample_mh0;
+      sprintf(rmrfactor_mass_str_down, "mh0");
+    } else if (nle_state->term1.rmrfactor_mass_id_down == 5) {
+      rmrfactor_mass_down=(long double)nle_state->input_sample_muser;
+      sprintf(rmrfactor_mass_str_down, "muser");
+    }
+  } else {
+    rmrf_str[0]=0;
+  }
+
+  // generate smrfactor string if (1-smr) is enabled
   if (nle_config->smrfactor_1minus_enable == 1) {
     getSmrfStr(nle_config, smrf_str, nle_state->term1.current_smrfactors, nle_state->term1.smrfactor);
+    if (nle_config->rmrfactor_1minus_enable == 1) {
+      getRmrfStr(nle_config, rmrf_str, nle_state->term1.current_rmrfactors, nle_state->term1.rmrfactor);
+    } else {
+      rmrf_str[0]=0;
+    }
   } else {
     smrf_str[0]=0;
   }
 
-  term1_static=((long double)nle_state->term1.current_match->match_up / (long double)nle_state->term1.current_match->match_down) / nle_state->term1.current_match->static_multiplier;
-  term2_static=((long double)nle_state->term2.current_match->match_up / (long double)nle_state->term2.current_match->match_down) / nle_state->term2.current_match->static_multiplier;
-  term3_static=((long double)nle_state->term3.current_match->match_up / (long double)nle_state->term3.current_match->match_down) / nle_state->term3.current_match->static_multiplier;
-
-  term1_exp = 1.0 / (long double)nle_state->term1.exp_inv;
-  term2_exp = 1.0 / (long double)nle_state->term2.exp_inv;
-  term3_exp = 1.0 / (long double)nle_state->term3.exp_inv;
+  term1_static=((long double)nle_state->term1.current_match->match_up / (long double)nle_state->term1.current_match->match_down) / (long double)nle_state->term1.current_match->static_multiplier;
+  term2_static=((long double)nle_state->term2.current_match->match_up / (long double)nle_state->term2.current_match->match_down) / (long double)nle_state->term2.current_match->static_multiplier;
+  term3_static=((long double)nle_state->term3.current_match->match_up / (long double)nle_state->term3.current_match->match_down) / (long double)nle_state->term3.current_match->static_multiplier;
 
   // determine which three variables have the highest uncertainty and will be used as outputs (floated)
 #ifdef DEBUG20
@@ -383,7 +439,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   printf("debug, term2=%s\n", term2_formula_str);
   printf("debug, term3=%s\n", term3_formula_str);
   if (nle_config->smrfactor_1minus_enable == 1) {
-    printf("debug, smrf= %s\n", smrf_str);
+    printf("debug, rmrf= %s, smrf=%s\n", rmrf_str, smrf_str);
   }
   printInputSamples(nle_state);
   printUses(&nle_state->all_uses);
@@ -1047,113 +1103,168 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             cos2w=1.0 - sin2w;
                           }
 
-                          if (nle_state->term1.current_match->smrfactor_mass == 0) {
-                            term1_reference_mass=mp;
-                          } else if (nle_state->term1.current_match->smrfactor_mass == 1) {
-                            term1_reference_mass=v;
-                          } else if (nle_state->term1.current_match->smrfactor_mass == 2) {
-                            term1_reference_mass=mz;
-                          } else if (nle_state->term1.current_match->smrfactor_mass == 3) {
-                            term1_reference_mass=mw;
-                          } else if (nle_state->term1.current_match->smrfactor_mass == 4) {
-                            term1_reference_mass=mh0;
-                          } else if (nle_state->term1.current_match->smrfactor_mass == 5) {
-                            term1_reference_mass=muser;
-                          }
-                          if (nle_state->term2.current_match->smrfactor_mass == 0) {
-                            term2_reference_mass=mp;
-                          } else if (nle_state->term2.current_match->smrfactor_mass == 1) {
-                            term2_reference_mass=v;
-                          } else if (nle_state->term2.current_match->smrfactor_mass == 2) {
-                            term2_reference_mass=mz;
-                          } else if (nle_state->term2.current_match->smrfactor_mass == 3) {
-                            term2_reference_mass=mw;
-                          } else if (nle_state->term2.current_match->smrfactor_mass == 4) {
-                            term2_reference_mass=mh0;
-                          } else if (nle_state->term2.current_match->smrfactor_mass == 5) {
-                            term2_reference_mass=muser;
-                          }
-                          if (nle_state->term3.current_match->smrfactor_mass == 0) {
-                            term3_reference_mass=mp;
-                          } else if (nle_state->term3.current_match->smrfactor_mass == 1) {
-                            term3_reference_mass=v;
-                          } else if (nle_state->term3.current_match->smrfactor_mass == 2) {
-                            term3_reference_mass=mz;
-                          } else if (nle_state->term3.current_match->smrfactor_mass == 3) {
-                            term3_reference_mass=mw;
-                          } else if (nle_state->term3.current_match->smrfactor_mass == 4) {
-                            term3_reference_mass=mh0;
-                          } else if (nle_state->term3.current_match->smrfactor_mass == 5) {
-                            term3_reference_mass=muser;
+                          // set reference mass ratio masses and factors if (1-rmr-smr) is enabled
+                          if (nle_config->rmrfactor_1minus_enable == 1) {
+                            if (nle_state->term1.rmrfactor_mass_id_up == 0) {
+                              rmrfactor_mass_up=mp;
+                            } else if (nle_state->term1.rmrfactor_mass_id_up == 1) {
+                              rmrfactor_mass_up=v;
+                            } else if (nle_state->term1.rmrfactor_mass_id_up == 2) {
+                              rmrfactor_mass_up=mz;
+                            } else if (nle_state->term1.rmrfactor_mass_id_up == 3) {
+                              rmrfactor_mass_up=mw;
+                            } else if (nle_state->term1.rmrfactor_mass_id_up == 4) {
+                              rmrfactor_mass_up=mh0;
+                            } else if (nle_state->term1.rmrfactor_mass_id_up == 5) {
+                              rmrfactor_mass_up=muser;
+                            }
+                            if (nle_state->term1.rmrfactor_mass_id_down == 0) {
+                              rmrfactor_mass_down=mp;
+                            } else if (nle_state->term1.rmrfactor_mass_id_down == 1) {
+                              rmrfactor_mass_down=v;
+                            } else if (nle_state->term1.rmrfactor_mass_id_down == 2) {
+                              rmrfactor_mass_down=mz;
+                            } else if (nle_state->term1.rmrfactor_mass_id_down == 3) {
+                              rmrfactor_mass_down=mw;
+                            } else if (nle_state->term1.rmrfactor_mass_id_down == 4) {
+                              rmrfactor_mass_down=mh0;
+                            } else if (nle_state->term1.rmrfactor_mass_id_down == 5) {
+                              rmrfactor_mass_down=muser;
+                            }
+                            rmrf=(long double)nle_state->term1.rmrfactor * rmrfactor_mass_up / rmrfactor_mass_down;
                           }
 
-                          if (nle_state->term1.smrfactor_1minus == 1) {
-                            smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_reference_mass;
-                            smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_reference_mass;
-                            smrf_sm3=nle_state->term1.smrfactor * sm3 / term1_reference_mass;
-                            // check if (1-smr) is negative for sm1 and invert inside and outside radical
-                            if ((1.0 - smrf_sm1) < 0) {
-                              term1_mass_sm1=-powl(-(1.0 - smrf_sm1), term1_exp);
+                          // set solution mass ratio reference mass and factors
+                          if (nle_state->term1.current_match->smrfactor_mass_id == 0) {
+                            term1_smrfactor_mass=mp;
+                          } else if (nle_state->term1.current_match->smrfactor_mass_id == 1) {
+                            term1_smrfactor_mass=v;
+                          } else if (nle_state->term1.current_match->smrfactor_mass_id == 2) {
+                            term1_smrfactor_mass=mz;
+                          } else if (nle_state->term1.current_match->smrfactor_mass_id == 3) {
+                            term1_smrfactor_mass=mw;
+                          } else if (nle_state->term1.current_match->smrfactor_mass_id == 4) {
+                            term1_smrfactor_mass=mh0;
+                          } else if (nle_state->term1.current_match->smrfactor_mass_id == 5) {
+                            term1_smrfactor_mass=muser;
+                          }
+                          if (nle_state->term2.current_match->smrfactor_mass_id == 0) {
+                            term2_smrfactor_mass=mp;
+                          } else if (nle_state->term2.current_match->smrfactor_mass_id == 1) {
+                            term2_smrfactor_mass=v;
+                          } else if (nle_state->term2.current_match->smrfactor_mass_id == 2) {
+                            term2_smrfactor_mass=mz;
+                          } else if (nle_state->term2.current_match->smrfactor_mass_id == 3) {
+                            term2_smrfactor_mass=mw;
+                          } else if (nle_state->term2.current_match->smrfactor_mass_id == 4) {
+                            term2_smrfactor_mass=mh0;
+                          } else if (nle_state->term2.current_match->smrfactor_mass_id == 5) {
+                            term2_smrfactor_mass=muser;
+                          }
+                          if (nle_state->term3.current_match->smrfactor_mass_id == 0) {
+                            term3_smrfactor_mass=mp;
+                          } else if (nle_state->term3.current_match->smrfactor_mass_id == 1) {
+                            term3_smrfactor_mass=v;
+                          } else if (nle_state->term3.current_match->smrfactor_mass_id == 2) {
+                            term3_smrfactor_mass=mz;
+                          } else if (nle_state->term3.current_match->smrfactor_mass_id == 3) {
+                            term3_smrfactor_mass=mw;
+                          } else if (nle_state->term3.current_match->smrfactor_mass_id == 4) {
+                            term3_smrfactor_mass=mh0;
+                          } else if (nle_state->term3.current_match->smrfactor_mass_id == 5) {
+                            term3_smrfactor_mass=muser;
+                          }
+
+                          // set mass component of each term
+                          if (nle_config->smrfactor_1minus_enable == 1) {
+                            smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_smrfactor_mass;
+                            smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_smrfactor_mass;
+                            smrf_sm3=nle_state->term1.smrfactor * sm3 / term1_smrfactor_mass;
+                            if (nle_config->rmrfactor_1minus_enable == 1) { 
+                              // check if (1-rmr-smr) is negative for sm1 and invert inside and outside radical
+                              if ((1.0 - rmrf - smrf_sm1) < 0) {
+                              term1_mass_sm1=-powl(-(1.0 - rmrf - smrf_sm1), term1_exp);
+                              } else {
+                                term1_mass_sm1=powl((1.0 - rmrf - smrf_sm1), term1_exp);
+                              }
+                              // check if (1-rmr-smr) is negative for sm2 and invert inside and outside radical
+                              if ((1.0 - rmrf - smrf_sm2) < 0) {
+                                term1_mass_sm2=-powl(-(1.0 - rmrf - smrf_sm2), term1_exp);
+                              } else {
+                                term1_mass_sm2=powl((1.0 - rmrf - smrf_sm2), term1_exp);
+                              }
+                              // check if (1-rmr-smr) is negative for sm3 and invert inside and outside radical
+                              if ((1.0 - rmrf - smrf_sm3) < 0) {
+                                term1_mass_sm3=-powl(-(1.0 - rmrf - smrf_sm3), term1_exp);
+                              } else {
+                                term1_mass_sm3=powl((1.0 - rmrf - smrf_sm3), term1_exp);
+                              }
                             } else {
-                              term1_mass_sm1=powl((1.0 - smrf_sm1), term1_exp);
-                            }
-                            // check if (1-smr) is negative for sm2 and invert inside and outside radical
-                            if ((1.0 - smrf_sm2) < 0) {
-                              term1_mass_sm2=-powl(-(1.0 - smrf_sm2), term1_exp);
-                            } else {
-                              term1_mass_sm2=powl((1.0 - smrf_sm2), term1_exp);
-                            }
-                            // check if (1-smr) is negative for sm3 and invert inside and outside radical
-                            if ((1.0 - smrf_sm3) < 0) {
-                              term1_mass_sm3=-powl(-(1.0 - smrf_sm3), term1_exp);
-                            } else {
-                              term1_mass_sm3=powl((1.0 - smrf_sm3), term1_exp);
+                              // check if (1-smr) is negative for sm1 and invert inside and outside radical
+                              if ((1.0 - smrf_sm1) < 0) {
+                                term1_mass_sm1=-powl(-(1.0 - smrf_sm1), term1_exp);
+                              } else {
+                                term1_mass_sm1=powl((1.0 - smrf_sm1), term1_exp);
+                              }
+                              // check if (1-smr) is negative for sm2 and invert inside and outside radical
+                              if ((1.0 - smrf_sm2) < 0) {
+                                term1_mass_sm2=-powl(-(1.0 - smrf_sm2), term1_exp);
+                              } else {
+                                term1_mass_sm2=powl((1.0 - smrf_sm2), term1_exp);
+                              }
+                              // check if (1-smr) is negative for sm3 and invert inside and outside radical
+                              if ((1.0 - smrf_sm3) < 0) {
+                                term1_mass_sm3=-powl(-(1.0 - smrf_sm3), term1_exp);
+                              } else {
+                                term1_mass_sm3=powl((1.0 - smrf_sm3), term1_exp);
+                              }
                             }
                             term2_mass_sm1=powl(smrf_sm1, term2_exp);
                             term2_mass_sm2=powl(smrf_sm2, term2_exp);
                             term2_mass_sm3=powl(smrf_sm3, term2_exp);
                           } else {
-                            term1_mass_sm1=powl((sm1 / term1_reference_mass), term1_exp);
-                            term1_mass_sm2=powl((sm2 / term1_reference_mass), term1_exp);
-                            term1_mass_sm3=powl((sm3 / term1_reference_mass), term1_exp);
-                            term2_mass_sm1=powl((sm1 / term2_reference_mass), term2_exp);
-                            term2_mass_sm2=powl((sm2 / term2_reference_mass), term2_exp);
-                            term2_mass_sm3=powl((sm3 / term2_reference_mass), term2_exp);
+                            term1_mass_sm1=powl((sm1 / term1_smrfactor_mass), term1_exp);
+                            term1_mass_sm2=powl((sm2 / term1_smrfactor_mass), term1_exp);
+                            term1_mass_sm3=powl((sm3 / term1_smrfactor_mass), term1_exp);
+                            term2_mass_sm1=powl((sm1 / term2_smrfactor_mass), term2_exp);
+                            term2_mass_sm2=powl((sm2 / term2_smrfactor_mass), term2_exp);
+                            term2_mass_sm3=powl((sm3 / term2_smrfactor_mass), term2_exp);
                           }
                           if (nle_config->nle_mode == 3) {
-                            term3_mass_sm1=powl((sm1 / term3_reference_mass), term3_exp);
-                            term3_mass_sm2=powl((sm2 / term3_reference_mass), term3_exp);
-                            term3_mass_sm3=powl((sm3 / term3_reference_mass), term3_exp);
+                            term3_mass_sm1=powl((sm1 / term3_smrfactor_mass), term3_exp);
+                            term3_mass_sm2=powl((sm2 / term3_smrfactor_mass), term3_exp);
+                            term3_mass_sm3=powl((sm3 / term3_smrfactor_mass), term3_exp);
                           }
 
+                          // set outfactor_rmr masses for each term if configured (indepentend from and not to be confused with rmrfactor masses in (1-rmr-smr) mode)
                           if (nle_state->term1.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 0) {
-                              rmr_mass_up=mp;
+                              outfactor_rmr_mass_up=mp;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 1) {
-                              rmr_mass_up=v;
+                              outfactor_rmr_mass_up=v;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 2) {
-                              rmr_mass_up=mz;
+                              outfactor_rmr_mass_up=mz;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 3) {
-                              rmr_mass_up=mw;
+                              outfactor_rmr_mass_up=mw;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 4) {
-                              rmr_mass_up=mh0;
+                              outfactor_rmr_mass_up=mh0;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 5) {
-                              rmr_mass_up=muser;
+                              outfactor_rmr_mass_up=muser;
                             }
                             if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 0) {
-                              rmr_mass_down=mp;
+                              outfactor_rmr_mass_down=mp;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 1) {
-                              rmr_mass_down=v;
+                              outfactor_rmr_mass_down=v;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 2) {
-                              rmr_mass_down=mz;
+                              outfactor_rmr_mass_down=mz;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 3) {
-                              rmr_mass_down=mw;
+                              outfactor_rmr_mass_down=mw;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 4) {
-                              rmr_mass_down=mh0;
+                              outfactor_rmr_mass_down=mh0;
                             } else if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 5) {
-                              rmr_mass_down=muser;
+                              outfactor_rmr_mass_down=muser;
                             }
-                            term1_rmr=powl((rmr_mass_down / rmr_mass_up), ((long double)nle_state->term1.current_match->outfactor_rmr_exp_up / (long double)nle_state->term1.current_match->outfactor_rmr_exp_down));
+                            term1_rmr=powl((outfactor_rmr_mass_down / outfactor_rmr_mass_up), ((long double)nle_state->term1.current_match->outfactor_rmr_exp_up / (long double)nle_state->term1.current_match->outfactor_rmr_exp_down));
                           } else {
                             term1_rmr=1.0;
                           }
@@ -1167,35 +1278,34 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           } else {
                             term1_cos2w=1.0;
                           }
-
                           if (nle_state->term2.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 0) {
-                              rmr_mass_up=mp;
+                              outfactor_rmr_mass_up=mp;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 1) {
-                              rmr_mass_up=v;
+                              outfactor_rmr_mass_up=v;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 2) {
-                              rmr_mass_up=mz;
+                              outfactor_rmr_mass_up=mz;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 3) {
-                              rmr_mass_up=mw;
+                              outfactor_rmr_mass_up=mw;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 4) {
-                              rmr_mass_up=mh0;
+                              outfactor_rmr_mass_up=mh0;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 5) {
-                              rmr_mass_up=muser;
+                              outfactor_rmr_mass_up=muser;
                             } 
                             if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 0) { 
-                              rmr_mass_down=mp;
+                              outfactor_rmr_mass_down=mp;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 1) {
-                              rmr_mass_down=v;
+                              outfactor_rmr_mass_down=v;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 2) {
-                              rmr_mass_down=mz;
+                              outfactor_rmr_mass_down=mz;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 3) {
-                              rmr_mass_down=mw;
+                              outfactor_rmr_mass_down=mw;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 4) {
-                              rmr_mass_down=mh0;
+                              outfactor_rmr_mass_down=mh0;
                             } else if (nle_state->term2.current_match->outfactor_rmr_mass_id_down == 5) {
-                              rmr_mass_down=muser;
+                              outfactor_rmr_mass_down=muser;
                             } 
-                            term2_rmr=powl((rmr_mass_down / rmr_mass_up), ((long double)nle_state->term2.current_match->outfactor_rmr_exp_up / (long double)nle_state->term2.current_match->outfactor_rmr_exp_down));
+                            term2_rmr=powl((outfactor_rmr_mass_down / outfactor_rmr_mass_up), ((long double)nle_state->term2.current_match->outfactor_rmr_exp_up / (long double)nle_state->term2.current_match->outfactor_rmr_exp_down));
                           } else {
                             term2_rmr=1.0;
                           }
@@ -1209,35 +1319,34 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           } else {
                             term2_cos2w=1.0;
                           }
-
                           if (nle_state->term3.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 0) {
-                              rmr_mass_up=mp;
+                              outfactor_rmr_mass_up=mp;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 1) {
-                              rmr_mass_up=v;
+                              outfactor_rmr_mass_up=v;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 2) {
-                              rmr_mass_up=mz;
+                              outfactor_rmr_mass_up=mz;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 3) {
-                              rmr_mass_up=mw;
+                              outfactor_rmr_mass_up=mw;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 4) {
-                              rmr_mass_up=mh0;
+                              outfactor_rmr_mass_up=mh0;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 5) {
-                              rmr_mass_up=muser;
+                              outfactor_rmr_mass_up=muser;
                             } 
                             if (nle_state->term1.current_match->outfactor_rmr_mass_id_down == 0) { 
-                              rmr_mass_down=mp;
+                              outfactor_rmr_mass_down=mp;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 1) {
-                              rmr_mass_down=v;
+                              outfactor_rmr_mass_down=v;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 2) {
-                              rmr_mass_down=mz;
+                              outfactor_rmr_mass_down=mz;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 3) {
-                              rmr_mass_down=mw;
+                              outfactor_rmr_mass_down=mw;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 4) {
-                              rmr_mass_down=mh0;
+                              outfactor_rmr_mass_down=mh0;
                             } else if (nle_state->term3.current_match->outfactor_rmr_mass_id_down == 5) {
-                              rmr_mass_down=muser;
+                              outfactor_rmr_mass_down=muser;
                             } 
-                            term3_rmr=powl((rmr_mass_down / rmr_mass_up), ((long double)nle_state->term3.current_match->outfactor_rmr_exp_up / (long double)nle_state->term3.current_match->outfactor_rmr_exp_down));
+                            term3_rmr=powl((outfactor_rmr_mass_down / outfactor_rmr_mass_up), ((long double)nle_state->term3.current_match->outfactor_rmr_exp_up / (long double)nle_state->term3.current_match->outfactor_rmr_exp_down));
                           } else {
                             term3_rmr=1.0;
                           }
@@ -1255,6 +1364,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           term2_coefficient=(term2_static * term2_rmr / term2_sin2w) / term2_cos2w;
                           term3_coefficient=(term3_static * term3_rmr / term3_sin2w) / term3_cos2w;
 
+                          // Combine factors for each term and generate test value for each solution mass
                           if (nle_config->nle_mode == 2) {
                             // for 2-term mixed mode, we will use term3 as a pseudo term for the mixing of terms 1 and 2
                             sm1_test_term1=term1_coefficient * term1_mass_sm1 * term1_coefficient * term1_mass_sm1;
@@ -1459,7 +1569,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
 #ifdef DEBUG21
                         clock_gettime(CLOCK_REALTIME, &end_time);
                         elapsed_time=((long double)(end_time.tv_sec - 1500000000) + ((long double)end_time.tv_nsec / 1.0E9)) - ((long double)(start_time2.tv_sec - 1500000000) + ((long double)start_time2.tv_nsec) / 1.0E9);
-                        printf("debug, Finished phase 2 samples loop, exponents: %s, samples: %lld, mass mode: %d%d%d, precision: %.6Le (%6.4fs)\n", nle_state->exponents_str, samples, nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term3.current_match->smrfactor_mass, precision_last, elapsed_time);
+                        printf("debug, Finished phase 2 samples loop, exponents: %s, samples: %lld, mass mode: %d%d%d, precision: %.6Le (%6.4fs)\n", nle_state->exponents_str, samples, nle_state->term1.current_match->smrfactor_mass_id, nle_state->term2.current_match->smrfactor_mass_id, nle_state->term3.current_match->smrfactor_mass_id, precision_last, elapsed_time);
                         fflush(stdout);
 #endif
                         // determine output values/ranges
@@ -1663,9 +1773,9 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
     combined_score = (float)complexity / (float)symmetry;
 
     if (nle_config->nle_mode == 2) {
-      sprintf(mass_str, "M%d%d", nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass);
+      sprintf(mass_str, "M%d%d", nle_state->term1.current_match->smrfactor_mass_id, nle_state->term2.current_match->smrfactor_mass_id);
     } else if (nle_config->nle_mode == 3) {
-      sprintf(mass_str, "M%d%d%d", nle_state->term1.current_match->smrfactor_mass, nle_state->term2.current_match->smrfactor_mass, nle_state->term3.current_match->smrfactor_mass);
+      sprintf(mass_str, "M%d%d%d", nle_state->term1.current_match->smrfactor_mass_id, nle_state->term2.current_match->smrfactor_mass_id, nle_state->term3.current_match->smrfactor_mass_id);
     } else {
       mass_str[0]=0;
     }
@@ -1854,67 +1964,71 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
     sprintf(out_str_19, "result, %.4f, %3d, %3d, %s, %s, %12lld, 19, term3=%s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, term3_formula_str);
     printf("%s\n", out_str_19);
     if (nle_config->smrfactor_1minus_enable == 1) {
-      sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str);
+      if (nle_config->rmrfactor_1minus_enable == 1) {
+        sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s, rmrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str, rmrf_str);
+      } else {
+        sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str);
+      }
       printf("%s\n", out_str_20);
     }
     fflush(stdout);
     if (nle_config->upload_results_enable == 1) {
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_02, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_02, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_03, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_03, 511));
       system(exec_str);
       if (out_str_04[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_04, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_04, 511));
         system(exec_str);
       }
       if (out_str_05[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_05, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_05, 511));
         system(exec_str);
       }
       if (out_str_06[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_06, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_06, 511));
         system(exec_str);
       }
       if (out_str_07[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_07, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_07, 511));
         system(exec_str);
       }
       if (out_str_08[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_08, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_08, 511));
         system(exec_str);
       }
       if (out_str_09[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_09, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_09, 511));
         system(exec_str);
       }
       if (out_str_10[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_10, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_10, 511));
         system(exec_str);
       }
       if (out_str_11[0] != 0) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_11, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_11, 511));
         system(exec_str);
       }
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_12, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_12, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_13, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_13, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_14, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_14, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_15, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_15, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_16, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_16, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_17, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_17, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_18, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_18, 511));
       system(exec_str);
-      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_19, 320));
+      sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_19, 511));
       system(exec_str);
       if (nle_config->smrfactor_1minus_enable == 1) {
-        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_20, 320));
+        sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_20, 511));
         system(exec_str);
       }
     } // end if upload_results_enable

@@ -120,18 +120,18 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
       }                             
     } else {
       // overwrite mass_ratio_id with smrfactor mass ratio
-      mass_ratio_id=nle_state->term1.smrfactor_mass;
-      if (nle_state->term1.smrfactor_mass == 0) {
+      mass_ratio_id=nle_state->term1.smrfactor_mass_id;
+      if (nle_state->term1.smrfactor_mass_id == 0) {
         sprintf(mass_str, "mP   ");
-      } else if (nle_state->term1.smrfactor_mass == 1) {
+      } else if (nle_state->term1.smrfactor_mass_id == 1) {
         sprintf(mass_str, "v    ");
-      } else if (nle_state->term1.smrfactor_mass == 2) {
+      } else if (nle_state->term1.smrfactor_mass_id == 2) {
         sprintf(mass_str, "mz   ");
-      } else if (nle_state->term1.smrfactor_mass == 3) {
+      } else if (nle_state->term1.smrfactor_mass_id == 3) {
         sprintf(mass_str, "mw   ");
-      } else if (nle_state->term1.smrfactor_mass == 4) {
+      } else if (nle_state->term1.smrfactor_mass_id == 4) {
         sprintf(mass_str, "mh0  ");
-      } else if (nle_state->term1.smrfactor_mass == 5) {
+      } else if (nle_state->term1.smrfactor_mass_id == 5) {
         sprintf(mass_str, "muser");
       }
       if (nle_config->phase1_status_enable == 1) {
@@ -140,7 +140,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
     } // end if 1minus_enable
 
     if (mass_ratio_enabled == 1) {
-      if (nle_state->term1.smrfactor_1minus) {
+      if (nle_config->smrfactor_1minus_enable == 1) {
         term1_mass_ratio_factor=1.0;
         term2_mass_ratio_factor=1.0;
         term3_mass_ratio_factor=1.0;
@@ -171,9 +171,9 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                 match->term_id=1;
                 match->exp_inv=nle_state->term1.exp_inv;
                 if (nle_config->smrfactor_1minus_enable == 1) {
-                  match->smrfactor_mass=nle_state->term1.smrfactor_mass;
+                  match->smrfactor_mass_id=nle_state->term1.smrfactor_mass_id;
                 } else {
-                  match->smrfactor_mass=mass_ratio_id;
+                  match->smrfactor_mass_id=mass_ratio_id;
                 }
                 match->infactor_rational_up=infactors->infactor_rational_up;
                 match->infactor_rational_down=infactors->infactor_rational_down;
@@ -218,6 +218,35 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                 if (nle_config->smrfactor_1minus_enable == 1) {
                   addUses(&match->match_uses, &nle_state->term1.current_smrfactors->smrfactor_uses);
                 }
+                if (nle_config->rmrfactor_1minus_enable == 1) {
+                  addUses(&match->match_uses, &nle_state->term1.current_rmrfactors->rmrfactor_uses);
+                  if (nle_state->term1.rmrfactor_mass_id_up == 0) {
+                    match->match_uses.G=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_up == 1) {
+                    match->match_uses.v=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_up == 2) {
+                    match->match_uses.mz=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_up == 3) {
+                    match->match_uses.mw=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_up == 4) {
+                    match->match_uses.mh0=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_up == 5) {
+                    match->match_uses.m_user=1;
+                  }
+                  if (nle_state->term1.rmrfactor_mass_id_down == 0) {
+                    match->match_uses.G=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_down == 1) {
+                    match->match_uses.v=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_down == 2) {
+                    match->match_uses.mz=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_down == 3) {
+                    match->match_uses.mw=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_down == 4) {
+                    match->match_uses.mh0=1;
+                  } else if (nle_state->term1.rmrfactor_mass_id_down == 5) {
+                    match->match_uses.m_user=1;
+                  }
+                }
                 addUses(&match->match_uses, &outfactors->outfactor_uses);
                 addUses(&match->match_uses, &infactors->infactor_uses);
                 addUses(&match->match_uses, &dynamicfactors->dynamicfactor_uses);
@@ -247,7 +276,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                 nle_state->terms_matched[1]=nle_state->term2.exp_inv;
                 match->term_id=2;
                 match->exp_inv=nle_state->term2.exp_inv;
-                match->smrfactor_mass=mass_ratio_id;
+                match->smrfactor_mass_id=mass_ratio_id;
                 match->infactor_rational_up=infactors->infactor_rational_up;
                 match->infactor_rational_down=infactors->infactor_rational_down;
                 match->infactor_2_exp_up=infactors->infactor_2_exp_up;
@@ -326,7 +355,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                   nle_state->terms_matched[2]=nle_state->term3.exp_inv;
                   match->term_id=3;
                   match->exp_inv=nle_state->term3.exp_inv;
-                  match->smrfactor_mass=mass_ratio_id;
+                  match->smrfactor_mass_id=mass_ratio_id;
                   match->infactor_rational_up=infactors->infactor_rational_up;
                   match->infactor_rational_down=infactors->infactor_rational_down;
                   match->infactor_2_exp_up=infactors->infactor_2_exp_up;

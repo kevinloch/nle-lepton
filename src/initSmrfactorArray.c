@@ -48,28 +48,28 @@ void initSmrfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                 u=abs(e2upsmr);
                 v=e2downsmr;
                 if (!((u == 1) && (v == 1)) && (gcd(u, v) == 1)) {  // extra checks to prevent 2 or 1/2
-                  e2smr=pow(2.0, ((float)e2upsmr / (float)e2downsmr));
+                  e2smr=pow(2.0, ((double)e2upsmr / (double)e2downsmr));
 
                   for (piupsmr=-nle_config->smrfactor_pi_exp_up_max; piupsmr <= nle_config->smrfactor_pi_exp_up_max; piupsmr++) {
                     for (pidownsmr=1; pidownsmr <= nle_config->smrfactor_pi_exp_down_max; pidownsmr++) {
                       u=abs(piupsmr);
                       v=pidownsmr;
                       if (gcd(u, v) == 1) {
-                        pismr=pow(M_PI, ((float)piupsmr / (float)pidownsmr));
+                        pismr=pow(M_PI, ((double)piupsmr / (double)pidownsmr));
 
                         for (aupsmr=-nle_config->smrfactor_alpha_exp_up_max; aupsmr <= nle_config->smrfactor_alpha_exp_up_max; aupsmr++) {
                           for (adownsmr=1; adownsmr <= nle_config->smrfactor_alpha_exp_down_max; adownsmr++) {
                             u=abs(aupsmr);
                             v=adownsmr;
                             if (gcd(u, v) == 1) {
-                              asmr=pow(nle_config->ref_alpha_em, ((float)aupsmr / (float)adownsmr));
+                              asmr=pow(nle_config->ref_alpha_em, ((double)aupsmr / (double)adownsmr));
 
                               for (userupsmr=-nle_config->smrfactor_user_exp_up_max; userupsmr <= nle_config->smrfactor_user_exp_up_max; userupsmr++) {
                                 for (userdownsmr=1; userdownsmr <= nle_config->smrfactor_user_exp_down_max; userdownsmr++) {
                                   u=abs(userupsmr);
                                   v=userdownsmr;
                                   if (gcd(u, v) == 1) {
-                                    usersmr=pow(nle_config->smrfactor_user, ((float)userupsmr / (float)userdownsmr));
+                                    usersmr=pow(nle_config->smrfactor_user, ((double)userupsmr / (double)userdownsmr));
                                     smrfactor=updownsmr * e2smr * asmr * pismr * usersmr;
 #ifdef DEBUG_SMRFACTOR
                                     printf("debug, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, userup: %d, userdown: %d, smrf: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upsmr, downsmr, e2upsmr, e2downsmr, aupsmr, adownsmr, piupsmr, pidownsmr, userupsmr, userdownsmr, smrfactor, updownsmr, e2smr, asmr, pismr, usersmr);

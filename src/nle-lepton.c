@@ -40,11 +40,13 @@
 #include "initInfactorArray.h"
 #include "initOutfactorArray.h"
 #include "initSmrfactorArray.h"
+#include "initRmrfactorArray.h"
 #include "phase1.h"
 #include "verifyMatches.h"
 #include "generateExponents.h"
 
 //#define DEBUG_SMRFACTOR // prints smrfactor_seq and optionally select specific smrfactor_seq
+//#define DEBUG_RMRFACTOR // prints rmrfactor_seq and optionally select specific rmrfactor_seq
 
 int processCmdArgs(nle_config_t *nle_config, int argc, char **argv) {
   int i;
@@ -155,17 +157,27 @@ int main(int argc, char **argv) {
   double r;
   int i;
   int smrfactor_seq;
+  int smrfactor_random_id=0;
+  int smrfactor_seq_max;
   nle_smrfactor_precomputed_t *smrfactors;
   int coefficients_matched;
   long seedsec;
   long seedus;
   int failed;
-  int mass_ratio_id;
-  int mass_ratio_id_max;
-  int mass_ratio_enabled;
+  int smr_reference_mass_id;
+  int smr_reference_mass_id_max;
+  int smr_mass_ratio_enabled;
   int run;
   int polarity_seq;
   int valid_polarity;
+  int rmr_mass_id_max;
+  int rmr_mass_id_up;
+  int rmr_mass_id_down;
+  int rmr_mass_ratio_enabled;
+  int rmrfactor_seq;
+  int rmrfactor_random_id=0;
+  int rmrfactor_seq_max;
+  nle_rmrfactor_precomputed_t *rmrfactors;
 
   // initialize nle_config to default values
   initConfig(&nle_config);
@@ -206,6 +218,15 @@ int main(int argc, char **argv) {
     initSmrfactorArray(&nle_config, &nle_state);
   } else {
     nle_state.smrfactors_precomputed_count=0;
+  }
+
+  // allocate memory for and initialize precomupted rmrfactor array if rmrfactor_1minus_enable == 1
+  // otherwise set rmrfactor count to zero
+  if (nle_config.rmrfactor_1minus_enable == 1) {
+    nle_state.rmrfactors_precomputed_start=(nle_rmrfactor_precomputed_t *)malloc(1000000 * sizeof(nle_rmrfactor_precomputed_t));
+    initRmrfactorArray(&nle_config, &nle_state);
+  } else {
+    nle_state.rmrfactors_precomputed_count=0;
   }
 
   // allocate memory for and initialize precomupted infactor array
@@ -273,47 +294,55 @@ int main(int argc, char **argv) {
       nle_state.input_sample_muser=nle_config.smrfactor_mass_user;
     }
 
-    // sequence through mass ratio reference masses if (1-smr) enabled, run once otherwise
+    // sequence through solution mass ratio reference masses if (1-smr) enabled, run once otherwise
     if (nle_config.smrfactor_1minus_enable == 1) {
-      mass_ratio_id_max=5;
+      smr_reference_mass_id_max=5;
     } else {
-      mass_ratio_id_max=0;
+      smr_reference_mass_id_max=0;
     }
-    for (mass_ratio_id=0; mass_ratio_id <= mass_ratio_id_max; mass_ratio_id++) {
-      mass_ratio_enabled=1;
-      if (mass_ratio_id == 0) {
+    for (smr_reference_mass_id=0; smr_reference_mass_id <= smr_reference_mass_id_max; smr_reference_mass_id++) {
+      smr_mass_ratio_enabled=1;
+      if (smr_reference_mass_id == 0) {
         if (nle_config.smrfactor_mass_mp_enable == 0) {
-          mass_ratio_enabled=0;
+          smr_mass_ratio_enabled=0;
         }
-      } else if (mass_ratio_id == 1) {
+      } else if (smr_reference_mass_id == 1) {
         if (nle_config.smrfactor_mass_v_enable == 0) {
-          mass_ratio_enabled=0;
+          smr_mass_ratio_enabled=0;
         }
-      } else if (mass_ratio_id == 2) {
+      } else if (smr_reference_mass_id == 2) {
         if (nle_config.smrfactor_mass_mz_enable == 0) {
-          mass_ratio_enabled=0;
-        } 
-      } else if (mass_ratio_id == 3) {
+          smr_mass_ratio_enabled=0;
+        }
+      } else if (smr_reference_mass_id == 3) {
         if (nle_config.smrfactor_mass_mw_enable == 0) {
-          mass_ratio_enabled=0;
+          smr_mass_ratio_enabled=0;
         }
-      } else if (mass_ratio_id == 4) {
+      } else if (smr_reference_mass_id == 4) {
         if (nle_config.smrfactor_mass_mh0_enable == 0) {
-          mass_ratio_enabled=0;
+          smr_mass_ratio_enabled=0;
         }
-      } else if (mass_ratio_id == 5) {
+      } else if (smr_reference_mass_id == 5) {
         if (nle_config.smrfactor_mass_user_enable == 0) {
-          mass_ratio_enabled=0;
+          smr_mass_ratio_enabled=0;
         }
-      }                             
-      if ((nle_config.smrfactor_1minus_enable == 0) || (mass_ratio_enabled == 1)) {
+      }
+      if ((nle_config.smrfactor_1minus_enable == 0) || (smr_mass_ratio_enabled == 1)) {
         if (nle_config.smrfactor_1minus_enable == 1) {
-            nle_state.term1.smrfactor_mass=mass_ratio_id;
-            nle_state.term2.smrfactor_mass=mass_ratio_id;
+            nle_state.term1.smrfactor_mass_id=smr_reference_mass_id;
+            nle_state.term2.smrfactor_mass_id=smr_reference_mass_id;
         }
-        // sequence through smrfactors if smrfactor_1minus is enabled, otherwise run once when smrfactor_seq == 0
-        smrfactors=nle_state.smrfactors_precomputed_start;
-        for (smrfactor_seq=0; smrfactor_seq <= nle_state.smrfactors_precomputed_count; smrfactor_seq++) {
+        // select random smrfactors or sequence through smrfactors if smrfactor_1minus is enabled, otherwise run once when smrfactor_seq == 0
+        if (nle_config.smrfactor_1minus_random == 1) {
+          r=pcg_ldrand64(&nle_state);
+          smrfactor_random_id=(int)((r * (double)nle_state.smrfactors_precomputed_count) + 0.5);
+          smrfactors=nle_state.smrfactors_precomputed_start + smrfactor_random_id;
+          smrfactor_seq_max=0;
+        } else {
+          smrfactors=nle_state.smrfactors_precomputed_start;
+          smrfactor_seq_max=nle_state.smrfactors_precomputed_count;
+        }
+        for (smrfactor_seq=0; smrfactor_seq <= smrfactor_seq_max; smrfactor_seq++) {
           if ((nle_state.smrfactors_precomputed_count > 0) && (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
             nle_state.term1.current_smrfactors=smrfactors;
             nle_state.term2.current_smrfactors=smrfactors;
@@ -322,66 +351,157 @@ int main(int argc, char **argv) {
           }
           if ((nle_state.smrfactors_precomputed_count == 0) || (smrfactor_seq < nle_state.smrfactors_precomputed_count)) {
 #ifdef DEBUG_SMRFACTOR
-            //if (smrfactor_seq == 956) { // use to select specific smrfactors for debugging
-              printf("debug, smrfactor_seq: %d\n", smrfactor_seq);
-              fflush(stdout);
+            //if (smrfactor_seq == 294) { // use to select specific smrfactors for debugging
+            printf("debug, smrfactor_seq: %d, smr_reference_mass_id: %d, smrfactor_random_id: %d\n", smrfactor_seq, smr_reference_mass_id, smrfactor_random_id);
+            fflush(stdout);
 #endif
-            for (polarity_seq=0; polarity_seq <= 1; polarity_seq++) {
-              // check polarity 
-              valid_polarity=0;
-              if ((nle_config.smrfactor_1minus_enable == 0) && (polarity_seq == 0)) { // run once f not (1-smr) mode
-                nle_state.nle_mixing_polarity=0; // not used if not (1-smr) but set anyway
-                valid_polarity=1;
-              } else if (nle_config.smrfactor_1minus_enable == 1) {
-                if ((polarity_seq == 0) && ((nle_config.nle_mixing_polarity == -1) || (nle_config.nle_mixing_polarity == 0))) { 
-                  nle_state.nle_mixing_polarity=0;
-                  valid_polarity=1;
-                } else if ((polarity_seq == 1) && ((nle_config.nle_mixing_polarity == -1) || (nle_config.nle_mixing_polarity == 1))) {
-                  nle_state.nle_mixing_polarity=1;
-                  valid_polarity=1;
-                }
-              } // end if 1-minus
 
-              if (valid_polarity == 1) {
-                // phase 1
-                for (i=0; i<=2; i++) {
-                  nle_state.terms_matched[i]=0;
+            // sequence through reference mass ratio masses if (1-rmr-smr) enabled, run once otherwise
+            if (nle_config.rmrfactor_1minus_enable == 1) {
+              rmr_mass_id_max=5;
+            } else {
+              rmr_mass_id_max=0;
+            }
+            for (rmr_mass_id_up=0; rmr_mass_id_up <= rmr_mass_id_max; rmr_mass_id_up++) {
+              for (rmr_mass_id_down=0; rmr_mass_id_down <= rmr_mass_id_max; rmr_mass_id_down++) {
+                rmr_mass_ratio_enabled=1;
+                if ((rmr_mass_id_up == 0) || (rmr_mass_id_down == 0)) {
+                  if (nle_config.rmrfactor_mass_mp_enable == 0) {
+                    rmr_mass_ratio_enabled=0;
+                  }
                 }
-                failed=solveNLEforCoefficients(&nle_config, &nle_state);
-                if (failed == 0) {
-                  if (nle_state.phase1_matches_count > 0) {
-                    coefficients_matched=0;
-                    for (i=0; i <= 2; i++) {
-                      if (nle_state.terms_matched[i] != 0) {
-                        coefficients_matched++;
-                      }
-                    }
-                    if (coefficients_matched == 3) {
-                      // phase 2
-                      verifyMatches(&nle_config, &nle_state);
-                    } else {
-                      if (nle_config.phase1_status_enable == 1) {
-                        printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
-                        fflush(stdout);
-                      }
-                    }
+                if ((rmr_mass_id_up == 1) || (rmr_mass_id_down == 1)) {
+                  if (nle_config.rmrfactor_mass_v_enable == 0) {
+                    rmr_mass_ratio_enabled=0;
+                  }
+                }
+                if ((rmr_mass_id_up == 2) || (rmr_mass_id_down == 2)) {
+                  if (nle_config.rmrfactor_mass_mz_enable == 0) {
+                    rmr_mass_ratio_enabled=0;
+                  }
+                }
+                if ((rmr_mass_id_up == 3) || (rmr_mass_id_down == 3)) {
+                  if (nle_config.rmrfactor_mass_mw_enable == 0) {
+                    rmr_mass_ratio_enabled=0;
+                  }
+                }
+                if ((rmr_mass_id_up == 4) || (rmr_mass_id_down == 4)) {
+                  if (nle_config.rmrfactor_mass_mh0_enable == 0) {
+                    rmr_mass_ratio_enabled=0;
+                  }
+                }
+                if ((rmr_mass_id_up == 5) || (rmr_mass_id_down == 5)) {
+                  if (nle_config.rmrfactor_mass_user_enable == 0) {
+                    rmr_mass_ratio_enabled=0;
+                  }
+                }
+                // skip if same mass up/down
+                if (rmr_mass_id_up == rmr_mass_id_down) {
+                  rmr_mass_ratio_enabled=0;
+                }
+                // skip if rmr/smr sync is enabled and rmr_mass_id_down != smr_reference_mass_id
+                if ((nle_config.rmrfactor_smrfactor_sync == 1) && (rmr_mass_id_down != smr_reference_mass_id)) {
+                  rmr_mass_ratio_enabled=0;
+                }
+                if ((nle_config.rmrfactor_1minus_enable == 0) || (rmr_mass_ratio_enabled == 1)) {
+                  if (nle_config.rmrfactor_1minus_enable == 1) {
+                      nle_state.term1.rmrfactor_mass_id_up=rmr_mass_id_up;
+                      nle_state.term1.rmrfactor_mass_id_down=rmr_mass_id_down;
+                  }
+                  // select random rmrfactors or sequence through rmrfactors if rmrfactor_1minus is enabled, otherwise run once when rmrfactor_seq == 0
+                  if (nle_config.rmrfactor_1minus_random == 1) {
+                    r=pcg_ldrand64(&nle_state);
+                    rmrfactor_random_id=(int)((r * (double)nle_state.rmrfactors_precomputed_count) + 0.5);
+                    rmrfactors=nle_state.rmrfactors_precomputed_start + rmrfactor_random_id;
+                    rmrfactor_seq_max=0;
                   } else {
-                    if (nle_config.phase1_status_enable == 1) {
-                      printf("status, No interesting coefficient multipliers found\n");
-                      fflush(stdout);
+                    rmrfactors=nle_state.rmrfactors_precomputed_start;
+                    rmrfactor_seq_max=nle_state.rmrfactors_precomputed_count;
+                  }
+                  for (rmrfactor_seq=0; rmrfactor_seq <= rmrfactor_seq_max; rmrfactor_seq++) {
+                    if ((nle_state.rmrfactors_precomputed_count > 0) && (rmrfactor_seq < nle_state.rmrfactors_precomputed_count)) {
+                      nle_state.term1.current_rmrfactors=rmrfactors;
+                      nle_state.term1.rmrfactor=rmrfactors->rmrfactor_multiplier;
                     }
-                  } // end nummatches
-                } // end if failed
-              } // end if valid polarity
-            } // end for polarity_seq
-#ifdef DEBUG_SMRFACTOR
-            //} // end if smrfactor_seq
+                    if ((nle_state.rmrfactors_precomputed_count == 0) || (rmrfactor_seq < nle_state.rmrfactors_precomputed_count)) {
+#ifdef DEBUG_RMRFACTOR
+                      //if (rmrfactor_seq == 103) { // use to select specific rmrfactors for debugging
+                      printf("debug, rmrfactor_seq: %d, rmr_mass_id_up: %d, rmr_mass_id_down: %d, smrfactmr_seq: %d, smr_reference_mass_id: %d, rmrfactor_random_id: %d, smrfactor_random_id: %d\n", rmrfactor_seq, rmr_mass_id_up, rmr_mass_id_down, smrfactor_seq, smr_reference_mass_id, rmrfactor_random_id, smrfactor_random_id);
+                      fflush(stdout);
 #endif
-            smrfactors++;
-          } // end if smrfactor_seq
+
+                      for (polarity_seq=0; polarity_seq <= 1; polarity_seq++) {
+                        // check polarity 
+                        valid_polarity=0;
+                        if ((nle_config.smrfactor_1minus_enable == 0) && (polarity_seq == 0)) { // run once f not (1-smr) mode
+                          nle_state.nle_mixing_polarity=0; // not used if not (1-smr) but set anyway
+                          valid_polarity=1;
+                        } else if (nle_config.smrfactor_1minus_enable == 1) {
+                          if ((polarity_seq == 0) && ((nle_config.nle_mixing_polarity == -1) || (nle_config.nle_mixing_polarity == 0))) { 
+                            nle_state.nle_mixing_polarity=0;
+                            valid_polarity=1;
+                          } else if ((polarity_seq == 1) && ((nle_config.nle_mixing_polarity == -1) || (nle_config.nle_mixing_polarity == 1))) {
+                            nle_state.nle_mixing_polarity=1;
+                            valid_polarity=1;
+                          }
+                        } // end if 1-minus
+          
+                        if (valid_polarity == 1) {
+                          // phase 1
+                          for (i=0; i<=2; i++) {
+                            nle_state.terms_matched[i]=0;
+                          }
+                          failed=solveNLEforCoefficients(&nle_config, &nle_state);
+                          if (failed == 0) {
+                            if (nle_state.phase1_matches_count > 0) {
+                              coefficients_matched=0;
+                              for (i=0; i <= 2; i++) {
+                                if (nle_state.terms_matched[i] != 0) {
+                                  coefficients_matched++;
+                                }
+                              }
+                              if (coefficients_matched == 3) {
+                                // phase 2
+                                verifyMatches(&nle_config, &nle_state);
+                              } else {
+                                if (nle_config.phase1_status_enable == 1) {
+                                  printf("status, No complete three-term phase 2 formulas to solve, terms with matches: %d, %d, %d\n", nle_state.terms_matched[0], nle_state.terms_matched[1], nle_state.terms_matched[2]);
+                                  fflush(stdout);
+                                }
+                              }
+                            } else {
+                              if (nle_config.phase1_status_enable == 1) {
+                                printf("status, No interesting coefficient multipliers found\n");
+                                fflush(stdout);
+                              }
+                            } // end nummatches
+                          } // end if failed
+                        } // end if valid polarity
+                      } // end for polarity_seq
+
+#ifdef DEBUG_RMRFACTOR
+                      //} // end if rmrfactor_seq ==
+#endif
+                      if (nle_config.rmrfactor_1minus_random == 0) {
+                        rmrfactors++;
+                      }
+                    } // end if rmrfactor_seq <
+                  } // end for rmrfactor_seq
+                } // end if rmr_mass_ratio_enabled
+              } // end for rmr_mass_id_down
+            } // end for rmr_mass_id_up
+
+#ifdef DEBUG_SMRFACTOR
+            //} // end if smrfactor_seq ==
+#endif
+            if (nle_config.smrfactor_1minus_random == 0) {
+              smrfactors++;
+            }
+          } // end if smrfactor_seq <
         } // end for smrfactor_seq
-      } // end if mass_ratio_enabled
-    } // end for mass_ratio_id
+      } // end if smr_mass_ratio_enabled
+    } // end for smr_reference_mass_id
+
   } // end while run
   exit(0);
 }   

@@ -1,3 +1,14 @@
+4.4 New features:
+      - Added support for (1-rmr-smr) mode.  rmr = reference mass ratio and associated factors for example 'sqrt(2)*mh0/v'.  This goes inside term 1 only and is
+        independent from the outfactor reference mass ratios added in version 4.3.
+      - Added config file options to randomly select smrf and/or rmrf factors each time phase 1 is run, instead of sequencing through all possible combinations.
+        This improves distribution of work when using many parallel threads 
+
+    Bug fixes:
+      - Fixed critical bug where some infactors and outfactors were being improperly cast to single precision.  This was limiting precision of results in phase2
+        which could cause false negative matches against experimental uncertainties, especially when solving for v or sm2.  This also caused many unnecessary
+        duplicate formulas to be sent to phase 2.
+
 4.3.4 New features:
       - (1-smr) mode now allows even exponents on term 1, both terms having the same exponent, and negative exponents
       - Two new config file options allow user control of the two-term test "reasonable range"

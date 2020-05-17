@@ -215,16 +215,16 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
   // 2-term mixed will not converge unless at least one reference mass is floated or rmr is used
   if ((nle_config->nle_mode == 2) && (nle_state->term1.current_match->outfactor_rmr_exp_up == 0)) {
     if (nle_config->smrfactor_1minus_enable == 1) {
-      reference_mass=nle_state->term1.smrfactor_mass;
+      reference_mass=nle_state->term1.smrfactor_mass_id;
     } else {
-      if (nle_state->term1.current_match->smrfactor_mass == nle_state->term2.current_match->smrfactor_mass) {
-        reference_mass=nle_state->term1.current_match->smrfactor_mass;
+      if (nle_state->term1.current_match->smrfactor_mass_id == nle_state->term2.current_match->smrfactor_mass_id) {
+        reference_mass=nle_state->term1.current_match->smrfactor_mass_id;
       } else {
         // find which term has the highest uncertainty reference mass
-        if (nle_config->relerror[nle_state->term1.current_match->smrfactor_mass] > nle_config->relerror[nle_state->term2.current_match->smrfactor_mass]) {
-          reference_mass=nle_state->term1.current_match->smrfactor_mass;
+        if (nle_config->relerror[nle_state->term1.current_match->smrfactor_mass_id] > nle_config->relerror[nle_state->term2.current_match->smrfactor_mass_id]) {
+          reference_mass=nle_state->term1.current_match->smrfactor_mass_id;
         } else {
-          reference_mass=nle_state->term2.current_match->smrfactor_mass;
+          reference_mass=nle_state->term2.current_match->smrfactor_mass_id;
         }
       }
     }
@@ -305,23 +305,23 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     rmr_mass_id_up=nle_state->term1.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term1.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
-    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term1.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
-    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term2.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
-    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term3.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
     smr_count_down=0;
-    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term1.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
-    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term2.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
-    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term3.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
     if (((smr_count_up == 0) && (smr_count_down == 0))\
@@ -342,23 +342,23 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     rmr_mass_id_up=nle_state->term2.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term2.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
-    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term1.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
-    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term2.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
-    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term3.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
     smr_count_down=0;
-    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term1.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
-    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term2.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
-    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term3.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
     if (((smr_count_up == 0) && (smr_count_down == 0))\
@@ -379,23 +379,23 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
     rmr_mass_id_up=nle_state->term3.current_match->outfactor_rmr_mass_id_up;
     rmr_mass_id_down=nle_state->term3.current_match->outfactor_rmr_mass_id_down;
     smr_count_up=0;
-    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term1.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
-    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term2.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
-    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_up) {
+    if (nle_state->term3.current_match->smrfactor_mass_id == rmr_mass_id_up) {
       smr_count_up++;
     }
     smr_count_down=0;
-    if (nle_state->term1.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term1.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
-    if (nle_state->term2.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term2.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
-    if (nle_state->term3.current_match->smrfactor_mass == rmr_mass_id_down) {
+    if (nle_state->term3.current_match->smrfactor_mass_id == rmr_mass_id_down) {
       smr_count_down++;
     }
     if (((smr_count_up == 0) && (smr_count_down == 0))\

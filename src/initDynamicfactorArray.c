@@ -92,14 +92,14 @@ void initDynamicfactorArray(nle_config_t *nle_config, nle_state_t *nle_state, nl
       u=abs(sin2w_exp_up);
       v=sin2w_exp_down;
       if (gcd(u, v) == 1) {
-        outfactor_sin2w=pow(sin2w, ((float)sin2w_exp_up / (float)sin2w_exp_down));
+        outfactor_sin2w=pow(sin2w, ((double)sin2w_exp_up / (double)sin2w_exp_down));
 
         for (cos2w_exp_up=-nle_config->outfactor_weak_exp_up_max; cos2w_exp_up <= nle_config->outfactor_weak_exp_up_max; cos2w_exp_up++) {
           for (cos2w_exp_down=1; cos2w_exp_down <= nle_config->outfactor_weak_exp_down_max; cos2w_exp_down++) {
             u=abs(cos2w_exp_up);
             v=cos2w_exp_down;
             if (gcd(u, v) == 1) {
-              outfactor_cos2w=pow(cos2w, ((float)cos2w_exp_up / (float)cos2w_exp_down));
+              outfactor_cos2w=pow(cos2w, ((double)cos2w_exp_up / (double)cos2w_exp_down));
 
               for (rmr_exp_up=0; rmr_exp_up <= nle_config->outfactor_rmr_exp_up_max; rmr_exp_up++) {
                 for (rmr_exp_down=1; rmr_exp_down <= nle_config->outfactor_rmr_exp_down_max; rmr_exp_down++) {
@@ -140,7 +140,7 @@ void initDynamicfactorArray(nle_config_t *nle_config, nle_state_t *nle_state, nl
                           } else if (rmr_mass_id_down == 5) {
                             rmr_mass_down=nle_state->input_sample_muser;
                           }
-                          outfactor_rmr=pow((rmr_mass_up / rmr_mass_down), ((float)rmr_exp_up / (float)rmr_exp_down));
+                          outfactor_rmr=pow((rmr_mass_up / rmr_mass_down), ((double)rmr_exp_up / (double)rmr_exp_down));
 
                           dynamicfactor=outfactor_sin2w * outfactor_cos2w * outfactor_rmr;
 

@@ -115,21 +115,21 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                 u=abs(e2upin);
                 v=e2downin;
                 if (!((u == 1) && (v == 1)) && (gcd(u, v) == 1)) {  // extra checks to prevent 2 or 1/2
-                  e2in=pow(2.0, ((float)e2upin / (float)e2downin));
+                  e2in=pow(2.0, ((double)e2upin / (double)e2downin));
 
                   for (aupin=-nle_config->infactor_alpha_exp_up_max; aupin <= nle_config->infactor_alpha_exp_up_max; aupin++) {
                     for (adownin=1; adownin <= nle_config->infactor_alpha_exp_down_max; adownin++) {
                       u=abs(aupin);
                       v=adownin;
                       if (gcd(u, v) == 1) {
-                        ain=pow(nle_config->ref_alpha_em, ((float)aupin / (float)adownin));
+                        ain=pow(nle_config->ref_alpha_em, ((double)aupin / (double)adownin));
 
                         for (piupin=-nle_config->infactor_pi_exp_up_max; piupin <= nle_config->infactor_pi_exp_up_max; piupin++) {
                           for (pidownin=1; pidownin <= nle_config->infactor_pi_exp_down_max; pidownin++) {
                             u=abs(piupin);
                             v=pidownin;
                             if (gcd(u, v) == 1) {
-                              piin=pow(M_PI, ((float)piupin / (float)pidownin));
+                              piin=pow(M_PI, ((double)piupin / (double)pidownin));
  
                               for (nssupin=-nle_config->infactor_nss_enable; nssupin <= nle_config->infactor_nss_enable; nssupin++) {
                                 for (nbvupin=-nle_config->infactor_nbv_enable; nbvupin <= nle_config->infactor_nbv_enable; nbvupin++) {
@@ -140,7 +140,7 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                         u=abs(userupin);
                                         v=userdownin;
                                         if (gcd(u, v) == 1) {
-                                          userin=pow(nle_config->infactor_user, ((float)userupin / (float)userdownin));
+                                          userin=pow(nle_config->infactor_user, ((double)userupin / (double)userdownin));
                                           infactor=updownin * e2in * ain * piin * userin;
 #ifdef DEBUG_INFACTOR
                                           printf("debug, infactorInit, up: %d, down: %d, e2up: %d, e2down: %d, aup: %d, adown: %d, piup: %d, pidown: %d, nssup: %d, nbvup: %d, userup: %d, userdown: %d, infactor: %.9e, updown: %.9e, e2: %.9e, a: %.9e, pi: %.9e, user: %.9e\n", upin, downin, e2upin, e2downin, aupin, adownin, piupin, pidownin, nssupin, nbvupin, userupin, userdownin, infactor, updownin, e2in, ain, piin, userin);
@@ -179,57 +179,57 @@ void initInfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                                                  + abs(userupin) + (userdownin-1);
                                           for (i=1; i<= nle_config->exp_inv_max; i++) {
                                             if (i == 1) {
-                                              multiplier->infactor_multiplier[1]=infactor * pow(nbv[1], (float)nbvupin) * pow(nss[1], (float)nssupin);
+                                              multiplier->infactor_multiplier[1]=infactor * pow(nbv[1], (double)nbvupin) * pow(nss[1], (double)nssupin);
                                             } else if (i == 2) {
-                                              multiplier->infactor_multiplier[2]=pow(infactor * pow(nbv[2], (float)nbvupin) * pow(nss[2], (float)nssupin), (1.0 / 2.0));
+                                              multiplier->infactor_multiplier[2]=pow(infactor * pow(nbv[2], (double)nbvupin) * pow(nss[2], (double)nssupin), (1.0 / 2.0));
                                             } else if (i == 3) {
-                                              multiplier->infactor_multiplier[3]=pow(infactor * pow(nbv[3], (float)nbvupin) * pow(nss[3], (float)nssupin), (1.0 / 3.0));
+                                              multiplier->infactor_multiplier[3]=pow(infactor * pow(nbv[3], (double)nbvupin) * pow(nss[3], (double)nssupin), (1.0 / 3.0));
                                             } else if (i == 4) {
-                                              multiplier->infactor_multiplier[4]=pow(infactor * pow(nbv[4], (float)nbvupin) * pow(nss[4], (float)nssupin), (1.0 / 4.0));
+                                              multiplier->infactor_multiplier[4]=pow(infactor * pow(nbv[4], (double)nbvupin) * pow(nss[4], (double)nssupin), (1.0 / 4.0));
                                             } else if (i == 5) {
-                                              multiplier->infactor_multiplier[5]=pow(infactor * pow(nbv[5], (float)nbvupin) * pow(nss[5], (float)nssupin), (1.0 / 5.0));
+                                              multiplier->infactor_multiplier[5]=pow(infactor * pow(nbv[5], (double)nbvupin) * pow(nss[5], (double)nssupin), (1.0 / 5.0));
                                             } else if (i == 6) {
-                                              multiplier->infactor_multiplier[6]=pow(infactor * pow(nbv[6], (float)nbvupin) * pow(nss[6], (float)nssupin), (1.0 / 6.0));
+                                              multiplier->infactor_multiplier[6]=pow(infactor * pow(nbv[6], (double)nbvupin) * pow(nss[6], (double)nssupin), (1.0 / 6.0));
                                             } else if (i == 7) {
-                                              multiplier->infactor_multiplier[7]=pow(infactor * pow(nbv[7], (float)nbvupin) * pow(nss[7], (float)nssupin), (1.0 / 7.0));
+                                              multiplier->infactor_multiplier[7]=pow(infactor * pow(nbv[7], (double)nbvupin) * pow(nss[7], (double)nssupin), (1.0 / 7.0));
                                             } else if (i == 8) {
-                                              multiplier->infactor_multiplier[8]=pow(infactor * pow(nbv[8], (float)nbvupin) * pow(nss[8], (float)nssupin), (1.0 / 8.0));
+                                              multiplier->infactor_multiplier[8]=pow(infactor * pow(nbv[8], (double)nbvupin) * pow(nss[8], (double)nssupin), (1.0 / 8.0));
                                             } else if (i == 9) {
-                                              multiplier->infactor_multiplier[9]=pow(infactor * pow(nbv[9], (float)nbvupin) * pow(nss[9], (float)nssupin), (1.0 / 9.0));
+                                              multiplier->infactor_multiplier[9]=pow(infactor * pow(nbv[9], (double)nbvupin) * pow(nss[9], (double)nssupin), (1.0 / 9.0));
                                             } else if (i == 10) {
-                                              multiplier->infactor_multiplier[10]=pow(infactor * pow(nbv[10], (float)nbvupin) * pow(nss[10], (float)nssupin), (1.0 / 10.0));
+                                              multiplier->infactor_multiplier[10]=pow(infactor * pow(nbv[10], (double)nbvupin) * pow(nss[10], (double)nssupin), (1.0 / 10.0));
                                             } else if (i == 11) {
-                                              multiplier->infactor_multiplier[11]=pow(infactor * pow(nbv[11], (float)nbvupin) * pow(nss[11], (float)nssupin), (1.0 / 11.0));
+                                              multiplier->infactor_multiplier[11]=pow(infactor * pow(nbv[11], (double)nbvupin) * pow(nss[11], (double)nssupin), (1.0 / 11.0));
                                             } else if (i == 12) {
-                                              multiplier->infactor_multiplier[12]=pow(infactor * pow(nbv[12], (float)nbvupin) * pow(nss[12], (float)nssupin), (1.0 / 12.0));
+                                              multiplier->infactor_multiplier[12]=pow(infactor * pow(nbv[12], (double)nbvupin) * pow(nss[12], (double)nssupin), (1.0 / 12.0));
                                             } else if (i == 13) {
-                                              multiplier->infactor_multiplier[13]=pow(infactor * pow(nbv[13], (float)nbvupin) * pow(nss[13], (float)nssupin), (1.0 / 13.0));
+                                              multiplier->infactor_multiplier[13]=pow(infactor * pow(nbv[13], (double)nbvupin) * pow(nss[13], (double)nssupin), (1.0 / 13.0));
                                             } else if (i == 14) {
-                                              multiplier->infactor_multiplier[14]=pow(infactor * pow(nbv[14], (float)nbvupin) * pow(nss[14], (float)nssupin), (1.0 / 14.0));
+                                              multiplier->infactor_multiplier[14]=pow(infactor * pow(nbv[14], (double)nbvupin) * pow(nss[14], (double)nssupin), (1.0 / 14.0));
                                             } else if (i == 15) {
-                                              multiplier->infactor_multiplier[15]=pow(infactor * pow(nbv[15], (float)nbvupin) * pow(nss[15], (float)nssupin), (1.0 / 15.0));
+                                              multiplier->infactor_multiplier[15]=pow(infactor * pow(nbv[15], (double)nbvupin) * pow(nss[15], (double)nssupin), (1.0 / 15.0));
                                             } else if (i == 16) {
-                                              multiplier->infactor_multiplier[16]=pow(infactor * pow(nbv[16], (float)nbvupin) * pow(nss[16], (float)nssupin), (1.0 / 16.0));
+                                              multiplier->infactor_multiplier[16]=pow(infactor * pow(nbv[16], (double)nbvupin) * pow(nss[16], (double)nssupin), (1.0 / 16.0));
                                             } else if (i == 17) {
-                                              multiplier->infactor_multiplier[17]=pow(infactor * pow(nbv[17], (float)nbvupin) * pow(nss[17], (float)nssupin), (1.0 / 17.0));
+                                              multiplier->infactor_multiplier[17]=pow(infactor * pow(nbv[17], (double)nbvupin) * pow(nss[17], (double)nssupin), (1.0 / 17.0));
                                             } else if (i == 18) {
-                                              multiplier->infactor_multiplier[18]=pow(infactor * pow(nbv[18], (float)nbvupin) * pow(nss[18], (float)nssupin), (1.0 / 18.0));
+                                              multiplier->infactor_multiplier[18]=pow(infactor * pow(nbv[18], (double)nbvupin) * pow(nss[18], (double)nssupin), (1.0 / 18.0));
                                             } else if (i == 19) {
-                                              multiplier->infactor_multiplier[19]=pow(infactor * pow(nbv[19], (float)nbvupin) * pow(nss[19], (float)nssupin), (1.0 / 19.0));
+                                              multiplier->infactor_multiplier[19]=pow(infactor * pow(nbv[19], (double)nbvupin) * pow(nss[19], (double)nssupin), (1.0 / 19.0));
                                             } else if (i == 20) {
-                                              multiplier->infactor_multiplier[20]=pow(infactor * pow(nbv[20], (float)nbvupin) * pow(nss[20], (float)nssupin), (1.0 / 20.0));
+                                              multiplier->infactor_multiplier[20]=pow(infactor * pow(nbv[20], (double)nbvupin) * pow(nss[20], (double)nssupin), (1.0 / 20.0));
                                             } else if (i == 21) {
-                                              multiplier->infactor_multiplier[21]=pow(infactor * pow(nbv[21], (float)nbvupin) * pow(nss[21], (float)nssupin), (1.0 / 21.0));
+                                              multiplier->infactor_multiplier[21]=pow(infactor * pow(nbv[21], (double)nbvupin) * pow(nss[21], (double)nssupin), (1.0 / 21.0));
                                             } else if (i == 22) {
-                                              multiplier->infactor_multiplier[22]=pow(infactor * pow(nbv[22], (float)nbvupin) * pow(nss[22], (float)nssupin), (1.0 / 22.0));
+                                              multiplier->infactor_multiplier[22]=pow(infactor * pow(nbv[22], (double)nbvupin) * pow(nss[22], (double)nssupin), (1.0 / 22.0));
                                             } else if (i == 23) {
-                                              multiplier->infactor_multiplier[23]=pow(infactor * pow(nbv[23], (float)nbvupin) * pow(nss[23], (float)nssupin), (1.0 / 23.0));
+                                              multiplier->infactor_multiplier[23]=pow(infactor * pow(nbv[23], (double)nbvupin) * pow(nss[23], (double)nssupin), (1.0 / 23.0));
                                             } else if (i == 24) {
-                                              multiplier->infactor_multiplier[24]=pow(infactor * pow(nbv[24], (float)nbvupin) * pow(nss[24], (float)nssupin), (1.0 / 24.0));
+                                              multiplier->infactor_multiplier[24]=pow(infactor * pow(nbv[24], (double)nbvupin) * pow(nss[24], (double)nssupin), (1.0 / 24.0));
                                             } else if (i == 25) {
-                                              multiplier->infactor_multiplier[25]=pow(infactor * pow(nbv[25], (float)nbvupin) * pow(nss[25], (float)nssupin), (1.0 / 25.0));
+                                              multiplier->infactor_multiplier[25]=pow(infactor * pow(nbv[25], (double)nbvupin) * pow(nss[25], (double)nssupin), (1.0 / 25.0));
                                             } else if (i == 26) {
-                                              multiplier->infactor_multiplier[26]=pow(infactor * pow(nbv[26], (float)nbvupin) * pow(nss[26], (float)nssupin), (1.0 / 26.0));
+                                              multiplier->infactor_multiplier[26]=pow(infactor * pow(nbv[26], (double)nbvupin) * pow(nss[26], (double)nssupin), (1.0 / 26.0));
                                             }  // if i
 #ifdef DEBUG_INFACTOR
                                             printf("debug, infactorInit, i: %d, multiplier: %.9e\n", i, multiplier->infactor_multiplier[i]);

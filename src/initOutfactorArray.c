@@ -52,42 +52,42 @@ void initOutfactorArray(nle_config_t *nle_config, nle_state_t *nle_state) {
                 u=abs(e2upout);
                 v=e2downout;
                 if (!((u == 1) && (v == 1)) && (gcd(u, v) == 1)) {  // extra checks to prevent 2 or 1/2
-                  e2out=pow(2.0, ((float)e2upout / (float)e2downout));
+                  e2out=pow(2.0, ((double)e2upout / (double)e2downout));
 
                   for (aupout=-nle_config->outfactor_alpha_exp_up_max; aupout <= nle_config->outfactor_alpha_exp_up_max; aupout++) {
                     for (adownout=1; adownout <= nle_config->outfactor_alpha_exp_down_max; adownout++) {
                       u=abs(aupout);
                       v=adownout;
                       if (gcd(u, v) == 1) {
-                        aout=pow(nle_config->ref_alpha_em, ((float)aupout / (float)adownout));
+                        aout=pow(nle_config->ref_alpha_em, ((double)aupout / (double)adownout));
 
                         for (piupout=-nle_config->outfactor_pi_exp_up_max; piupout <= nle_config->outfactor_pi_exp_up_max; piupout++) {
                           for (pidownout=1; pidownout <= nle_config->outfactor_pi_exp_down_max; pidownout++) {
                             u=abs(piupout);
                             v=pidownout;
                             if (gcd(u, v) == 1) {
-                              piout=pow(M_PI, ((float)piupout / (float)pidownout));
+                              piout=pow(M_PI, ((double)piupout / (double)pidownout));
  
                               for (user1upout=-nle_config->outfactor_user1_exp_up_max; user1upout <= nle_config->outfactor_user1_exp_up_max; user1upout++) {
                                 for (user1downout=1; user1downout <= nle_config->outfactor_user1_exp_down_max; user1downout++) {
                                   u=abs(user1upout);
                                   v=user1downout;
                                   if (gcd(u, v) == 1) {
-                                    user1out=pow(nle_config->outfactor_user1, ((float)user1upout / (float)user1downout));
+                                    user1out=pow(nle_config->outfactor_user1, ((double)user1upout / (double)user1downout));
 
                                     for (user2upout=-nle_config->outfactor_user2_exp_up_max; user2upout <= nle_config->outfactor_user2_exp_up_max; user2upout++) {
                                       for (user2downout=1; user2downout <= nle_config->outfactor_user2_exp_down_max; user2downout++) {
                                         u=abs(user2upout);
                                         v=user2downout;
                                         if (gcd(u, v) == 1) {
-                                          user2out=pow(nle_config->outfactor_user2, ((float)user2upout / (float)user2downout));
+                                          user2out=pow(nle_config->outfactor_user2, ((double)user2upout / (double)user2downout));
 
                                           for (user3upout=-nle_config->outfactor_user3_exp_up_max; user3upout <= nle_config->outfactor_user3_exp_up_max; user3upout++) {
                                             for (user3downout=1; user3downout <= nle_config->outfactor_user3_exp_down_max; user3downout++) {
                                               u=abs(user3upout);
                                               v=user3downout;
                                               if (gcd(u, v) == 1) {
-                                                user3out=pow(nle_config->outfactor_user3, ((float)user3upout / (float)user3downout));
+                                                user3out=pow(nle_config->outfactor_user3, ((double)user3upout / (double)user3downout));
 
                                                 outfactor=updownout * e2out * aout * piout * user1out * user2out * user3out;
 #ifdef DEBUG_OUTFACTOR

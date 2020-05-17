@@ -62,17 +62,6 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
     }
 
-    // force 1minus on term1 if smrfactor_1minus_enable = yes
-    if (nle_config->smrfactor_1minus_enable == 1) {
-      nle_state->term1.smrfactor_1minus=1;
-      nle_state->term2.smrfactor_1minus=0;
-      nle_state->term3.smrfactor_1minus=0;
-    } else {
-      nle_state->term1.smrfactor_1minus=0;
-      nle_state->term2.smrfactor_1minus=0;
-      nle_state->term3.smrfactor_1minus=0;
-    }
-
     if (nle_config->nle_mode == 2) {
       nle_state->term1.exp_inv=exp_inv_1;
       nle_state->term2.exp_inv=exp_inv_2;
