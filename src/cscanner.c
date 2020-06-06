@@ -150,7 +150,7 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
         term3_mass_ratio_factor=pow(mass_ratio, (1.0 / (double)nle_state->term3.exp_inv));
       }
 
-      // pre-computed static outfactors
+      // pre-computed dynamic outfactors
       dynamicfactors=dynamicfactors_precomputed_start;
       for (dynamicfactor=0; dynamicfactor < dynamicfactors_precomputed_count; dynamicfactor++) {
 
@@ -217,35 +217,6 @@ void cscanner(nle_config_t *nle_config, nle_state_t *nle_state) {
                 initUses(&match->match_uses);
                 if (nle_config->smrfactor_1minus_enable == 1) {
                   addUses(&match->match_uses, &nle_state->term1.current_smrfactors->smrfactor_uses);
-                }
-                if (nle_config->rmrfactor_1minus_enable == 1) {
-                  addUses(&match->match_uses, &nle_state->term1.current_rmrfactors->rmrfactor_uses);
-                  if (nle_state->term1.rmrfactor_mass_id_up == 0) {
-                    match->match_uses.G=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_up == 1) {
-                    match->match_uses.v=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_up == 2) {
-                    match->match_uses.mz=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_up == 3) {
-                    match->match_uses.mw=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_up == 4) {
-                    match->match_uses.mh0=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_up == 5) {
-                    match->match_uses.m_user=1;
-                  }
-                  if (nle_state->term1.rmrfactor_mass_id_down == 0) {
-                    match->match_uses.G=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_down == 1) {
-                    match->match_uses.v=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_down == 2) {
-                    match->match_uses.mz=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_down == 3) {
-                    match->match_uses.mw=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_down == 4) {
-                    match->match_uses.mh0=1;
-                  } else if (nle_state->term1.rmrfactor_mass_id_down == 5) {
-                    match->match_uses.m_user=1;
-                  }
                 }
                 addUses(&match->match_uses, &outfactors->outfactor_uses);
                 addUses(&match->match_uses, &infactors->infactor_uses);

@@ -27,8 +27,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   long double results_window;
   char exec_str[512];
   char mass_str[32];
-  char rmrfactor_mass_str_up[32];
-  char rmrfactor_mass_str_down[32];
   char out_str_01[512];
   char out_str_02[512];
   char out_str_03[512];
@@ -64,7 +62,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   char term2_formula_str[288];
   char term3_formula_str[288];
   char smrf_str[80];
-  char rmrf_str[80];
   int symmetry;
   float combined_score;
  
@@ -91,9 +88,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   long double term1_rmr, term2_rmr, term3_rmr;
   long double term1_sin2w, term2_sin2w, term3_sin2w;
   long double term1_cos2w, term2_cos2w, term3_cos2w;
-  long double rmrfactor_mass_up=0;
-  long double rmrfactor_mass_down=0;
-  long double rmrf=0;
   long double term1_smrfactor_mass=0;
   long double term2_smrfactor_mass=0;
   long double term3_smrfactor_mass=0;
@@ -313,71 +307,21 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   term2_exp = 1.0 / (long double)nle_state->term2.exp_inv;
   term3_exp = 1.0 / (long double)nle_state->term3.exp_inv;
 
+  smrf_str[0]=0;
+
   // generate formula strings for each term
-  getFormulaStr(nle_config, nle_state, term1_formula_str, nle_state->term1.current_match);
-  getFormulaStr(nle_config, nle_state, term2_formula_str, nle_state->term2.current_match);
-  getFormulaStr(nle_config, nle_state, term3_formula_str, nle_state->term3.current_match);
-
-  // load rmrfactor strings if (1-rmr-smr) is enabled
-  if (nle_config->rmrfactor_1minus_enable == 1) {
-    getRmrfStr(nle_config, rmrf_str, nle_state->term1.current_rmrfactors, nle_state->term1.rmrfactor);
-    if (nle_state->term1.rmrfactor_mass_id_up == 0) {
-      rmrfactor_mass_up=(long double)nle_state->input_sample_mp;
-      sprintf(rmrfactor_mass_str_up, "mP");
-    } else if (nle_state->term1.rmrfactor_mass_id_up == 1) {
-      rmrfactor_mass_up=(long double)nle_state->input_sample_v;
-      sprintf(rmrfactor_mass_str_up, "v");
-    } else if (nle_state->term1.rmrfactor_mass_id_up == 2) {
-      rmrfactor_mass_up=(long double)nle_state->input_sample_mz;
-      sprintf(rmrfactor_mass_str_up, "mz");
-    } else if (nle_state->term1.rmrfactor_mass_id_up == 3) {
-      rmrfactor_mass_up=(long double)nle_state->input_sample_mw;
-      sprintf(rmrfactor_mass_str_up, "mw");
-    } else if (nle_state->term1.rmrfactor_mass_id_up == 4) {
-      rmrfactor_mass_up=(long double)nle_state->input_sample_mh0;
-      sprintf(rmrfactor_mass_str_up, "mh0");
-    } else if (nle_state->term1.rmrfactor_mass_id_up == 5) {
-      rmrfactor_mass_up=(long double)nle_state->input_sample_muser;
-      sprintf(rmrfactor_mass_str_up, "muser");
-    }
-    if (nle_state->term1.rmrfactor_mass_id_down == 0) {
-      rmrfactor_mass_down=(long double)nle_state->input_sample_mp;
-      sprintf(rmrfactor_mass_str_down, "mP");
-    } else if (nle_state->term1.rmrfactor_mass_id_down == 1) {
-      rmrfactor_mass_down=(long double)nle_state->input_sample_v;
-      sprintf(rmrfactor_mass_str_down, "v");
-    } else if (nle_state->term1.rmrfactor_mass_id_down == 2) {
-      rmrfactor_mass_down=(long double)nle_state->input_sample_mz;
-      sprintf(rmrfactor_mass_str_down, "mz");
-    } else if (nle_state->term1.rmrfactor_mass_id_down == 3) {
-      rmrfactor_mass_down=(long double)nle_state->input_sample_mw;
-      sprintf(rmrfactor_mass_str_down, "mw");
-    } else if (nle_state->term1.rmrfactor_mass_id_down == 4) {
-      rmrfactor_mass_down=(long double)nle_state->input_sample_mh0;
-      sprintf(rmrfactor_mass_str_down, "mh0");
-    } else if (nle_state->term1.rmrfactor_mass_id_down == 5) {
-      rmrfactor_mass_down=(long double)nle_state->input_sample_muser;
-      sprintf(rmrfactor_mass_str_down, "muser");
-    }
-  } else {
-    rmrf_str[0]=0;
-  }
-
-  // generate smrfactor string if (1-smr) is enabled
+  getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
+  getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
+  getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
   if (nle_config->smrfactor_1minus_enable == 1) {
     getSmrfStr(nle_config, smrf_str, nle_state->term1.current_smrfactors, nle_state->term1.smrfactor);
-    if (nle_config->rmrfactor_1minus_enable == 1) {
-      getRmrfStr(nle_config, rmrf_str, nle_state->term1.current_rmrfactors, nle_state->term1.rmrfactor);
-    } else {
-      rmrf_str[0]=0;
-    }
   } else {
     smrf_str[0]=0;
   }
 
-  term1_static=((long double)nle_state->term1.current_match->match_up / (long double)nle_state->term1.current_match->match_down) / (long double)nle_state->term1.current_match->static_multiplier;
-  term2_static=((long double)nle_state->term2.current_match->match_up / (long double)nle_state->term2.current_match->match_down) / (long double)nle_state->term2.current_match->static_multiplier;
-  term3_static=((long double)nle_state->term3.current_match->match_up / (long double)nle_state->term3.current_match->match_down) / (long double)nle_state->term3.current_match->static_multiplier;
+  term1_static=((long double)nle_state->term1.current_match->match_up / (long double)nle_state->term1.current_match->match_down) / nle_state->term1.current_match->static_multiplier;
+  term2_static=((long double)nle_state->term2.current_match->match_up / (long double)nle_state->term2.current_match->match_down) / nle_state->term2.current_match->static_multiplier;
+  term3_static=((long double)nle_state->term3.current_match->match_up / (long double)nle_state->term3.current_match->match_down) / nle_state->term3.current_match->static_multiplier;
 
   // determine which three variables have the highest uncertainty and will be used as outputs (floated)
 #ifdef DEBUG20
@@ -439,7 +383,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   printf("debug, term2=%s\n", term2_formula_str);
   printf("debug, term3=%s\n", term3_formula_str);
   if (nle_config->smrfactor_1minus_enable == 1) {
-    printf("debug, rmrf= %s, smrf=%s\n", rmrf_str, smrf_str);
+    printf("debug, smrf= %s\n", smrf_str);
   }
   printInputSamples(nle_state);
   printUses(&nle_state->all_uses);
@@ -1103,38 +1047,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             cos2w=1.0 - sin2w;
                           }
 
-                          // set reference mass ratio masses and factors if (1-rmr-smr) is enabled
-                          if (nle_config->rmrfactor_1minus_enable == 1) {
-                            if (nle_state->term1.rmrfactor_mass_id_up == 0) {
-                              rmrfactor_mass_up=mp;
-                            } else if (nle_state->term1.rmrfactor_mass_id_up == 1) {
-                              rmrfactor_mass_up=v;
-                            } else if (nle_state->term1.rmrfactor_mass_id_up == 2) {
-                              rmrfactor_mass_up=mz;
-                            } else if (nle_state->term1.rmrfactor_mass_id_up == 3) {
-                              rmrfactor_mass_up=mw;
-                            } else if (nle_state->term1.rmrfactor_mass_id_up == 4) {
-                              rmrfactor_mass_up=mh0;
-                            } else if (nle_state->term1.rmrfactor_mass_id_up == 5) {
-                              rmrfactor_mass_up=muser;
-                            }
-                            if (nle_state->term1.rmrfactor_mass_id_down == 0) {
-                              rmrfactor_mass_down=mp;
-                            } else if (nle_state->term1.rmrfactor_mass_id_down == 1) {
-                              rmrfactor_mass_down=v;
-                            } else if (nle_state->term1.rmrfactor_mass_id_down == 2) {
-                              rmrfactor_mass_down=mz;
-                            } else if (nle_state->term1.rmrfactor_mass_id_down == 3) {
-                              rmrfactor_mass_down=mw;
-                            } else if (nle_state->term1.rmrfactor_mass_id_down == 4) {
-                              rmrfactor_mass_down=mh0;
-                            } else if (nle_state->term1.rmrfactor_mass_id_down == 5) {
-                              rmrfactor_mass_down=muser;
-                            }
-                            rmrf=(long double)nle_state->term1.rmrfactor * rmrfactor_mass_up / rmrfactor_mass_down;
-                          }
-
-                          // set solution mass ratio reference mass and factors
                           if (nle_state->term1.current_match->smrfactor_mass_id == 0) {
                             term1_smrfactor_mass=mp;
                           } else if (nle_state->term1.current_match->smrfactor_mass_id == 1) {
@@ -1175,49 +1087,27 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             term3_smrfactor_mass=muser;
                           }
 
-                          // set mass component of each term
                           if (nle_config->smrfactor_1minus_enable == 1) {
                             smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_smrfactor_mass;
                             smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_smrfactor_mass;
                             smrf_sm3=nle_state->term1.smrfactor * sm3 / term1_smrfactor_mass;
-                            if (nle_config->rmrfactor_1minus_enable == 1) { 
-                              // check if (1-rmr-smr) is negative for sm1 and invert inside and outside radical
-                              if ((1.0 - rmrf - smrf_sm1) < 0) {
-                              term1_mass_sm1=-powl(-(1.0 - rmrf - smrf_sm1), term1_exp);
-                              } else {
-                                term1_mass_sm1=powl((1.0 - rmrf - smrf_sm1), term1_exp);
-                              }
-                              // check if (1-rmr-smr) is negative for sm2 and invert inside and outside radical
-                              if ((1.0 - rmrf - smrf_sm2) < 0) {
-                                term1_mass_sm2=-powl(-(1.0 - rmrf - smrf_sm2), term1_exp);
-                              } else {
-                                term1_mass_sm2=powl((1.0 - rmrf - smrf_sm2), term1_exp);
-                              }
-                              // check if (1-rmr-smr) is negative for sm3 and invert inside and outside radical
-                              if ((1.0 - rmrf - smrf_sm3) < 0) {
-                                term1_mass_sm3=-powl(-(1.0 - rmrf - smrf_sm3), term1_exp);
-                              } else {
-                                term1_mass_sm3=powl((1.0 - rmrf - smrf_sm3), term1_exp);
-                              }
+                            // check if (1-smr) is negative for sm1 and invert inside and outside radical
+                            if ((1.0 - smrf_sm1) < 0) {
+                              term1_mass_sm1=-powl(-(1.0 - smrf_sm1), term1_exp);
                             } else {
-                              // check if (1-smr) is negative for sm1 and invert inside and outside radical
-                              if ((1.0 - smrf_sm1) < 0) {
-                                term1_mass_sm1=-powl(-(1.0 - smrf_sm1), term1_exp);
-                              } else {
-                                term1_mass_sm1=powl((1.0 - smrf_sm1), term1_exp);
-                              }
-                              // check if (1-smr) is negative for sm2 and invert inside and outside radical
-                              if ((1.0 - smrf_sm2) < 0) {
-                                term1_mass_sm2=-powl(-(1.0 - smrf_sm2), term1_exp);
-                              } else {
-                                term1_mass_sm2=powl((1.0 - smrf_sm2), term1_exp);
-                              }
-                              // check if (1-smr) is negative for sm3 and invert inside and outside radical
-                              if ((1.0 - smrf_sm3) < 0) {
-                                term1_mass_sm3=-powl(-(1.0 - smrf_sm3), term1_exp);
-                              } else {
-                                term1_mass_sm3=powl((1.0 - smrf_sm3), term1_exp);
-                              }
+                              term1_mass_sm1=powl((1.0 - smrf_sm1), term1_exp);
+                            }
+                            // check if (1-smr) is negative for sm2 and invert inside and outside radical
+                            if ((1.0 - smrf_sm2) < 0) {
+                              term1_mass_sm2=-powl(-(1.0 - smrf_sm2), term1_exp);
+                            } else {
+                              term1_mass_sm2=powl((1.0 - smrf_sm2), term1_exp);
+                            }
+                            // check if (1-smr) is negative for sm3 and invert inside and outside radical
+                            if ((1.0 - smrf_sm3) < 0) {
+                              term1_mass_sm3=-powl(-(1.0 - smrf_sm3), term1_exp);
+                            } else {
+                              term1_mass_sm3=powl((1.0 - smrf_sm3), term1_exp);
                             }
                             term2_mass_sm1=powl(smrf_sm1, term2_exp);
                             term2_mass_sm2=powl(smrf_sm2, term2_exp);
@@ -1236,7 +1126,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             term3_mass_sm3=powl((sm3 / term3_smrfactor_mass), term3_exp);
                           }
 
-                          // set outfactor_rmr masses for each term if configured (indepentend from and not to be confused with rmrfactor masses in (1-rmr-smr) mode)
                           if (nle_state->term1.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 0) {
                               outfactor_rmr_mass_up=mp;
@@ -1278,6 +1167,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           } else {
                             term1_cos2w=1.0;
                           }
+
                           if (nle_state->term2.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 0) {
                               outfactor_rmr_mass_up=mp;
@@ -1319,6 +1209,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           } else {
                             term2_cos2w=1.0;
                           }
+
                           if (nle_state->term3.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 0) {
                               outfactor_rmr_mass_up=mp;
@@ -1364,7 +1255,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           term2_coefficient=(term2_static * term2_rmr / term2_sin2w) / term2_cos2w;
                           term3_coefficient=(term3_static * term3_rmr / term3_sin2w) / term3_cos2w;
 
-                          // Combine factors for each term and generate test value for each solution mass
                           if (nle_config->nle_mode == 2) {
                             // for 2-term mixed mode, we will use term3 as a pseudo term for the mixing of terms 1 and 2
                             sm1_test_term1=term1_coefficient * term1_mass_sm1 * term1_coefficient * term1_mass_sm1;
@@ -1964,11 +1854,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
     sprintf(out_str_19, "result, %.4f, %3d, %3d, %s, %s, %12lld, 19, term3=%s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, term3_formula_str);
     printf("%s\n", out_str_19);
     if (nle_config->smrfactor_1minus_enable == 1) {
-      if (nle_config->rmrfactor_1minus_enable == 1) {
-        sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s, rmrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str, rmrf_str);
-      } else {
-        sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str);
-      }
+      sprintf(out_str_20, "result, %.4f, %3d, %3d, %s, %s, %12lld, 20, smrf= %s", combined_score, symmetry, complexity, nle_state->exponents_str, mass_str, result_hash, smrf_str);
       printf("%s\n", out_str_20);
     }
     fflush(stdout);

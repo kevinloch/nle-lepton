@@ -72,7 +72,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
       tmpmatchcomplexity=(phase1_match->match_complexity + upcomplexity + downcomplexity);
 #ifdef DEBUG_VERIFY
       printf("debug, term1, match_seq: %d, tmpmatchup: %d, tmpmatchdown: %d, tmpmatchcomplexity: %d, tmphash: %lld\n", i, tmpmatchup, tmpmatchdown, tmpmatchcomplexity, tmphash);
-      getFormulaStr(nle_config, nle_state, term1_formula_str, phase1_match);
+      getFormulaStr(nle_config, term1_formula_str, phase1_match);
       printf("debug, term1, phase1_match=%s\n", term1_formula_str);
       fflush(stdout);
 #endif
@@ -84,7 +84,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
           if (tmpmatchcomplexity <= temp_match->match_complexity) {
 #ifdef DEBUG_VERIFY
             printf("debug, term1, replace, tmpmatchcomplexity: %d, temp_match->match_complexity: %d, tmphash: %lld\n", tmpmatchcomplexity, temp_match->match_complexity, tmphash);
-            getFormulaStr(nle_config, nle_state, term1_formula_str, temp_match);
+            getFormulaStr(nle_config, term1_formula_str, temp_match);
             printf("debug, term1, replace, old:=%s\n", term1_formula_str);
 #endif
             // replace
@@ -134,7 +134,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             initUses(&temp_match->match_uses);
             addUses(&temp_match->match_uses, &phase1_match->match_uses);
 #ifdef DEBUG_VERIFY
-            getFormulaStr(nle_config, nle_state, term1_formula_str, temp_match);
+            getFormulaStr(nle_config, term1_formula_str, temp_match);
             printf("debug, term1, replace, new:=%s\n", term1_formula_str);
             fflush(stdout);
 #endif
@@ -192,7 +192,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         initUses(&term1_match->match_uses);
         addUses(&term1_match->match_uses, &phase1_match->match_uses);
 #ifdef DEBUG_VERIFY
-        getFormulaStr(nle_config, nle_state, term1_formula_str, term1_match);
+        getFormulaStr(nle_config, term1_formula_str, term1_match);
         printf("debug, term1, addnew term1=%s\n", term1_formula_str);
        fflush(stdout);
 #endif
@@ -232,7 +232,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
       tmpmatchcomplexity=(phase1_match->match_complexity + upcomplexity + downcomplexity);
 #ifdef DEBUG_VERIFY
       printf("debug, term2, match_seq: %d, tmpmatchup: %d, tmpmatchdown: %d, tmpmatchcomplexity: %d, tmphash: %lld\n", i, tmpmatchup, tmpmatchdown, tmpmatchcomplexity, tmphash);
-      getFormulaStr(nle_config, nle_state, term2_formula_str, phase1_match);
+      getFormulaStr(nle_config, term2_formula_str, phase1_match);
       printf("debug, term2, phase1_match=%s\n", term2_formula_str);
       fflush(stdout);
 #endif
@@ -244,7 +244,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
           if (tmpmatchcomplexity <= temp_match->match_complexity) {
 #ifdef DEBUG_VERIFY
             printf("debug, term2, replace, tmpmatchcomplexity: %d, temp_match->match_complexity: %d, tmpmash: %lld\n", tmpmatchcomplexity, temp_match->match_complexity, tmphash);
-            getFormulaStr(nle_config, nle_state, term2_formula_str, temp_match);
+            getFormulaStr(nle_config, term2_formula_str, temp_match);
             printf("debug, term2, replace, old:=%s\n", term2_formula_str);
 #endif
             // replace
@@ -294,7 +294,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             initUses(&temp_match->match_uses);
             addUses(&temp_match->match_uses, &phase1_match->match_uses);
 #ifdef DEBUG_VERIFY
-            getFormulaStr(nle_config, nle_state, term2_formula_str, temp_match);
+            getFormulaStr(nle_config, term2_formula_str, temp_match);
             printf("debug, term2, replace, new:=%s\n", term2_formula_str);
            fflush(stdout);
 #endif
@@ -352,7 +352,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         initUses(&term2_match->match_uses);
         addUses(&term2_match->match_uses, &phase1_match->match_uses);
 #ifdef DEBUG_VERIFY
-        getFormulaStr(nle_config, nle_state, term2_formula_str, term2_match);
+        getFormulaStr(nle_config, term2_formula_str, term2_match);
         printf("debug, term2, addnew term2=%s\n", term2_formula_str);
         fflush(stdout);
 #endif
@@ -392,7 +392,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
       tmpmatchcomplexity=(phase1_match->match_complexity + upcomplexity + downcomplexity);
 #ifdef DEBUG_VERIFY
       printf("debug, term3, match_seq: %d, tmpmatchup: %d, tmpmatchdown: %d, tmpmatchcomplexity: %d, tmphash: %lld\n", i, tmpmatchup, tmpmatchdown, tmpmatchcomplexity, tmphash);
-      getFormulaStr(nle_config, nle_state, term3_formula_str, phase1_match);
+      getFormulaStr(nle_config, term3_formula_str, phase1_match);
       printf("debug, term3, phase1_match=%s\n", term3_formula_str);
       fflush(stdout);
 #endif
@@ -404,7 +404,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
           if (tmpmatchcomplexity <= temp_match->match_complexity) {
 #ifdef DEBUG_VERIFY
             printf("debug, term3, replace, tmpmatchcomplexity: %d, temp_match->match_complexity: %d, tmphash: %lld\n", tmpmatchcomplexity, temp_match->match_complexity, tmphash);
-            getFormulaStr(nle_config, nle_state, term3_formula_str, temp_match);
+            getFormulaStr(nle_config, term3_formula_str, temp_match);
             printf("debug, term3, replace, old:=%s\n", term3_formula_str);
 #endif
             // replace
@@ -454,7 +454,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
             initUses(&temp_match->match_uses);
             addUses(&temp_match->match_uses, &phase1_match->match_uses);
 #ifdef DEBUG_VERIFY
-            getFormulaStr(nle_config, nle_state, term3_formula_str, temp_match);
+            getFormulaStr(nle_config, term3_formula_str, temp_match);
             printf("debug, term3, replace, new:=%s\n", term3_formula_str);
             fflush(stdout);
 #endif
@@ -512,7 +512,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         initUses(&term3_match->match_uses);
         addUses(&term3_match->match_uses, &phase1_match->match_uses);
 #ifdef DEBUG_VERIFY
-        getFormulaStr(nle_config, nle_state, term3_formula_str, term3_match);
+        getFormulaStr(nle_config, term3_formula_str, term3_match);
         printf("debug, term3, addnew term3=%s\n", term3_formula_str);
         fflush(stdout);
 #endif
@@ -530,19 +530,19 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
   if (nle_config->phase2_status_enable == 1) {
     if (nle_config->nle_mode == 2) {
       if (nle_state->nle_mixing_polarity == 0) {
-        printf("status, Solving phase 2 formulas for masses, input sample: %lld, exponents: %s, mixing polarity: -,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+        printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s, mixing polarity: -,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
       } else if (nle_state->nle_mixing_polarity == 1) {
-        printf("status, Solving phase 2 formulas for masses, input sample: %lld, exponents: %s, mixing polarity: +,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+        printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s, mixing polarity: +,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
       }
     } else {
-      printf("status, Solving phase 2 formulas for masses, input sample: %lld, exponents: %s,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
+      printf("status, Solving phase 2 formulas for masses, input sample: %d, exponents: %s,                 progress: total (0/%lld) term1 (0/%d) term2 (0/%d) term3 (0/%d)\n", nle_state->phase1_seq, nle_state->exponents_str, combo_count, nle_state->term1.matches_count, nle_state->term2.matches_count, nle_state->term3.matches_count);
     }
     fflush(stdout);
   }
   for (t1=0; t1 < nle_state->term1.matches_count; t1++) {
 #ifdef DEBUG_VERIFY
     nle_state->term1.current_match=term1_match;
-    getFormulaStr(nle_config, nle_state, term1_formula_str, nle_state->term1.current_match);
+    getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
     printf("term1=%s\n", term1_formula_str);
     fflush(stdout);
 #endif
@@ -552,7 +552,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
     for (t2=0; t2 < nle_state->term2.matches_count; t2++) {
 #ifdef DEBUG_VERIFY
       nle_state->term2.current_match=term2_match;
-      getFormulaStr(nle_config, nle_state, term2_formula_str, nle_state->term2.current_match);
+      getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
       printf("term2=%s\n", term2_formula_str);
       fflush(stdout);
 #endif
@@ -563,7 +563,7 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
         combo++;
 #ifdef DEBUG_VERIFY
         nle_state->term3.current_match=term3_match;
-        getFormulaStr(nle_config, nle_state, term3_formula_str, nle_state->term3.current_match);
+        getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
         printf("term3=%s\n", term3_formula_str);
         fflush(stdout);
 #endif
@@ -651,23 +651,23 @@ void verifyMatches(nle_config_t *nle_config, nle_state_t *nle_state) {
                   if (precision < 1.0E30) {
                     if (nle_config->nle_mode == 2) {
                       if (nle_state->nle_mixing_polarity == 0) {
-                        printf("status, Solved  phase 2 formula  for masses, input sample: %lld, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       } else {
-                        printf("status, Solved  phase 2 formula  for masses, input sample: %lld, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       }
                     } else {
-                      printf("status, Solved  phase 2 formula  for masses, input sample: %lld, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                      printf("status, Solved  phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                     }
                     fflush(stdout);
                   } else {
                     if (nle_config->nle_mode == 2) {
                       if (nle_state->nle_mixing_polarity == 0) {
-                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %lld, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: -, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       } else {
-                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %lld, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mixing polarity: +, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                       }
                     } else {
-                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %lld, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
+                        printf("status, Failed to solve phase 2 formula  for masses, input sample: %d, exponents: %s, mass mode: %d%d%d, progress: total (%lld/%lld) term1 (%d/%d) term2 (%d/%d) term3 (%d/%d), precision: %.3Le, (%6.4fs)\n", nle_state->phase1_seq, nle_state->exponents_str, term1_match->smrfactor_mass_id, term2_match->smrfactor_mass_id, term3_match->smrfactor_mass_id, combo, combo_count, t1+1, nle_state->term1.matches_count, t2+1, nle_state->term2.matches_count, t3+1, nle_state->term3.matches_count, precision, elapsed_time);
                     }
                     fflush(stdout);
                   } // end precision
