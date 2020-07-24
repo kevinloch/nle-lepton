@@ -97,6 +97,18 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
     }
 
+    // check if exp_inv_include is set and enforce
+    if (nle_config->exp_inv_include != 0) {
+      if ((nle_state->term1.exp_inv != nle_config->exp_inv_include) && (nle_state->term1.exp_inv != -nle_config->exp_inv_include) && (nle_state->term2.exp_inv != nle_config->exp_inv_include)&& (nle_state->term2.exp_inv != -nle_config->exp_inv_include)) {
+        valid=0;
+      }
+    }
+
+    // enforce exp_inv_min
+    if ((nle_state->term1.exp_inv < nle_config->exp_inv_min) && (nle_state->term1.exp_inv > -nle_config->exp_inv_min) && (nle_state->term2.exp_inv < nle_config->exp_inv_min)&& (nle_state->term2.exp_inv > -nle_config->exp_inv_min)) {
+      valid=0;
+    }
+
     // special exponent checks for 2-term mode
     if (nle_config->nle_mode == 2) {
       if ((nle_state->term1.exp_inv * nle_state->term2.exp_inv) < 0) {

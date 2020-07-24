@@ -1,3 +1,6 @@
+4.3.6 New features:
+      - Added config file option 'exp_inv_include' to require that at least one term has this specific inverse exponent (can be + or - this value, 0 = random)
+
 4.3.5 Bug fixes:
       - Fixed critical bug where some infactors and outfactors were being improperly cast to single precision.  This was limiting precision of results in phase2
         which could cause false negative matches against experimental uncertainties, especially when solving for v or sm2.  This also caused many unnecessary

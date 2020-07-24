@@ -307,21 +307,21 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   term2_exp = 1.0 / (long double)nle_state->term2.exp_inv;
   term3_exp = 1.0 / (long double)nle_state->term3.exp_inv;
 
-  smrf_str[0]=0;
-
   // generate formula strings for each term
   getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
   getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
   getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
+
+  // generate smrfactor string if (1-smr) is enabled
   if (nle_config->smrfactor_1minus_enable == 1) {
     getSmrfStr(nle_config, smrf_str, nle_state->term1.current_smrfactors, nle_state->term1.smrfactor);
   } else {
     smrf_str[0]=0;
   }
 
-  term1_static=((long double)nle_state->term1.current_match->match_up / (long double)nle_state->term1.current_match->match_down) / nle_state->term1.current_match->static_multiplier;
-  term2_static=((long double)nle_state->term2.current_match->match_up / (long double)nle_state->term2.current_match->match_down) / nle_state->term2.current_match->static_multiplier;
-  term3_static=((long double)nle_state->term3.current_match->match_up / (long double)nle_state->term3.current_match->match_down) / nle_state->term3.current_match->static_multiplier;
+  term1_static=((long double)nle_state->term1.current_match->match_up / (long double)nle_state->term1.current_match->match_down) / (long double)nle_state->term1.current_match->static_multiplier;
+  term2_static=((long double)nle_state->term2.current_match->match_up / (long double)nle_state->term2.current_match->match_down) / (long double)nle_state->term2.current_match->static_multiplier;
+  term3_static=((long double)nle_state->term3.current_match->match_up / (long double)nle_state->term3.current_match->match_down) / (long double)nle_state->term3.current_match->static_multiplier;
 
   // determine which three variables have the highest uncertainty and will be used as outputs (floated)
 #ifdef DEBUG20
@@ -1047,6 +1047,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             cos2w=1.0 - sin2w;
                           }
 
+                          // set solution mass ratio reference mass and factors
                           if (nle_state->term1.current_match->smrfactor_mass_id == 0) {
                             term1_smrfactor_mass=mp;
                           } else if (nle_state->term1.current_match->smrfactor_mass_id == 1) {
@@ -1087,6 +1088,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             term3_smrfactor_mass=muser;
                           }
 
+                          // set mass component of each term
                           if (nle_config->smrfactor_1minus_enable == 1) {
                             smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_smrfactor_mass;
                             smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_smrfactor_mass;
@@ -1126,6 +1128,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                             term3_mass_sm3=powl((sm3 / term3_smrfactor_mass), term3_exp);
                           }
 
+                          // set outfactor_rmr masses for each term if configured (independent from and not to be confused with rmrfactor masses in (1-rmr-smr) mode)
                           if (nle_state->term1.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term1.current_match->outfactor_rmr_mass_id_up == 0) {
                               outfactor_rmr_mass_up=mp;
@@ -1167,7 +1170,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           } else {
                             term1_cos2w=1.0;
                           }
-
                           if (nle_state->term2.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term2.current_match->outfactor_rmr_mass_id_up == 0) {
                               outfactor_rmr_mass_up=mp;
@@ -1209,7 +1211,6 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           } else {
                             term2_cos2w=1.0;
                           }
-
                           if (nle_state->term3.current_match->outfactor_rmr_exp_up != 0) {
                             if (nle_state->term3.current_match->outfactor_rmr_mass_id_up == 0) {
                               outfactor_rmr_mass_up=mp;
@@ -1255,6 +1256,7 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
                           term2_coefficient=(term2_static * term2_rmr / term2_sin2w) / term2_cos2w;
                           term3_coefficient=(term3_static * term3_rmr / term3_sin2w) / term3_cos2w;
 
+                          // Combine factors for each term and generate test value for each solution mass
                           if (nle_config->nle_mode == 2) {
                             // for 2-term mixed mode, we will use term3 as a pseudo term for the mixing of terms 1 and 2
                             sm1_test_term1=term1_coefficient * term1_mass_sm1 * term1_coefficient * term1_mass_sm1;

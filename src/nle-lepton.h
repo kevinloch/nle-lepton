@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3.5"
+#define NLE_VERSION "4.3.6-dev-01"
 
 typedef struct {
   int G;
@@ -156,7 +156,7 @@ typedef struct {
 
 typedef struct {
   __uint128_t pcg_state;
-  int phase1_seq;
+  long long phase1_seq;
   double input_sample_sm1;
   double input_sample_sm2;
   double input_sample_sm3;
@@ -208,7 +208,9 @@ typedef struct {
   double ref_sm3_relerror;
   int nle_mode;
   int nle_mixing_polarity;
+  int exp_inv_min;
   int exp_inv_max;
+  int exp_inv_include;
   int exp_inv_term1_force;
   int exp_inv_term2_force;
   int exp_inv_term3_force;

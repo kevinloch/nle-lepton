@@ -22,7 +22,9 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->ref_sm3_error=0.12E6;
   nle_config->nle_mode=3;
   nle_config->nle_mixing_polarity=0;
+  nle_config->exp_inv_min=1;
   nle_config->exp_inv_max=9;
+  nle_config->exp_inv_include=0;
   nle_config->exp_inv_term1_force=0;
   nle_config->exp_inv_term2_force=0;
   nle_config->exp_inv_term3_force=0;
@@ -198,7 +200,9 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionDouble(&nle_config->ref_sm3_error, option, value, "ref_sm3_error");
   checkOptionInt(&nle_config->nle_mode, option, value, "nle_mode");
   checkOptionInt(&nle_config->nle_mixing_polarity, option, value, "nle_mixing_polarity");
+  checkOptionInt(&nle_config->exp_inv_min, option, value, "exp_inv_min");
   checkOptionInt(&nle_config->exp_inv_max, option, value, "exp_inv_max");
+  checkOptionInt(&nle_config->exp_inv_include, option, value, "exp_inv_include");
   checkOptionInt(&nle_config->exp_inv_term1_force, option, value, "exp_inv_term1_force");
   checkOptionInt(&nle_config->exp_inv_term2_force, option, value, "exp_inv_term2_force");
   checkOptionInt(&nle_config->exp_inv_term3_force, option, value, "exp_inv_term3_force");
