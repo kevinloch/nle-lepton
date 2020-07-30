@@ -1,5 +1,10 @@
 4.3.6 New features:
       - Added config file option 'exp_inv_include' to require that at least one term has this specific inverse exponent (can be + or - this value, 0 = random)
+      - Added 'term1 signature' to output when phase 1 is solved in (1-smr) mode.   This shows whether (1-smr) is positive or negative for sm1, sm2, and sm3.
+
+      Bug fixes:
+      - Removed confusing "sqrt()" label for reporting c1 and c2 when phase1 is solved in 2-term modes.  The reported c1 and c2 still represent the unsquared term1 and term2
+        coefficients while phase1 internally works with the squared terms and coefficients.  Phase 1 detail (deprecated) still shows the squared coefficients used internally.
 
 4.3.5 Bug fixes:
       - Fixed critical bug where some infactors and outfactors were being improperly cast to single precision.  This was limiting precision of results in phase2

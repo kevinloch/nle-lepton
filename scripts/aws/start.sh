@@ -23,7 +23,7 @@ do
       for (( i=1; i<=${numcpu}; i++ ))
       do
         seed=$((${i} * 1000000))
-        ./${cmd} -s ${seed} > leptonout-${i}.txt 2>&1 &
+        ./${cmd} -c ${cfg} -s ${seed} > leptonout-${i}.txt 2>&1 &
       done
     fi
   fi
