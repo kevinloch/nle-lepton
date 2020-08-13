@@ -180,7 +180,7 @@ int selectOutputs(nle_config_t *nle_config, nle_state_t *nle_state) {
         unchosen_outputs[i]=0;
       } 
     } else if (i == 5) {
-      if (nle_state->all_uses.m_user == 1) {
+      if ((nle_state->all_uses.m_user == 1) && (nle_config->smrfactor_mass_user_random == 0) && (nle_config->smrfactor_mass_user_scan == 0)) {
         unchosen_outputs[i]=1;
       } else {
         unchosen_outputs[i]=0;

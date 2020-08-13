@@ -14,14 +14,10 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->phase1_status_enable=1;
   nle_config->phase1_solution_detail=1;
   nle_config->phase2_status_enable=1;
-  nle_config->ref_sm1=0.51099895000E6;
-  nle_config->ref_sm1_error=0.00000000015E6;
-  nle_config->ref_sm2=105.6583755E6;
-  nle_config->ref_sm2_error=0.0000023E6;
-  nle_config->ref_sm3=1776.86E6;
-  nle_config->ref_sm3_error=0.12E6;
   nle_config->nle_mode=3;
+  nle_config->smrfactor_1minus_enable=0;
   nle_config->nle_mixing_polarity=0;
+  nle_config->smrfactor_mass_configuration=-1;
   nle_config->exp_inv_min=1;
   nle_config->exp_inv_max=9;
   nle_config->exp_inv_include=0;
@@ -32,7 +28,9 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->exp_inv_2seq_limit=12;
   nle_config->exp_inv_3seq_limit=9;
   nle_config->exp_inv_4seq_limit=6;
+  nle_config->exp_pos_enable=1;
   nle_config->exp_neg_enable=1;
+  nle_config->phase1_run_continuous=1;
   nle_config->phase1_random_samples_enable=1;
   nle_config->phase1_filter=5;
   nle_config->phase1_int_match_max=16;
@@ -46,19 +44,23 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->phase2_complexity_max=75;
   nle_config->phase2_check_nbv_nss=1;
   nle_config->phase2_check_weak=1;
+  nle_config->phase2_check_rmr=1;
   nle_config->phase2_results_window=1.1;
   nle_config->phase2_results_always=0;
   nle_config->phase2_ignore_small_rel_unc=0;
-  nle_config->phase2_check_rmr=1;
   nle_config->smrfactor_mass_mp_enable=1;
   nle_config->smrfactor_mass_v_enable=1;
   nle_config->smrfactor_mass_mz_enable=1;
   nle_config->smrfactor_mass_mw_enable=1;
   nle_config->smrfactor_mass_mh0_enable=1;
   nle_config->smrfactor_mass_user_enable=0;
+  nle_config->smrfactor_mass_user_random=0;
+  nle_config->smrfactor_mass_user_scan=0;
+  nle_config->smrfactor_mass_user_min=1.0E3;
+  nle_config->smrfactor_mass_user_max=1.0E30;
+  nle_config->smrfactor_mass_user_step=0.01;
   nle_config->smrfactor_mass_user=1.0E9;
   nle_config->smrfactor_mass_user_error=0.0;
-  nle_config->smrfactor_1minus_enable=0;
   nle_config->smrfactor_rational_max=32;
   nle_config->smrfactor_rational_filter=1;
   nle_config->smrfactor_2_exp_up_max=1;
@@ -110,6 +112,12 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->outfactor_rmr_mw_enable=0;
   nle_config->outfactor_rmr_mh0_enable=0;
   nle_config->outfactor_rmr_user_enable=0;
+  nle_config->ref_sm1=0.51099895000E6;
+  nle_config->ref_sm1_error=0.00000000015E6;
+  nle_config->ref_sm2=105.6583755E6;
+  nle_config->ref_sm2_error=0.0000023E6;
+  nle_config->ref_sm3=1776.86E6;
+  nle_config->ref_sm3_error=0.12E6;
   nle_config->ref_c=2.997924580000E+08;
   nle_config->ref_h=6.62607015E-34;
   nle_config->ref_hbar=1.05457181764616E-34;
@@ -139,14 +147,11 @@ void checkOptionBool(int *config_int, char *option, char *value, char *matchstr)
 
   matchstr_length=strlen(matchstr);
   if ((strstr(option, matchstr) != NULL) && (option[matchstr_length] != '_')) {
-    //printf("Boolean option: %s, value: %s\n", option, value);
     if (strcasestr(value, "yes") != NULL) {
       *config_int=1;
     } else {
       *config_int=0;
     }
-    //printf("set value: %d\n", *config_int);
-    //fflush(stdout);
   }
 }
 
@@ -155,10 +160,16 @@ void checkOptionInt(int *config_int, char *option, char *value, char *matchstr) 
   
   matchstr_length=strlen(matchstr);
   if ((strstr(option, matchstr) != NULL) && (option[matchstr_length] != '_')) {
-    //printf("Integer option: %s, value: %s\n", option, value);
     *config_int=strtol(value, NULL, 10);
-    //printf("set value: %d\n", *config_int);
-    //fflush(stdout);
+  }
+}
+
+void checkOptionLL(long long *config_ll, char *option, char *value, char *matchstr) {
+  size_t matchstr_length;
+
+  matchstr_length=strlen(matchstr);
+  if ((strstr(option, matchstr) != NULL) && (option[matchstr_length] != '_')) {
+    *config_ll=strtoll(value, NULL, 10);
   }
 }
 
@@ -167,10 +178,7 @@ void checkOptionDouble(double *config_double, char *option, char *value, char *m
   
   matchstr_length=strlen(matchstr);
   if ((strstr(option, matchstr) != NULL) && (option[matchstr_length] != '_')) {
-    //printf("Double option: %s, value: %s\n", option, value);
     *config_double=strtod(value, NULL);
-    //printf("set value: %.16e\n", *config_double);
-    //fflush(stdout);
   }
 }
 
@@ -179,10 +187,7 @@ void checkOptionStr(char *config_str,  char *option, char *value, char *matchstr
   
   matchstr_length=strlen(matchstr);
   if ((strstr(option, matchstr) != NULL) && (option[matchstr_length] != '_')) {
-    //printf("String option: %s, value: %s\n", option, value);
     strcpy(config_str, value);
-    //printf("set value: %s\n", config_str);
-    //fflush(stdout);
   }
 }
 
@@ -192,14 +197,10 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionBool(&nle_config->phase1_status_enable, option, value, "phase1_status_enable");
   checkOptionBool(&nle_config->phase1_solution_detail, option, value, "phase1_solution_detail");
   checkOptionBool(&nle_config->phase2_status_enable, option, value, "phase2_status_enable");
-  checkOptionDouble(&nle_config->ref_sm1, option, value, "ref_sm1");
-  checkOptionDouble(&nle_config->ref_sm1_error, option, value, "ref_sm1_error");
-  checkOptionDouble(&nle_config->ref_sm2, option, value, "ref_sm2");
-  checkOptionDouble(&nle_config->ref_sm2_error, option, value, "ref_sm2_error");
-  checkOptionDouble(&nle_config->ref_sm3, option, value, "ref_sm3");
-  checkOptionDouble(&nle_config->ref_sm3_error, option, value, "ref_sm3_error");
   checkOptionInt(&nle_config->nle_mode, option, value, "nle_mode");
+  checkOptionBool(&nle_config->smrfactor_1minus_enable, option, value, "smrfactor_1minus_enable");
   checkOptionInt(&nle_config->nle_mixing_polarity, option, value, "nle_mixing_polarity");
+  checkOptionInt(&nle_config->smrfactor_mass_configuration, option, value, "smrfactor_mass_configuration");
   checkOptionInt(&nle_config->exp_inv_min, option, value, "exp_inv_min");
   checkOptionInt(&nle_config->exp_inv_max, option, value, "exp_inv_max");
   checkOptionInt(&nle_config->exp_inv_include, option, value, "exp_inv_include");
@@ -210,7 +211,9 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionInt(&nle_config->exp_inv_2seq_limit, option, value, "exp_inv_2seq_limit");
   checkOptionInt(&nle_config->exp_inv_3seq_limit, option, value, "exp_inv_3seq_limit");
   checkOptionInt(&nle_config->exp_inv_4seq_limit, option, value, "exp_inv_4seq_limit");
+  checkOptionBool(&nle_config->exp_pos_enable, option, value, "exp_pos_enable");
   checkOptionBool(&nle_config->exp_neg_enable, option, value, "exp_neg_enable");
+  checkOptionBool(&nle_config->phase1_run_continuous, option, value, "phase1_run_continuous");
   checkOptionBool(&nle_config->phase1_random_samples_enable, option, value, "phase1_random_samples_enable");
   checkOptionInt(&nle_config->phase1_filter, option, value, "phase1_filter");
   checkOptionInt(&nle_config->phase1_int_match_max, option, value, "phase1_int_match_max");
@@ -218,25 +221,29 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionDouble(&nle_config->phase1_two_term_test_min, option, value, "phase1_two_term_test_min");
   checkOptionDouble(&nle_config->phase1_two_term_test_max, option, value, "phase1_two_term_test_max");
   checkOptionInt(&nle_config->phase1_unsolvable_checkpoint, option, value, "phase1_unsolvable_checkpoint");
-  checkOptionInt(&nle_config->phase1_mc_samples_limit, option, value, "phase1_mc_samples_limit");
+  checkOptionLL(&nle_config->phase1_mc_samples_limit, option, value, "phase1_mc_samples_limit");
   checkOptionBool(&nle_config->phase2_enable, option, value, "phase2_enable");
   checkOptionInt(&nle_config->phase2_symmetry_min, option, value, "phase2_symmetry_min");
   checkOptionInt(&nle_config->phase2_complexity_max, option, value, "phase2_complexity_max");
   checkOptionBool(&nle_config->phase2_check_nbv_nss, option, value, "phase2_check_nbv_nss");
   checkOptionBool(&nle_config->phase2_check_weak, option, value, "phase2_check_weak");
+  checkOptionBool(&nle_config->phase2_check_rmr, option, value, "phase2_check_rmr");
   checkOptionDouble(&nle_config->phase2_results_window, option, value, "phase2_results_window");
   checkOptionBool(&nle_config->phase2_results_always, option, value, "phase2_results_always");
   checkOptionBool(&nle_config->phase2_ignore_small_rel_unc, option, value, "phase2_ignore_small_rel_unc");
-  checkOptionBool(&nle_config->phase2_check_rmr, option, value, "phase2_check_rmr");
   checkOptionBool(&nle_config->smrfactor_mass_mp_enable, option, value, "smrfactor_mass_mp_enable");
   checkOptionBool(&nle_config->smrfactor_mass_v_enable, option, value, "smrfactor_mass_v_enable");
   checkOptionBool(&nle_config->smrfactor_mass_mz_enable, option, value, "smrfactor_mass_mz_enable");
   checkOptionBool(&nle_config->smrfactor_mass_mw_enable, option, value, "smrfactor_mass_mw_enable");
   checkOptionBool(&nle_config->smrfactor_mass_mh0_enable, option, value, "smrfactor_mass_mh0_enable");
   checkOptionBool(&nle_config->smrfactor_mass_user_enable, option, value, "smrfactor_mass_user_enable");
+  checkOptionBool(&nle_config->smrfactor_mass_user_random, option, value, "smrfactor_mass_user_random");
+  checkOptionBool(&nle_config->smrfactor_mass_user_scan, option, value, "smrfactor_mass_user_scan");
+  checkOptionDouble(&nle_config->smrfactor_mass_user_min, option, value, "smrfactor_mass_user_min");
+  checkOptionDouble(&nle_config->smrfactor_mass_user_max, option, value, "smrfactor_mass_user_max");
+  checkOptionDouble(&nle_config->smrfactor_mass_user_step, option, value, "smrfactor_mass_user_step");
   checkOptionDouble(&nle_config->smrfactor_mass_user, option, value, "smrfactor_mass_user");
   checkOptionDouble(&nle_config->smrfactor_mass_user_error, option, value, "smrfactor_mass_user_error");
-  checkOptionBool(&nle_config->smrfactor_1minus_enable, option, value, "smrfactor_1minus_enable");
   checkOptionInt(&nle_config->smrfactor_rational_max, option, value, "smrfactor_rational_max");
   checkOptionBool(&nle_config->smrfactor_rational_filter, option, value, "smrfactor_rational_filter");
   checkOptionInt(&nle_config->smrfactor_2_exp_up_max, option, value, "smrfactor_2_exp_up_max");
@@ -288,6 +295,12 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionBool(&nle_config->outfactor_rmr_mw_enable, option, value, "outfactor_rmr_mw_enable");
   checkOptionBool(&nle_config->outfactor_rmr_mh0_enable, option, value, "outfactor_rmr_mh0_enable");
   checkOptionBool(&nle_config->outfactor_rmr_user_enable, option, value, "outfactor_rmr_user_enable");
+  checkOptionDouble(&nle_config->ref_sm1, option, value, "ref_sm1");
+  checkOptionDouble(&nle_config->ref_sm1_error, option, value, "ref_sm1_error");
+  checkOptionDouble(&nle_config->ref_sm2, option, value, "ref_sm2");
+  checkOptionDouble(&nle_config->ref_sm2_error, option, value, "ref_sm2_error");
+  checkOptionDouble(&nle_config->ref_sm3, option, value, "ref_sm3");
+  checkOptionDouble(&nle_config->ref_sm3_error, option, value, "ref_sm3_error");
   checkOptionDouble(&nle_config->ref_c, option, value, "ref_c");
   checkOptionDouble(&nle_config->ref_h, option, value, "ref_h");
   checkOptionDouble(&nle_config->ref_hbar, option, value, "ref_hbar");

@@ -1090,9 +1090,15 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
 
                           // set mass component of each term
                           if (nle_config->smrfactor_1minus_enable == 1) {
-                            smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_smrfactor_mass;
-                            smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_smrfactor_mass;
-                            smrf_sm3=nle_state->term1.smrfactor * sm3 / term1_smrfactor_mass;
+                            if (nle_state->smrfactor_mass_configuration == 1) {
+                              smrf_sm1=nle_state->term1.smrfactor * sm1 / term1_smrfactor_mass;
+                              smrf_sm2=nle_state->term1.smrfactor * sm2 / term1_smrfactor_mass;
+                              smrf_sm3=nle_state->term1.smrfactor * sm3 / term1_smrfactor_mass;
+                            } else if (nle_state->smrfactor_mass_configuration == 0) {
+                              smrf_sm1=nle_state->term1.smrfactor * term1_smrfactor_mass / sm1;
+                              smrf_sm2=nle_state->term1.smrfactor * term1_smrfactor_mass / sm2;
+                              smrf_sm3=nle_state->term1.smrfactor * term1_smrfactor_mass / sm3;
+                            }
                             // check if (1-smr) is negative for sm1 and invert inside and outside radical
                             if ((1.0 - smrf_sm1) < 0) {
                               term1_mass_sm1=-powl(-(1.0 - smrf_sm1), term1_exp);

@@ -1,10 +1,24 @@
 4.3.6 New features:
+      - Added config file option 'exp_inv_min' to require that at least one term has an inverse epxonent at least this large (+/-)
       - Added config file option 'exp_inv_include' to require that at least one term has this specific inverse exponent (can be + or - this value, 0 = random)
-      - Added 'term1 signature' to output when phase 1 is solved in (1-smr) mode.   This shows whether (1-smr) is positive or negative for sm1, sm2, and sm3.
+      - Added config file option 'exp_pos_enable' to independently allow positive and negative exponents
+      - Added config file option 'phase1_run_continuous' to independently set run-once or run continuously. Previously this automatically followed set setting
+        of 'phase1_random_samples_enable'
+      - Added config file option 'smrfactor_mass_scan', '_mass_random', '_mass_min', '_mass_max, and '_mass_step' to allow scanning or random selection
+        from a range of values instead of fixed reference masses.  This can be useful for graphing the behavior of two-term test over a wide range of reference         masses in (1-smr) mode, or for arbitrary reference mass scans in all modes
+      - Added 'term1 signature' to output when phase 1 is solved in (1-smr) mode.  This shows whether (1-smr) is positive or negative for sm1, sm2, and sm3.
+      - Added c3 to phase1 output status and results for (1-smr) mode
+      - "Solving phase1..." status messages now also output for (1-smr) mode
 
       Bug fixes:
-      - Removed confusing "sqrt()" label for reporting c1 and c2 when phase1 is solved in 2-term modes.  The reported c1 and c2 still represent the unsquared term1 and term2
-        coefficients while phase1 internally works with the squared terms and coefficients.  Phase 1 detail (deprecated) still shows the squared coefficients used internally.
+      - Config file option 'phase1_mc_samples_limit' is now a long long integer to support > 2 billion samples
+      - Removed confusing "sqrt()" label for reporting c1 and c2 when phase1 is solved in 2-term modes.  The reported c1 and c2 still represent the unsquared
+        term1 and term2 coefficients while phase1 internally works with the squared terms and coefficients.  Phase 1 detail (deprecated) still shows the squared
+        coefficients while phase1 internally works with the squared terms and coefficients.  Phase 1 detail (deprecated) still shows the squared coefficients
+        used internally.
+      - Fixed bug where same exponents in (1-smr) mode were not allowed when 'exp_neg_enable=no'
+      - /aws/start.sh now uses the specified config file when launching program
+      - Fixed bug where 'stuckprecision' was not set high enough to always cause it to be ignored in 2-term modes
 
 4.3.5 Bug fixes:
       - Fixed critical bug where some infactors and outfactors were being improperly cast to single precision.  This was limiting precision of results in phase2

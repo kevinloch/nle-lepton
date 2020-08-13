@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3.6-dev-02"
+#define NLE_VERSION "4.3.6-dev-08"
 
 typedef struct {
   int G;
@@ -172,6 +172,9 @@ typedef struct {
   double input_sample_muser;
   char exponents_str[20];
   int nle_mixing_polarity;
+  char nle_mixing_polarity_str[2];
+  int smrfactor_mass_configuration;
+  char smrfactor_mass_configuration_str[5];
   nle_term_state_t term1;
   nle_term_state_t term2;
   nle_term_state_t term3;
@@ -197,17 +200,10 @@ typedef struct {
   int phase1_status_enable;
   int phase1_solution_detail;
   int phase2_status_enable;
-  double ref_sm1;
-  double ref_sm1_error;
-  double ref_sm1_relerror;
-  double ref_sm2;
-  double ref_sm2_error;
-  double ref_sm2_relerror;
-  double ref_sm3;
-  double ref_sm3_error;
-  double ref_sm3_relerror;
   int nle_mode;
+  int smrfactor_1minus_enable;
   int nle_mixing_polarity;
+  int smrfactor_mass_configuration;
   int exp_inv_min;
   int exp_inv_max;
   int exp_inv_include;
@@ -218,7 +214,9 @@ typedef struct {
   int exp_inv_2seq_limit;
   int exp_inv_3seq_limit;
   int exp_inv_4seq_limit;
+  int exp_pos_enable;
   int exp_neg_enable;
+  int phase1_run_continuous;
   int phase1_random_samples_enable;
   int phase1_filter;
   int phase1_int_match_max;
@@ -226,26 +224,30 @@ typedef struct {
   double phase1_two_term_test_min;
   double phase1_two_term_test_max;
   int phase1_unsolvable_checkpoint;
-  int phase1_mc_samples_limit;
+  long long phase1_mc_samples_limit;
   int phase2_enable;
   int phase2_symmetry_min;
   int phase2_complexity_max;
   int phase2_check_nbv_nss;
   int phase2_check_weak;
+  int phase2_check_rmr;
   double phase2_results_window;
   int phase2_results_always; 
   int phase2_ignore_small_rel_unc;
-  int phase2_check_rmr;
   int smrfactor_mass_mp_enable;
   int smrfactor_mass_v_enable;
   int smrfactor_mass_mz_enable;
   int smrfactor_mass_mw_enable;
   int smrfactor_mass_mh0_enable;
   int smrfactor_mass_user_enable;
+  int smrfactor_mass_user_random;
+  int smrfactor_mass_user_scan;
+  double smrfactor_mass_user_min;
+  double smrfactor_mass_user_max;
+  double smrfactor_mass_user_step;
   double smrfactor_mass_user;
   double smrfactor_mass_user_error;
   double smrfactor_mass_user_relerror;
-  int smrfactor_1minus_enable;
   int smrfactor_rational_max;
   int smrfactor_rational_filter;
   int smrfactor_2_exp_up_max;
@@ -297,6 +299,15 @@ typedef struct {
   int outfactor_rmr_mw_enable;
   int outfactor_rmr_mh0_enable;
   int outfactor_rmr_user_enable;
+  double ref_sm1;
+  double ref_sm1_error;
+  double ref_sm1_relerror;
+  double ref_sm2;
+  double ref_sm2_error;
+  double ref_sm2_relerror;
+  double ref_sm3;
+  double ref_sm3_error;
+  double ref_sm3_relerror;
   double ref_c;
   double ref_h;
   double ref_hbar;

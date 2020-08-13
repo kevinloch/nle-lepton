@@ -14,54 +14,29 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
   while (!valid) {
     valid=1; // assumme exponents are valid unless checks fail
 
-    if (nle_config->exp_neg_enable == 1) {
-      // allow negative
-      // select random exponents
+    // generate 2 or 3 random exponents
+    r=pcg_ldrand64(nle_state);
+    exp_inv_1=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
+    while (exp_inv_1 == 0) {
       r=pcg_ldrand64(nle_state);
       exp_inv_1=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-      while (exp_inv_1 == 0) {
-        r=pcg_ldrand64(nle_state);
-        exp_inv_1=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-      }
+    }
+    r=pcg_ldrand64(nle_state);
+    exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
+    while ((exp_inv_2 == 0) || ((nle_config->smrfactor_1minus_enable == 0) && (exp_inv_2 == exp_inv_1))) { // same exponents are ok in (1-smr) mode
       r=pcg_ldrand64(nle_state);
       exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-      while ((exp_inv_2 == 0) || ((nle_config->smrfactor_1minus_enable == 0) && (exp_inv_2 == exp_inv_1))) { // same exponents are ok in (1-smr) mode
-        r=pcg_ldrand64(nle_state);
-        exp_inv_2=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-      }
-      if (nle_config->nle_mode > 2) {
+    }
+    if (nle_config->nle_mode > 2) {
+      r=pcg_ldrand64(nle_state);
+      exp_inv_3=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
+      while ((exp_inv_3 == 0) || (exp_inv_3 == exp_inv_1) || (exp_inv_3 == exp_inv_2)) {
         r=pcg_ldrand64(nle_state);
         exp_inv_3=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-        while ((exp_inv_3 == 0) || (exp_inv_3 == exp_inv_1) || (exp_inv_3 == exp_inv_2)) {
-          r=pcg_ldrand64(nle_state);
-          exp_inv_3=(int)(r * 2 * ((double)nle_config->exp_inv_max + 0.5)) - nle_config->exp_inv_max;
-        }
-      }
-    } else {
-      // only non-negative
-      // select random exponents
-      r=pcg_ldrand64(nle_state);
-      exp_inv_1=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
-      while (exp_inv_1 == 0) {
-        r=pcg_ldrand64(nle_state);
-        exp_inv_1=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
-      }
-      r=pcg_ldrand64(nle_state);
-      exp_inv_2=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
-      while ((exp_inv_2 == 0) || (exp_inv_2 == exp_inv_1)) {
-        r=pcg_ldrand64(nle_state);
-        exp_inv_2=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
-      }
-      if (nle_config->nle_mode > 2) {
-        r=pcg_ldrand64(nle_state);
-        exp_inv_3=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
-        while ((exp_inv_3 == 0) || (exp_inv_3 == exp_inv_1) || (exp_inv_3 == exp_inv_2)) {
-          r=pcg_ldrand64(nle_state);
-          exp_inv_3=(int)(r * ((double)nle_config->exp_inv_max - 0.5)) + 1;
-        }
       }
     }
 
+    // set nle_state exponent variables, sort if nle_mode =3
     if (nle_config->nle_mode == 2) {
       nle_state->term1.exp_inv=exp_inv_1;
       nle_state->term2.exp_inv=exp_inv_2;
@@ -94,6 +69,23 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
       if ((exp_inv_3 > exp_inv_1) && (exp_inv_3 > exp_inv_2)) {
         nle_state->term3.exp_inv = exp_inv_3;
+      }
+    }
+
+    // enforce exponent sign restrictions
+    if (nle_config->nle_mode == 2) {
+      if ((nle_config->exp_pos_enable == 0) && ((nle_state->term1.exp_inv > 0) || (nle_state->term2.exp_inv > 0))) {
+        valid=0;
+      }
+      if ((nle_config->exp_neg_enable == 0) && ((nle_state->term1.exp_inv < 0) || (nle_state->term2.exp_inv < 0))) {
+        valid=0;
+      }
+    } else {
+      if ((nle_config->exp_pos_enable == 0) && ((nle_state->term1.exp_inv > 0) || (nle_state->term2.exp_inv > 0) || (nle_state->term3.exp_inv < 0))) {
+        valid=0;
+      }
+      if ((nle_config->exp_neg_enable == 0) && ((nle_state->term1.exp_inv < 0) || (nle_state->term2.exp_inv < 0) || (nle_state->term3.exp_inv < 0))) {
+        valid=0;
       }
     }
 
