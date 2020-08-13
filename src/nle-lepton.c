@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
           r=pcg_ldrand64(&nle_state);
           mass_user_exp=(int)(mass_user_exp_min + (r * mass_user_exp_range));
           r=pcg_ldrand64(&nle_state);
-          smrfactor_mass_user=((double)1.0 + r) * pow(10.0, mass_user_exp);
+          smrfactor_mass_user=r * (double)10.0 * pow(10.0, mass_user_exp);
           nle_state.input_sample_muser=smrfactor_mass_user;
         } else if (nle_config.smrfactor_mass_user_scan == 1) {
           nle_state.input_sample_muser=smrfactor_mass_user;
