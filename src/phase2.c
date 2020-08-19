@@ -308,9 +308,9 @@ long double solveNLEforMasses(nle_config_t *nle_config, nle_state_t *nle_state) 
   term3_exp = 1.0 / (long double)nle_state->term3.exp_inv;
 
   // generate formula strings for each term
-  getFormulaStr(nle_config, term1_formula_str, nle_state->term1.current_match);
-  getFormulaStr(nle_config, term2_formula_str, nle_state->term2.current_match);
-  getFormulaStr(nle_config, term3_formula_str, nle_state->term3.current_match);
+  getFormulaStr(nle_config, nle_state, term1_formula_str, nle_state->term1.current_match);
+  getFormulaStr(nle_config, nle_state, term2_formula_str, nle_state->term2.current_match);
+  getFormulaStr(nle_config, nle_state, term3_formula_str, nle_state->term3.current_match);
 
   // generate smrfactor string if (1-smr) is enabled
   if (nle_config->smrfactor_1minus_enable == 1) {

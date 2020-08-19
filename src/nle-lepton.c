@@ -89,28 +89,28 @@ void checkConfig(nle_config_t *nle_config) {
   // various checks on configuration file that will cause immediate exit if failed
   int i;
 
-  // check operating mode
+  // Check operating mode
   if ((nle_config->nle_mode != 3) && (nle_config->nle_mode != 2)) {
     printf("init, Error: in nle-lepton.cfg, nle_mode=%d is unsupported.  2 and 3 are the only supported modes in this version.\n", nle_config->nle_mode);
     fflush(stdout);
     exit(1);
   }
 
-  // check 2-term and 1-minus are used together
+  // Check 2-term and 1-minus are used together
   if ((nle_config->smrfactor_1minus_enable == 1) && (nle_config->nle_mode != 2)) {
     printf("init, Error: in nle-lepton.cfg, nle_mode must be set to 2 when smrfactor_1minus_enable=yes\n");
     fflush(stdout);
     exit(1);
   }
 
-  // check if forced exponents exceed exp_inv_max
+  // Check if forced exponents exceed exp_inv_max
   if ((abs(nle_config->exp_inv_term1_force) > nle_config->exp_inv_max) || (abs(nle_config->exp_inv_term2_force) > nle_config->exp_inv_max) || (abs(nle_config->exp_inv_term2_force) > nle_config->exp_inv_max)) {
     printf("init, Error: in nle-lepton.cfg, forced exponents exceed exp_inv_max\n");
     fflush(stdout);
     exit(1);
   }
 
-  // check if all forced exponents or none
+  // Check if all forced exponents or none
   i=0;
   if (nle_config->exp_inv_term1_force != 0) {
     i++;
@@ -140,10 +140,39 @@ void checkConfig(nle_config_t *nle_config) {
     exit(1);
   }
 
-  // warn if phase 2 is disabled
+  // Check if phase 2 and smrfactor_mass_random mode are both enabled
+  if ((nle_config->phase2_enable == 1) && (nle_config->smrfactor_mass_user_random == 1)) {
+    printf("init, Error: in nle-lepton.cfg, setting phase2_enable=yes while smrfactor_mass_user_random=yes is not supported.\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  // Check if phase 2 and smrfactor_mass_scan mode are both enabled
+  if ((nle_config->phase2_enable == 1) && (nle_config->smrfactor_mass_user_scan == 1)) {
+    printf("init, Error: in nle-lepton.cfg, setting phase2_enable=yes while smrfactor_mass_user_scan=yes is not supported.\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  // Check if smrfactor_1minus is diabled and smrfactor_mass_random mode is enabled
+  if ((nle_config->smrfactor_1minus_enable == 0) && (nle_config->smrfactor_mass_user_random == 1)) {
+    printf("init, Error: in nle-lepton.cfg, setting smrfactor_1minus_enable=no while smrfactor_mass_user_random=yes is not supported.\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  // Check if smrfactor_1minus is diabled and smrfactor_mass_scan mode is enabled
+  if ((nle_config->smrfactor_1minus_enable == 0) && (nle_config->smrfactor_mass_user_scan == 1)) {
+    printf("init, Error: in nle-lepton.cfg, setting smrfactor_1minus_enable=no while smrfactor_mass_user_scan=yes is not supported.\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  // Warn if phase 2 is disabled
   if (nle_config->phase2_enable == 0) {
     printf("init, Warning, phase 2 processing is disabled!  Set phase2_enabled=yes in nle-lepton.cfg if you want to re-enable\n");
   }
+
 }
 
 int main(int argc, char **argv) {

@@ -59,7 +59,7 @@ void getSmrfStr(nle_config_t *nle_config, char *smrf_str, nle_smrfactor_precompu
   sprintf(smrf_str, "'%s %s %s %s %s'", updownsmr, e2smr, pismr, asmr, usmr);
 }
 
-void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match_t *current_match) {
+void getFormulaStr(nle_config_t *nle_config, nle_state_t *nle_state, char *formula_str, nle_phase1_match_t *current_match) {
   // creates a complete text string representation of a single formula term
   int upout;
   int downout;
@@ -83,6 +83,7 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
   char uin[32];
   char massstr[32];
   char massstrinv[32];
+  char smrfactor_mass_str[32];
 
   // note: all terms except match_up and match_down are inverted here as they represent offsets to the real coefficient
   upout=current_match->match_up * current_match->outfactor_rational_down;
@@ -255,90 +256,43 @@ void getFormulaStr(nle_config_t *nle_config, char *formula_str, nle_phase1_match
     sprintf(uin, "uin^(%2d/%d)", -(current_match->infactor_user_exp_up), current_match->infactor_user_exp_down);
   }
 
+  // load smrfactor mass string
   if (current_match->smrfactor_mass_id == 0) {
-    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
-      sprintf(massstr,       "   (1-(smrf*M/mP))   ");
-      sprintf(massstrinv,    "  1/(1-(smrf*M/mP))  ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
-      sprintf(massstr,       "       smrf*M/mP     ");
-      sprintf(massstrinv,    "      mP/(smrf*M)    ");
-    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else {
-      sprintf(massstr,       "         M/mP        ");
-      sprintf(massstrinv,    "         mP/M        ");
-    }
+    sprintf(smrfactor_mass_str, "mP");
   } else if (current_match->smrfactor_mass_id == 1) {
-    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
-      sprintf(massstr,       "    (1-(smrf*M/v))   ");
-      sprintf(massstrinv,    "   1/(1-(smrf*M/v))  ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
-      sprintf(massstr,       "        smrf*M/v     ");
-      sprintf(massstrinv,    "       v/(smrf*M)    ");
-    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else {
-      sprintf(massstr,       "         M/v         ");
-      sprintf(massstrinv,    "         v/M         ");
-    }
+    sprintf(smrfactor_mass_str, "v");
   } else if (current_match->smrfactor_mass_id == 2) {
-    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
-      sprintf(massstr,       "   (1-(smrf*M/mZ))   ");
-      sprintf(massstrinv,    "  1/(1-(smrf*M/mZ))  ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
-      sprintf(massstr,       "       smrf*M/mZ     ");
-      sprintf(massstrinv,    "      mZ/(smrf*M)    ");
-    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else {
-      sprintf(massstr,       "         M/mZ        ");
-      sprintf(massstrinv,    "         mZ/M        ");
-    }
+    sprintf(smrfactor_mass_str, "mz");
   } else if (current_match->smrfactor_mass_id == 3) {
-    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
-      sprintf(massstr,       "   (1-(smrf*M/mW))   ");
-      sprintf(massstrinv,    "  1/(1-(smrf*M/mW))  ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
-      sprintf(massstr,       "       smrf*M/mW     ");
-      sprintf(massstrinv,    "      mW/(smrf*M)    ");
-    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else {
-      sprintf(massstr,       "         M/mW        ");
-      sprintf(massstrinv,    "         mW/M        ");
-    }
+    sprintf(smrfactor_mass_str, "mw");
   } else if (current_match->smrfactor_mass_id == 4) {
-    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
-      sprintf(massstr,       "   (1-(smrf*M/mH0))  ");
-      sprintf(massstrinv,    "  1/(1-(smrf*M/mH0)) ");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
-      sprintf(massstr,       "      smrf*M/mH0     ");
-      sprintf(massstrinv,    "     mH0/(smrf*M)    ");
-    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else {
-      sprintf(massstr,       "        M/mH0        ");
-      sprintf(massstrinv,    "        mH0/M        ");
-    }
+    sprintf(smrfactor_mass_str, "mh0");
   } else if (current_match->smrfactor_mass_id == 5) {
-    if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
-      sprintf(massstr,       " (1-(smrf*M/m_user)) ");
-      sprintf(massstrinv,    "1/(1-(smrf*M/m_user))");
-    } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
-      sprintf(massstr,       "     smrf*M/m_user   ");
-      sprintf(massstrinv,    "    m_user/(smrf*M)  ");
-    } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-      sprintf(massstr,       "                     ");
-      sprintf(massstrinv,    "                     ");
-    } else {
-      sprintf(massstr,       "       M/m_user      ");
-      sprintf(massstrinv,    "       m_user/M      ");
+    sprintf(smrfactor_mass_str, "muser");
+  }
+
+  if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 1)) {
+    if (nle_state->smrfactor_mass_configuration == 1) {
+      sprintf(massstr,       "(1-(smrf*M/%s))", smrfactor_mass_str);
+      sprintf(massstrinv,    "1/(1-(smrf*M/%s))", smrfactor_mass_str);
+    } else if (nle_state->smrfactor_mass_configuration == 0) {
+      sprintf(massstr,       "(1-(smrf*%s/M))", smrfactor_mass_str);
+      sprintf(massstrinv,    "1/(1-(smrf*%s/M))", smrfactor_mass_str);
     }
+  } else if ((nle_config->smrfactor_1minus_enable == 1) && (current_match->term_id == 2)) {
+    if (nle_state->smrfactor_mass_configuration == 1) {
+      sprintf(massstr,       "    smrf*M/%s", smrfactor_mass_str);
+      sprintf(massstrinv,    "    %s/(smrf*M)", smrfactor_mass_str);
+    } else if (nle_state->smrfactor_mass_configuration == 0) {
+      sprintf(massstr,       "    smrf*%s/M", smrfactor_mass_str);
+      sprintf(massstrinv,    "    M/(smrf*%s)", smrfactor_mass_str);
+    }
+  } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
+    sprintf(massstr,       "");
+    sprintf(massstrinv,    "");
+  } else {
+    sprintf(massstr,       "M/%s", smrfactor_mass_str);
+    sprintf(massstrinv,    "%s/M", smrfactor_mass_str);
   }
 
   if (current_match->exp_inv == 1) {

@@ -123,7 +123,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     stalledrange_multiplier=3.0;     // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
     slowcheckpoint=10000;            // number of samples to check on slow processes for reporting and/or reset
     stuckprecision=2.0E+99;          // if precision is not past this level by slowcheckpoint, try resetting
-    dr_exception_limit=1.0E+18;      // Mamimum allowed dynamic range of any term.  This is used in 1-smr mode only
+    dr_exception_limit=1.0E+16;      // Mamimum allowed dynamic range of any term.  This is used in 1-smr mode only
     dr_grace_period=25;              // don't check dynamic range until this much progress
     two_term_precision=1.0E-3;       // check two_term_test after reaching this precision.  Disabling current ordering if not close enough to an integer
   } else if (nle_config->nle_mode == 2) {
@@ -147,7 +147,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     defaultrange_multiplier=5.0;     // lowest practical range multiplier, fastest for most formulas
     stalledrange_multiplier=17.0;    // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
     slowcheckpoint=10000;            // number of samples to check on slow processes for reporting and/or reset
-    stuckprecision=1.0E-2;           // if precision is not past this level by slowcheckpoint, try resetting
+    stuckprecision=1.0E-1;           // if precision is not past this level by slowcheckpoint, try resetting
   }
 
   term1_exp = 1.0 / (long double)nle_state->term1.exp_inv;
@@ -582,7 +582,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 #endif
 
                 precision=(fabsl(sm1_test) + fabsl(sm2_test) + fabsl(sm3_test));
-                if (precision < precision_last[ordering]) {
+                if (precision < (precision_last[ordering] * 0.9999)) {
                   progress[ordering]++;
                   stalled[ordering]=0;
 
@@ -776,8 +776,13 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       printf("status, +------------+------------------+----------+-----------------+-----------------+-----------------+-----------------+\n");
       if (nle_config->nle_mode == 2) {
         if (nle_config->smrfactor_1minus_enable == 1) {
-          printf("status, | %10s | 1-(smrf*M/%s) |  t1^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, smrfactor_mass_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
-          printf("status, | %10s |    smrf*M/%s  |  t2^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, smrfactor_mass_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
+          if (nle_state->smrfactor_mass_configuration == 1) {
+            printf("status, | %10s | 1-(smrf*M/%s) |  t1^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, smrfactor_mass_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
+            printf("status, | %10s |    smrf*M/%s  |  t2^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, smrfactor_mass_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
+          } else if (nle_state->smrfactor_mass_configuration == 0) {
+            printf("status, | %10s | 1-(smrf*%s/M) |  t1^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, smrfactor_mass_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
+            printf("status, | %10s |    smrf*%s/M) |  t2^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, smrfactor_mass_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
+          }
         } else {
           printf("status, | %10s |       M/v        |  t1^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, c1_center[best_ordering], sm1_test_term1, sm2_test_term1, sm3_test_term1);
           printf("status, | %10s |       M/v        |  t2^2    | %.9Le | %.9Le | %.9Le | %.9Le |\n", nle_state->exponents_str, c2_center[best_ordering], sm1_test_term2, sm2_test_term2, sm3_test_term2);
