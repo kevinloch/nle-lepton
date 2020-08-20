@@ -5,9 +5,9 @@
       - Added config file option 'exp_pos_enable' to independently allow positive and negative exponents
       - Added config file option 'phase1_run_continuous' to independently set run-once or run continuously. Previously this automatically followed set setting
         of 'phase1_random_samples_enable'
-      - Added config file option 'smrfactor_mass_user_scan', '_mass_user_random', '_mass_user_min', '_mass_user_max', and '_mass_user_step' to allow scanning or
-        random selection from a range of values instead of a fixed user-defined reference mass.   This can be useful for graphing the behavior of two-term test
-        over a wide range of reference masses in (1-smr) mode.  'phase2_enable=yes', and 'smrfactor_1minus_enable=no' are both unsupported when
+      - Added config file options 'smrfactor_mass_user_scan', '_mass_user_random', '_mass_user_min', '_mass_user_max', and '_mass_user_step' to allow scanning
+        or random selection from a range of values instead of a fixed user-defined reference mass.   This can be useful for graphing the behavior of two-term
+        test over a wide range of reference masses in (1-smr) mode.  'phase2_enable=yes', and 'smrfactor_1minus_enable=no' are both unsupported when
         'smrfactor_mass_user_random' or '_scan' is configured
       - Added 'term1 signature' to output when phase 1 is solved in (1-smr) mode.  This shows whether (1-smr) is positive or negative for sm1, sm2, and sm3.
       - Added c3 to phase1 output status and results for (1-smr) mode
