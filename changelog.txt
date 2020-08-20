@@ -12,7 +12,8 @@
       - Added 'term1 signature' to output when phase 1 is solved in (1-smr) mode.  This shows whether (1-smr) is positive or negative for sm1, sm2, and sm3.
       - Added c3 to phase1 output status and results for (1-smr) mode
       - "Solving phase1..." status messages now also output for (1-smr) mode
-      - Added scripts for graphing two-term test vs randomly generated reference mass in (1-smr) mode.  The scripts are in the ./scripts/scan directory
+      - Added scripts for graphing two-term test vs randomly generated reference mass in (1-smr) mode.  The scripts are in the ./scripts/scan directory.
+        Sample graphs are available at http://kevinloch.com/nle-lepton/scan/
 
       Bug fixes:
       - Config file option 'phase1_mc_samples_limit' is now a long long integer to support > 2 billion samples
@@ -23,6 +24,7 @@
       - Fixed bug where same exponents in (1-smr) mode were not allowed when 'exp_neg_enable=no'
       - /aws/start.sh now uses the specified config file when launching program
       - Fixed bug where 'stuckprecision' was not set high enough to always cause it to be ignored in 2-term modes
+      - Fixed bug with exponent sign checks in 3-term mode
 
 4.3.5 Bug fixes:
       - Fixed critical bug where some infactors and outfactors were being improperly cast to single precision.  This was limiting precision of results in phase2

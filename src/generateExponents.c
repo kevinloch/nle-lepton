@@ -36,7 +36,7 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
       }
     }
 
-    // set nle_state exponent variables, sort if nle_mode =3
+    // set nle_state exponent variables, sort if nle_mode=3
     if (nle_config->nle_mode == 2) {
       nle_state->term1.exp_inv=exp_inv_1;
       nle_state->term2.exp_inv=exp_inv_2;
@@ -81,7 +81,7 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
         valid=0;
       }
     } else {
-      if ((nle_config->exp_pos_enable == 0) && ((nle_state->term1.exp_inv > 0) || (nle_state->term2.exp_inv > 0) || (nle_state->term3.exp_inv < 0))) {
+      if ((nle_config->exp_pos_enable == 0) && ((nle_state->term1.exp_inv > 0) || (nle_state->term2.exp_inv > 0) || (nle_state->term3.exp_inv > 0))) {
         valid=0;
       }
       if ((nle_config->exp_neg_enable == 0) && ((nle_state->term1.exp_inv < 0) || (nle_state->term2.exp_inv < 0) || (nle_state->term3.exp_inv < 0))) {
@@ -108,7 +108,7 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
         valid=0;
       }
       if (nle_config->smrfactor_1minus_enable == 0) {
-        if (((nle_state->term1.exp_inv * nle_state->term1.exp_inv) == 1) || ((nle_state->term2.exp_inv * nle_state->term2.exp_inv) == 1)) {
+        if ((abs(nle_state->term1.exp_inv) == 1) || (abs(nle_state->term2.exp_inv) == 1)) {
           // if either term is +/- 1, this is not supported in 2-term mode without 1-smr mode
           valid=0;
         }
