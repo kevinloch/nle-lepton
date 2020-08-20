@@ -19,8 +19,7 @@
       - Config file option 'phase1_mc_samples_limit' is now a long long integer to support > 2 billion samples
       - Removed confusing "sqrt()" label for reporting c1 and c2 when phase1 is solved in 2-term modes.  The reported c1 and c2 still represent the unsquared
         term1 and term2 coefficients while phase1 internally works with the squared terms and coefficients.  Phase 1 detail (deprecated) still shows the squared
-        coefficients while phase1 internally works with the squared terms and coefficients.  Phase 1 detail (deprecated) still shows the squared coefficients
-        used internally.
+        coefficients.
       - Fixed bug where same exponents in (1-smr) mode were not allowed when 'exp_neg_enable=no'
       - /aws/start.sh now uses the specified config file when launching program
       - Fixed bug where 'stuckprecision' was not set high enough to always cause it to be ignored in 2-term modes
