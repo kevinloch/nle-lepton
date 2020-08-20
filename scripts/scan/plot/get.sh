@@ -6,17 +6,36 @@
 rm -f data.tmp
 rm -f data.txt
 
-# grab from output files in parent directory
-cat ../leptonout*.txt >> data.tmp
+echo "Finding raw data files..."
 
-# grab from output files in run* subdirectories of parent directory
-for f in `ls .. | grep run`
+# Grab from output files in parent directory
+for f in `ls .. | grep leptonout-`
 do
-  if [ -d ../${f} ]
+  if [ -f ../${f} ]
   then
-    cat ../${f}/leptonout*.txt >> data.tmp
+    echo "Found ../${f}"
+    cat ../${f} >> data.tmp
+  fi
+done
+
+# Grab from output files in run* subdirectories of parent directory
+for d in `ls .. | grep run`
+do
+  if [ -d ../${d} ]
+  then
+    echo "Found directory ../${d}"
+    for f in `ls ../${d} | grep leptonout-`
+    do
+      if [ -f ../${d}/${f} ]
+      then
+        echo "Found ../${d}/${f}"
+        cat ../${d}/${f} >> data.tmp
+      fi
+    done
   fi
 done
  
+echo "Sorting..."
+
 cat data.tmp | sort | uniq >> data.txt
 rm -f data.tmp
