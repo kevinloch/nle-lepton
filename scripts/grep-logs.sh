@@ -1,5 +1,4 @@
 #!/bin/sh
-
 #
 # sample script to extract results from httpd logs
 # run from cron as often as desired

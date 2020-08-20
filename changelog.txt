@@ -12,6 +12,7 @@
       - Added 'term1 signature' to output when phase 1 is solved in (1-smr) mode.  This shows whether (1-smr) is positive or negative for sm1, sm2, and sm3.
       - Added c3 to phase1 output status and results for (1-smr) mode
       - "Solving phase1..." status messages now also output for (1-smr) mode
+      - Added scripts for graphing two-term test vs randomly generated reference mass in (1-smr) mode.  The scripts are in the ./scripts/scan directory
 
       Bug fixes:
       - Config file option 'phase1_mc_samples_limit' is now a long long integer to support > 2 billion samples

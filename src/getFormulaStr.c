@@ -288,8 +288,8 @@ void getFormulaStr(nle_config_t *nle_config, nle_state_t *nle_state, char *formu
       sprintf(massstrinv,    "    M/(smrf*%s)", smrfactor_mass_str);
     }
   } else if ((nle_config->nle_mode == 2) && (current_match->term_id == 3)) {
-    sprintf(massstr,       "");
-    sprintf(massstrinv,    "");
+    massstr[0]=0;
+    massstrinv[0]=0;
   } else {
     sprintf(massstr,       "M/%s", smrfactor_mass_str);
     sprintf(massstrinv,    "%s/M", smrfactor_mass_str);

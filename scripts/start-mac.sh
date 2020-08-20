@@ -1,5 +1,4 @@
 #!/bin/sh
-
 #
 # sample script to start multiple threads on OSX
 #
