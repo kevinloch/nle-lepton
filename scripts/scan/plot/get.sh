@@ -3,7 +3,6 @@
 # This script gets raw data files from multiple sources and combines them into data.txt
 #
 
-rm -f data.tmp
 rm -f data.txt
 
 echo "Finding raw data files..."
@@ -14,7 +13,7 @@ do
   if [ -f ../${f} ]
   then
     echo "Found ../${f}"
-    cat ../${f} >> data.tmp
+    cat ../${f} >> data.txt
   fi
 done
 
@@ -29,13 +28,8 @@ do
       if [ -f ../${d}/${f} ]
       then
         echo "Found ../${d}/${f}"
-        cat ../${d}/${f} >> data.tmp
+        cat ../${d}/${f} >> data.txt
       fi
     done
   fi
 done
- 
-echo "Sorting..."
-
-cat data.tmp | sort | uniq >> data.txt
-rm -f data.tmp
