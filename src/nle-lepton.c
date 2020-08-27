@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
             r=pcg_ldrand64(&nle_state);
             mass_user_exp=(int)(mass_user_exp_min + (r * mass_user_exp_range));
             r=pcg_ldrand64(&nle_state);
-            smrfactor_mass_user=pow(10.0, r) * pow(10.0, mass_user_exp);
+            smrfactor_mass_user=pow(10.0, (r + (double)mass_user_exp));
             if ((smrfactor_mass_user >= nle_config.smrfactor_mass_user_min) && (smrfactor_mass_user <= nle_config.smrfactor_mass_user_max)) {
               valid_random_user_mass=1;
             }
