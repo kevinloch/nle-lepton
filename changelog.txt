@@ -5,6 +5,10 @@
       - Significant performance improvement in phase 1 in (1-smr) mode for when coefficients are not close to 1.
       - Improved detection for when phase 1 needs to be reset due to coefficients diverging from the solution path
 
+      Bug fixes:
+      - smrfactor_mass_user_random now filters on exact min and max limits instead of rounding to lowest exponents
+      - smrfactor_mass_user_random mode now selects random values more evenly for graphs with a logaritmic axis
+
 4.3.6 New features:
       - Added support for inverse solution mass ratios in (1-smr) mode.   M/mr and/or mr/M are enabled with config file option 'smrfactor_mass_configuration'
       - Added config file option 'exp_inv_min' to require that at least one term has an inverse epxonent at least this large (+/-)

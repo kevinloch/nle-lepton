@@ -210,6 +210,7 @@ int main(int argc, char **argv) {
   int mass_user_exp_min;
   int mass_user_exp_max;
   int mass_user_exp_range;
+  int valid_random_user_mass;
 
   // initialize nle_config to default values
   initConfig(&nle_config);
@@ -325,13 +326,19 @@ int main(int argc, char **argv) {
       if (nle_config.smrfactor_mass_user_enable == 1) {
         // set random or scan user mass if configured
         if (nle_config.smrfactor_mass_user_random == 1) {
+          valid_random_user_mass=0;
           mass_user_exp_min=(int)log10(nle_config.smrfactor_mass_user_min);
-          mass_user_exp_max=(int)log10(nle_config.smrfactor_mass_user_max);
+          mass_user_exp_max=(int)log10(nle_config.smrfactor_mass_user_max) + 1;
           mass_user_exp_range=mass_user_exp_max - mass_user_exp_min;
-          r=pcg_ldrand64(&nle_state);
-          mass_user_exp=(int)(mass_user_exp_min + (r * mass_user_exp_range));
-          r=pcg_ldrand64(&nle_state);
-          smrfactor_mass_user=r * (double)10.0 * pow(10.0, mass_user_exp);
+          while(valid_random_user_mass == 0) {
+            r=pcg_ldrand64(&nle_state);
+            mass_user_exp=(int)(mass_user_exp_min + (r * mass_user_exp_range));
+            r=pcg_ldrand64(&nle_state);
+            smrfactor_mass_user=pow(10.0, r) * pow(10.0, mass_user_exp);
+            if ((smrfactor_mass_user >= nle_config.smrfactor_mass_user_min) && (smrfactor_mass_user <= nle_config.smrfactor_mass_user_max)) {
+              valid_random_user_mass=1;
+            }
+          }
           nle_state.input_sample_muser=smrfactor_mass_user;
         } else if (nle_config.smrfactor_mass_user_scan == 1) {
           nle_state.input_sample_muser=smrfactor_mass_user;
