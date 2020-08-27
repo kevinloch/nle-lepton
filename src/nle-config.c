@@ -61,6 +61,8 @@ void initConfig(nle_config_t *nle_config) {
   nle_config->smrfactor_mass_user_step=0.01;
   nle_config->smrfactor_mass_user=1.0E9;
   nle_config->smrfactor_mass_user_error=0.0;
+  nle_config->smrfactor_gt_sm3=0;
+  nle_config->smrfactor_lt_sm1=0;
   nle_config->smrfactor_rational_max=32;
   nle_config->smrfactor_rational_filter=1;
   nle_config->smrfactor_2_exp_up_max=1;
@@ -244,6 +246,8 @@ void setOptionValue(nle_config_t *nle_config, char *option, char *value) {
   checkOptionDouble(&nle_config->smrfactor_mass_user_step, option, value, "smrfactor_mass_user_step");
   checkOptionDouble(&nle_config->smrfactor_mass_user, option, value, "smrfactor_mass_user");
   checkOptionDouble(&nle_config->smrfactor_mass_user_error, option, value, "smrfactor_mass_user_error");
+  checkOptionBool(&nle_config->smrfactor_gt_sm3, option, value, "smrfactor_gt_sm3");
+  checkOptionBool(&nle_config->smrfactor_lt_sm1, option, value, "smrfactor_lt_sm1");
   checkOptionInt(&nle_config->smrfactor_rational_max, option, value, "smrfactor_rational_max");
   checkOptionBool(&nle_config->smrfactor_rational_filter, option, value, "smrfactor_rational_filter");
   checkOptionInt(&nle_config->smrfactor_2_exp_up_max, option, value, "smrfactor_2_exp_up_max");

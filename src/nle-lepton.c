@@ -168,6 +168,13 @@ void checkConfig(nle_config_t *nle_config) {
     exit(1);
   }
 
+  //Check if both smrfactor_gt_sm3 and smrfactor_lt_sm1 are enabled
+  if ((nle_config->smrfactor_gt_sm3 == 1) && (nle_config->smrfactor_lt_sm1 == 1)) {
+    printf("init, Error: in nle-lepton.cfg, smrfactor_gt_sm3 and smrfactor_lt_sm1 cannot both be enabled at the same time\n");
+    fflush(stdout);
+    exit(1);
+  }
+
   // Warn if phase 2 is disabled
   if (nle_config->phase2_enable == 0) {
     printf("init, Warning, phase 2 processing is disabled!  Set phase2_enabled=yes in nle-lepton.cfg if you want to re-enable\n");

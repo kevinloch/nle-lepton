@@ -103,11 +103,11 @@ void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {
 
     // special exponent checks for 2-term mode
     if (nle_config->nle_mode == 2) {
-      if ((nle_state->term1.exp_inv * nle_state->term2.exp_inv) < 0) {
-        // if terms have opposite sign, this is not supported in 2-term mode
-        valid=0;
-      }
       if (nle_config->smrfactor_1minus_enable == 0) {
+        if ((nle_state->term1.exp_inv * nle_state->term2.exp_inv) < 0) {
+          // if terms have opposite sign, this is not supported in 2-term mode without (1-smr)
+          valid=0;
+        }
         if ((abs(nle_state->term1.exp_inv) == 1) || (abs(nle_state->term2.exp_inv) == 1)) {
           // if either term is +/- 1, this is not supported in 2-term mode without 1-smr mode
           valid=0;

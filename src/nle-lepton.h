@@ -1,7 +1,7 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3.6"
+#define NLE_VERSION "4.3.7-dev-07"
 
 typedef struct {
   int G;
@@ -248,6 +248,8 @@ typedef struct {
   double smrfactor_mass_user;
   double smrfactor_mass_user_error;
   double smrfactor_mass_user_relerror;
+  int smrfactor_gt_sm3;
+  int smrfactor_lt_sm1;
   int smrfactor_rational_max;
   int smrfactor_rational_filter;
   int smrfactor_2_exp_up_max;

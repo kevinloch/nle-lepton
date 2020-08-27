@@ -77,6 +77,8 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   // mc outputs
   int progress[6];
   int last_progress[6];
+  long double last_worst_ratio_test[6];
+  long double ratio_test_stalled_limit;
   int stalled[6];
   int ordering;
   int best_ordering=-1;
@@ -106,7 +108,6 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
   long double defaultrange_multiplier;
   long double stalledrange_multiplier;
   int slowcheckpoint;
-  long double stuckprecision;
   long double dr_exception_limit=0.0;
   long double dr_grace_period=0;
   long double two_term_precision;
@@ -117,12 +118,12 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     precision_target=1.0E-15;        // solve NLE to this level of precision
     best_ordering_threshold=1.0E-99; // Only process best ordering after it reaches this precision.  This speeds up phase1 processing.  Should be disabled for (1-smr) mode
     test_ratio=25.0;                 // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
-    ratio_grace_period=3;            // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
-    stalled_limit=500000;            // most formulas can make further progress with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
+    ratio_grace_period=25;           // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
+    ratio_test_stalled_limit=0.97;   // Reset ordering if last ratio test was this within percentage/100 of test_ratio and we have reached stalled_limit.  This is to detect when coefficients have diverged from the solution path
+    stalled_limit=500000;            // most formulas can make further progress with less than 500,000 samples, if not then it is probably hard to solve (like E+12+13+14, E+24+25+26, etc.)
     defaultrange_multiplier=2.0;     // lowest practical range multiplier, fastest for most formulas
-    stalledrange_multiplier=3.0;     // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
+    stalledrange_multiplier=10.0;    // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
     slowcheckpoint=10000;            // number of samples to check on slow processes for reporting and/or reset
-    stuckprecision=2.0E+99;          // if precision is not past this level by slowcheckpoint, try resetting
     dr_exception_limit=1.0E+16;      // Mamimum allowed dynamic range of any term.  This is used in 1-smr mode only
     dr_grace_period=25;              // don't check dynamic range until this much progress
     two_term_precision=1.0E-3;       // check two_term_test after reaching this precision.  Disabling current ordering if not close enough to an integer
@@ -132,22 +133,22 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
     best_ordering_threshold=1.0E-7;  // Only process best ordering after it reaches this precision.  This speeds up phase1 processing
     test_ratio=25.0;                 // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
     ratio_grace_period=25;           // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
-    stalled_limit=500000;            // most formulas can make further progress with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
+    ratio_test_stalled_limit=0.97;   // Reset ordering if last ratio test was this within percentage/100 of test_ratio and we have reached stalled_limit.  This is to detect when coefficients have diverged from the solution path
+    stalled_limit=500000;            // most formulas can make further progress with less than 500,000 samples, if not then it is probably hard to solve (like E+12+13+14, E+24+25+26, etc.)
     defaultrange_multiplier=1.0;     // lowest practical range multiplier, fastest for most formulas
     stalledrange_multiplier=2.0;     // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
     slowcheckpoint=10000;            // number of samples to check on slow processes for reporting and/or reset
-    stuckprecision=2.0E+99;          // if precision is not past this level by slowcheckpoint, try resetting
   } else {
     // 3-term mode
     precision_target=1.0E-15;        // solve NLE to this level of precision
     best_ordering_threshold=1.0E-7;  // Only process best ordering after it reaches this precision.  This speeds up phase1 processing
     test_ratio=25.0;                 // acceptable ratios of sm1_test/sm2_test/sm3_test, coefficient search ranges are guided by the least precise term so keeping test term ratios relatively close together optimizes search ranges for all coefficients
     ratio_grace_period=25;           // ignore test ratio until this much progress has been achieved.   Ratios are typically way off at the beginning.   Search ranges need to be able to find solutions within the ratio limits before this trigger
-    stalled_limit=500000;            // most formulas can make further progress with less than 500,000 samples, if not then it is probably hard to solve (like P+12+13+14, P+24+25+26, etc.)
+    ratio_test_stalled_limit=0.97;   // Reset ordering if last ratio test was this within percentage/100 of test_ratio and we have reached stalled_limit.  This is to detect when coefficients have diverged from the solution path
+    stalled_limit=500000;            // most formulas can make further progress with less than 500,000 samples, if not then it is probably hard to solve (like E+12+13+14, E+24+25+26, etc.)
     defaultrange_multiplier=5.0;     // lowest practical range multiplier, fastest for most formulas
     stalledrange_multiplier=17.0;    // this value works better for slow to solve formulas and fast formulas that get stuck.  Will automatically revert to default if just temporarily stuck.  For slow to solve formulas this will continuously trigger
     slowcheckpoint=10000;            // number of samples to check on slow processes for reporting and/or reset
-    stuckprecision=1.0E-1;           // if precision is not past this level by slowcheckpoint, try resetting
   }
 
   term1_exp = 1.0 / (long double)nle_state->term1.exp_inv;
@@ -176,6 +177,23 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
       smrfactor_mass=(long double)nle_state->input_sample_muser;
       sprintf(smrfactor_mass_str, "muser");
     }
+
+    // check if smrfactor_gt_sm3 or smrfactor_lt_sm1 are violated.  If so then silently exit phase 1.  This is cleaner than putting the smrfactor_mass logic in main()
+    if (nle_config->smrfactor_gt_sm3 == 1) {
+      if ((nle_state->smrfactor_mass_configuration == 1) && ((smrfactor_mass / nle_state->term1.smrfactor) <= nle_state->input_sample_sm3)) {
+        return(1);
+      } else if ((nle_state->smrfactor_mass_configuration == 0) && ((smrfactor_mass * nle_state->term1.smrfactor) <= nle_state->input_sample_sm3)) {
+        return(1); 
+      }
+    }
+    if (nle_config->smrfactor_lt_sm1 == 1) {
+      if ((nle_state->smrfactor_mass_configuration == 1) && ((smrfactor_mass / nle_state->term1.smrfactor) >= nle_state->input_sample_sm1)) {
+        return(1);
+      } else if ((nle_state->smrfactor_mass_configuration == 0) && ((smrfactor_mass * nle_state->term1.smrfactor) >= nle_state->input_sample_sm1)) {
+        return(1);
+      }
+    }
+
     if (nle_config->phase1_status_enable == 1) { // not needed in (1-smr) mode as p1 should quickly solve or abort
       printf("status, Solving          phase 1 formula for coefficients, input smaple: %lld, exponents:  %s, mixing polarity: %s, mass config: %s, sm3: %.14e, smrfactor mass: %.14Le, smrf: %s\n", nle_state->phase1_seq, nle_state->exponents_str, nle_state->nle_mixing_polarity_str, nle_state->smrfactor_mass_configuration_str, nle_state->input_sample_sm3, smrfactor_mass, smrf_str);
       fflush(stdout);
@@ -308,7 +326,6 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
 
       for (ordering=0; ((ordering <= 5) && (unsolvable_exception == 0)); ordering++) {
         if (ordering_enabled[ordering] == 1) {
-
           // in (1-smr) mode, periodically check if any progress has been made since last unsolvable_checkpoint
           if ((nle_config->smrfactor_1minus_enable == 1) && (samples > 1) && ((samples % nle_config->phase1_unsolvable_checkpoint) == 0)) {
             // check progress
@@ -410,7 +427,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
             } // end coefficient dr check
 
             // check if this ordering is stuck and needs to be reset
-            if ((progress[ordering] == ratio_grace_period) || (precision_last[ordering] > stuckprecision)) {
+            if ((stalled[ordering] > stalled_limit) && ((progress[ordering] <= ratio_grace_period) || ((progress[ordering] > ratio_grace_period) && ((last_worst_ratio_test[ordering] / (long double)test_ratio) > ratio_test_stalled_limit)))) {
 #ifdef DEBUG11
               clock_gettime(CLOCK_REALTIME, &endtime);
               elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
@@ -439,7 +456,6 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
           // check if stalled (too many samples since last progress increment)
           if (stalled[ordering] == stalled_limit) {
             range_multiplier[ordering]=stalledrange_multiplier; // may be a slow solution, try bigger multiplier
-            //stalled[ordering]=0;
 #ifdef DEBUG11
             clock_gettime(CLOCK_REALTIME, &endtime);
             elapsed_time=((double)(endtime.tv_sec - 1500000000) + ((double)endtime.tv_nsec / 1.0E9)) - ((double)(starttime.tv_sec - 1500000000) + ((double)starttime.tv_nsec) / 1.0E9);
@@ -525,7 +541,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
               }
             } // end if c2_gt_c1
           }
-#ifdef DEBUG11
+#ifdef DEBUG12
           if (i > 100) { 
             printf("debug, i: %d\n", i);
           }
@@ -593,6 +609,23 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
                     best_ordering=ordering;
                   }
 
+                  // update last_worst_test_raio used in stalled/reset checks.
+                  // This tracks if we were close to ratio limit when we last made progress
+                  if ((fabsl(sm1_test) / fabsl(sm2_test)) > (fabsl(sm2_test) / fabsl(sm1_test))) {
+                    last_worst_ratio_test[ordering]=(fabsl(sm1_test) / fabsl(sm2_test));
+                  } else {
+                    last_worst_ratio_test[ordering]=(fabsl(sm2_test) / fabsl(sm1_test));
+                  }
+                  if ((fabsl(sm1_test) / fabsl(sm3_test)) > last_worst_ratio_test[ordering]) {
+                    last_worst_ratio_test[ordering]=(fabsl(sm1_test) / fabsl(sm3_test));
+                  } else if ((fabsl(sm3_test) / fabsl(sm1_test)) > last_worst_ratio_test[ordering]) {
+                    last_worst_ratio_test[ordering]=(fabsl(sm3_test) / fabsl(sm1_test));
+                  } else if ((fabsl(sm2_test) / fabsl(sm3_test)) > last_worst_ratio_test[ordering]) {
+                    last_worst_ratio_test[ordering]=(fabsl(sm2_test) / fabsl(sm3_test));
+                  } else if ((fabsl(sm3_test) / fabsl(sm1_test)) > last_worst_ratio_test[ordering]) {
+                    last_worst_ratio_test[ordering]=(fabsl(sm3_test) / fabsl(sm2_test));
+                  }
+
                   // determine new search range for each coefficient
                   if (fabsl(sm1_test) > fabsl(sm2_test)) {
                     worst_test=fabsl(sm1_test);
@@ -609,10 +642,21 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
                     c3_range[ordering]=c3[ordering] / 2.0;
                   } else {
                     if (nle_config->smrfactor_1minus_enable == 1) {
-                      // this is super fast and reliable in (1-smr) mode for some reason
-                      c1_range[ordering]=range_factor;
-                      c2_range[ordering]=range_factor;
-                      c3_range[ordering]=range_factor;
+                      if (c1[ordering] > 1.0) {
+                        c1_range[ordering]=range_factor * sqrtl(c1[ordering]);
+                      } else {
+                        c1_range[ordering]=range_factor / sqrtl(c1[ordering]);
+                      }
+                      if (c2[ordering] > 1.0) {
+                        c2_range[ordering]=range_factor * sqrtl(c2[ordering]);
+                      } else {
+                        c2_range[ordering]=range_factor / sqrtl(c2[ordering]);
+                      }
+                      if (c3[ordering] > 1.0) {
+                        c3_range[ordering]=range_factor * sqrtl(c3[ordering]);
+                      } else {
+                        c3_range[ordering]=range_factor / sqrtl(c3[ordering]);
+                      }
                     } else {
                       c1_range_new=c1[ordering] * range_factor;
                       c1_range[ordering]=((c1_range[ordering] + c1_range_new + c1_range_new) / 3.0);

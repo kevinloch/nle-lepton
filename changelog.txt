@@ -1,3 +1,10 @@
+4.3.7 New features:
+      - Opposite sign exponents are now allowed in (1-smr) mode.
+      - Added new config options 'smrfactor_gt_sm3' and 'smrfactor_lt_sm1' to restrict the reference mass / factors (if M/mr) or referenc mass * factors
+        (if mr/M) to be greater than sm3 or less than sm1 in (1-smr) mode.  Only one of these restrictions can be enabled at a time.
+      - Significant performance improvement in phase 1 in (1-smr) mode for when coefficients are not close to 1.
+      - Improved detection for when phase 1 needs to be reset due to coefficients diverging from the solution path
+
 4.3.6 New features:
       - Added support for inverse solution mass ratios in (1-smr) mode.   M/mr and/or mr/M are enabled with config file option 'smrfactor_mass_configuration'
       - Added config file option 'exp_inv_min' to require that at least one term has an inverse epxonent at least this large (+/-)
