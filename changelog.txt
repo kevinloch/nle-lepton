@@ -1,3 +1,7 @@
+4.3.7.1 Bug fixes:
+        - Fixed bug where phase 1 interesting two-term test http uploads were truncated to ~325 characters
+        - Updated intended version numbers in example config files to 4.3.7
+
 4.3.7 New features:
       - Opposite sign exponents are now allowed in (1-smr) mode.
       - Added new config options 'smrfactor_gt_sm3' and 'smrfactor_lt_sm1' to restrict the reference mass / factors (if M/mr) or referenc mass * factors

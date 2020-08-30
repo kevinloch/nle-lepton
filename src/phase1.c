@@ -866,7 +866,7 @@ int solveNLEforCoefficients(nle_config_t *nle_config, nle_state_t *nle_state) {
         } // end if 1-minus
         if (nle_config->upload_results_enable == 1) {
           // upload interesting two_term_test as these are rare and significant
-          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 320));
+          sprintf(exec_str, "curl -s \"%s/%s\" > /dev/null 2>&1\n", nle_config->upload_url, underscore(out_str_01, 512));
           system(exec_str);
         } // end if upload enable
       } else {
