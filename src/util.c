@@ -1,11 +1,11 @@
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <math.h>
-#include "nle-lepton.h"
 
 // fast 64-bit random number generator to make full use of x86 80-bit extended prescision long doubles
 // Adapted from https://www.pcg-random.org/posts/does-it-beat-the-minimal-standard.html by M. E. Oneil
 long double pcg_ldrand64(nle_state_t *nle_state) {
-    const __uint128_t MULTIPLIER = ((__uint128_t)0x2d99787926d46932) | 0xa4c1f32680f70c55;
+    const __uint128_t MULTIPLIER = (((__uint128_t)0x2d99787926d46932) << 64) | ((__uint128_t)0xa4c1f32680f70c55);
     nle_state->pcg_state *= MULTIPLIER;
     nle_state->pcg_state += MULTIPLIER;
     return (long double)(nle_state->pcg_state >> 64) / (long double)((__uint128_t)1 << 64);

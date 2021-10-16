@@ -1,8 +1,8 @@
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <math.h> // pow, M_PI
 #include <stdlib.h> // abs
 #include <time.h>
-#include "nle-lepton.h"
 #include "util.h"
 
 //#define DEBUG_OUTFACTOR

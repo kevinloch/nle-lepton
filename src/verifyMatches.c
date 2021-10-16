@@ -1,7 +1,7 @@
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "nle-lepton.h"
 #include "util.h"
 #include "phase2.h"
 

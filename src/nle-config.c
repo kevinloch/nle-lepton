@@ -1,8 +1,7 @@
-#define _GNU_SOURCE // needed for strcasestr in string.h
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "nle-lepton.h"
 
 void initConfig(nle_config_t *nle_config) {
   // sets default values for configuration options.

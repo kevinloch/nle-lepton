@@ -1,3 +1,13 @@
+4.3.7.2 Bug fixes:
+        - Fixed bug in random number generatore where multiplier was initialized incorrectly
+        - Literals are now explicitly created as long doubles in phase1 and phase2 functions
+        - Phase 1 now reports correct solution precision in 3-term mode
+        - Phase 1 solution detail now prints correct values for (C * term) fields
+
+        Known issues:
+        - Phase 1 or Phase 2 will sometimes get stuck in some exponent combinations
+        - Formulas in 1-smr mode can have more than three solutions.  This mode should be deprecated or additional constraints added
+
 4.3.7.1 Bug fixes:
         - Fixed bug where phase 1 interesting two-term test http uploads were truncated to ~325 characters
         - Updated intended version numbers in example config files to 4.3.7

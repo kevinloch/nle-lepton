@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "nle-lepton.h"
+#include <stdio.h>
 
 void getSmrfStr(nle_config_t *nle_config, char *smrf_str, nle_smrfactor_precomputed_t *current_smrfactors, double smrfactor) {
   // creates a text string representation of the current solution mass ratio factors

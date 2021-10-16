@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "nle-lepton.h"
 #include "util.h"
 #include "nle-config.h"
 #include "usage.h"
@@ -45,6 +45,7 @@
 #include "generateExponents.h"
 
 //#define DEBUG_SMRFACTOR // prints smrfactor_seq and optionally select specific smrfactor_seq
+//#define DEBUG_SM3       // to scan for predicted sm3 once an interesting two-term test has been found
 
 int processCmdArgs(nle_config_t *nle_config, int argc, char **argv) {
   int i;
@@ -211,6 +212,9 @@ int main(int argc, char **argv) {
   int mass_user_exp_max;
   int mass_user_exp_range;
   int valid_random_user_mass;
+#ifdef DEBUG_SM3
+  double sm3;
+#endif
 
   // initialize nle_config to default values
   initConfig(&nle_config);
@@ -434,6 +438,11 @@ int main(int argc, char **argv) {
                       }
                     } // end if 1-minus
                     if (valid_mass_config == 1) {
+#ifdef DEBUG_SM3
+                    // this is for finding predicted sm3 once an interesting two-term test has been found.
+                    for (sm3=1783.4089539E6; sm3 < 1785.862E6; sm3+=1.0E-3) {
+                      nle_state.input_sample_sm3=sm3;
+#endif
 
                       // set polarity and mass config strings used in status and other outputs
                       if (nle_state.nle_mixing_polarity == 0) {
@@ -479,6 +488,9 @@ int main(int argc, char **argv) {
                           }
                         } // end nummatches
                       } // end if failed
+#ifdef DEBUG_SM3
+                    }
+#endif
                     } // end if valid mass_config
                   } // end for mass_config_seq
                 } // end if valid polarity

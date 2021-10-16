@@ -1,7 +1,7 @@
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <stdlib.h> // abs
 #include <math.h>   // pow
-#include "nle-lepton.h"
 #include "util.h"
 #include "initDynamicfactorArray.h"
 

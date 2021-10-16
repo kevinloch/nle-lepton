@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "nle-lepton.h"
+#include <stdio.h>
 
 void printUsage() {
 

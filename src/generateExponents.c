@@ -1,6 +1,6 @@
+#include "nle-lepton.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "nle-lepton.h"
 #include "util.h"
 
 void generateExponents(nle_config_t *nle_config, nle_state_t *nle_state) {

@@ -1,7 +1,10 @@
 #ifndef NLE_LEPTON_H
 #define NLE_LEPTON_H
 
-#define NLE_VERSION "4.3.7.1"
+#define NLE_VERSION "4.3.7.2"
+
+#define  __MATH_LONG_DOUBLE_CONSTANTS // needed to enable long double M_PIl and M_El in math.h
+#define _GNU_SOURCE // needed for strcasestr in string.h
 
 typedef struct {
   int G;
